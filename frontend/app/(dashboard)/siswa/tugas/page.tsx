@@ -1,25 +1,26 @@
 'use client';
 
 import { useState } from 'react';
-import { Upload, Clock, CheckCircle2, AlertCircle, FileText, X } from 'lucide-react';
+import { Clock, CheckCircle2, AlertCircle, FileText, X } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
+import { CustomImageUploader } from '@/components/ui/CustomImageUploader';
 
 type FilterTab = 'semua' | 'belum' | 'dikumpulkan' | 'dinilai' | 'terlambat';
 
 const ASSIGNMENTS = [
-  { id: '1', title: 'Essay Bahasa Indonesia: Tema Lingkungan Hidup', subject: 'Bahasa Indonesia', teacher: 'Rina Widyawati, S.Pd.', dueDate: '2025-07-05', maxScore: 100, status: 'BELUM_SUBMIT', description: 'Tulis essay minimal 500 kata tentang pentingnya menjaga lingkungan hidup.' },
-  { id: '2', title: 'Laporan Praktikum IPA: Proses Fotosintesis', subject: 'IPA', teacher: 'Budi Santoso, S.Pd.', dueDate: '2025-07-07', maxScore: 100, status: 'BELUM_SUBMIT', description: 'Buat laporan praktikum sesuai format yang telah diberikan di kelas.' },
-  { id: '3', title: 'Latihan Soal Matematika Bab 5 (Aljabar)', subject: 'Matematika', teacher: 'Siti Rahayu, S.Pd.', dueDate: '2025-07-10', maxScore: 100, status: 'BELUM_SUBMIT', description: 'Kerjakan soal nomor 1-20 di buku LKS halaman 85-87.' },
-  { id: '4', title: 'Reading Comprehension: Tourism in Indonesia', subject: 'Bahasa Inggris', teacher: 'Hendra Purnomo, S.Pd.', dueDate: '2025-06-28', maxScore: 100, status: 'SUBMITTED', submittedAt: '2025-06-25', description: 'Baca teks dan jawab pertanyaan.' },
-  { id: '5', title: 'PR IPS: Peta Persebaran SDA Indonesia', subject: 'IPS', teacher: 'Dewi Susanti, S.Pd.', dueDate: '2025-06-20', maxScore: 100, status: 'DINILAI', score: 88, feedback: 'Peta sudah lengkap dan rapi. Keterangan warna perlu diperjelas sedikit.', submittedAt: '2025-06-18' },
-  { id: '6', title: 'Hafalan Surat Al-Mulk', subject: 'PAI', teacher: 'Ustadz Ahmad Malik, Lc.', dueDate: '2025-06-15', maxScore: 100, status: 'DINILAI', score: 95, feedback: 'Hafalan sangat lancar dan tajwid benar. Pertahankan!', submittedAt: '2025-06-14' },
+  { id: '1', title: 'Essay Bahasa Indonesia: Tema Pelestarian Lingkungan', subject: 'Bahasa Indonesia', teacher: 'Rina Widyawati, S.Pd.', dueDate: '2025-07-05', maxScore: 100, status: 'BELUM_SUBMIT', description: 'Tulis essay minimal 500 kata tentang pentingnya menjaga lingkungan hidup di Surabaya.' },
+  { id: '2', title: 'Laporan Praktikum IPA: Proses Fotosintesis & Klorofil', subject: 'IPA', teacher: 'Ahmad Fauzi, M.Pd.', dueDate: '2025-07-07', maxScore: 100, status: 'BELUM_SUBMIT', description: 'Buat laporan praktikum sesuai format yang telah diberikan di laboratorium IPA.' },
+  { id: '3', title: 'Latihan Soal Matematika Bab 5 (Aljabar Linear)', subject: 'Matematika', teacher: 'Siti Rahayu, S.Pd.', dueDate: '2025-07-10', maxScore: 100, status: 'BELUM_SUBMIT', description: 'Kerjakan soal nomor 1-20 di buku LKS halaman 85-87.' },
+  { id: '4', title: 'Reading Comprehension: Tourism in Surabaya', subject: 'Bahasa Inggris', teacher: 'Rina Kartika, S.Pd.', dueDate: '2025-06-28', maxScore: 100, status: 'SUBMITTED', submittedAt: '2025-06-25', description: 'Baca teks dan jawab pertanyaan singkat.' },
+  { id: '5', title: 'PR IPS: Peta Persebaran Sumber Daya Alam Indonesia', subject: 'IPS', teacher: 'Dewi Susanti, S.Pd.', dueDate: '2025-06-20', maxScore: 100, status: 'DINILAI', score: 88, feedback: 'Peta sudah lengkap dan rapi. Keterangan warna legenda diperjelas.', submittedAt: '2025-06-18' },
+  { id: '6', title: 'Hafalan Surat Al-Mulk Ayat 1-15', subject: 'PAI', teacher: 'Nur Hidayah, S.Ag.', dueDate: '2025-06-15', maxScore: 100, status: 'DINILAI', score: 95, feedback: 'Hafalan sangat lancar dan makhraj tajwid sesuai. Pertahankan!', submittedAt: '2025-06-14' },
 ];
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  BELUM_SUBMIT: { label: 'Belum Dikumpulkan', color: 'text-yellow-600 bg-yellow-100', icon: <Clock className="w-3 h-3" /> },
-  SUBMITTED:    { label: 'Sudah Dikumpulkan', color: 'text-blue-600 bg-blue-100',   icon: <CheckCircle2 className="w-3 h-3" /> },
-  DINILAI:      { label: 'Sudah Dinilai',     color: 'text-green-600 bg-green-100', icon: <CheckCircle2 className="w-3 h-3" /> },
-  TERLAMBAT:    { label: 'Terlambat',         color: 'text-red-600 bg-red-100',       icon: <AlertCircle className="w-3 h-3" /> },
+  BELUM_SUBMIT: { label: 'Belum Dikumpulkan', color: 'text-amber-800 bg-amber-100 border-amber-200', icon: <Clock className="w-3 h-3" /> },
+  SUBMITTED:    { label: 'Sudah Dikumpulkan', color: 'text-blue-800 bg-blue-100 border-blue-200',   icon: <CheckCircle2 className="w-3 h-3" /> },
+  DINILAI:      { label: 'Sudah Dinilai',     color: 'text-emerald-800 bg-emerald-100 border-emerald-200', icon: <CheckCircle2 className="w-3 h-3" /> },
+  TERLAMBAT:    { label: 'Terlambat',         color: 'text-rose-800 bg-rose-100 border-rose-200',       icon: <AlertCircle className="w-3 h-3" /> },
 };
 
 export default function SiswaTugasPage() {
@@ -27,6 +28,7 @@ export default function SiswaTugasPage() {
   const [selectedTask, setSelectedTask] = useState<typeof ASSIGNMENTS[0] | null>(null);
   const [uploading, setUploading] = useState(false);
   const [answer, setAnswer] = useState('');
+  const [uploadedUrl, setUploadedUrl] = useState('');
 
   const filtered = ASSIGNMENTS.filter(a => {
     if (activeTab === 'semua') return true;
@@ -47,10 +49,11 @@ export default function SiswaTugasPage() {
 
   const handleSubmit = async () => {
     setUploading(true);
-    await new Promise(r => setTimeout(r, 1500));
+    await new Promise(r => setTimeout(r, 1200));
     setUploading(false);
     setSelectedTask(null);
     setAnswer('');
+    setUploadedUrl('');
   };
 
   const isOverdue = (dueDate: string) => new Date(dueDate) < new Date();
@@ -58,63 +61,73 @@ export default function SiswaTugasPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-gray-900">Tugas Saya</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Semester Ganjil 2024/2025</p>
+        <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Tugas &amp; Pengumpulan Berkas Siswa</h1>
+        <p className="text-xs text-slate-500 font-semibold mt-0.5">Semester Ganjil TA 2024/2025</p>
       </div>
 
-      {/* Submit modal */}
+      {/* Submit Modal */}
       {selectedTask && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
-              <h2 className="font-bold text-gray-900 text-sm">Kumpulkan Tugas</h2>
-              <button onClick={() => setSelectedTask(null)}>
-                <X className="w-5 h-5 text-gray-400 hover:text-gray-600" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl shadow-2xl border border-emerald-100 w-full max-w-lg overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-emerald-100 bg-emerald-50/50">
+              <div>
+                <h2 className="font-extrabold text-slate-900 text-base">Pengumpulan Tugas Siswa</h2>
+                <p className="text-[11px] font-semibold text-slate-500">Kirimkan hasil pengerjaan atau berkas tugas</p>
+              </div>
+              <button onClick={() => setSelectedTask(null)} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-emerald-100/60 rounded-xl transition-colors">
+                <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-5 space-y-4">
-              <div className="bg-gray-50 rounded-xl p-3.5">
-                <p className="font-semibold text-sm text-gray-900">{selectedTask.title}</p>
-                <p className="text-xs text-gray-500 mt-1">{selectedTask.subject} · Deadline: {formatDate(selectedTask.dueDate)}</p>
-                {selectedTask.description && <p className="text-xs text-gray-600 mt-2 leading-relaxed">{selectedTask.description}</p>}
+
+            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+              <div className="bg-emerald-50/60 rounded-2xl p-4 border border-emerald-100">
+                <p className="font-extrabold text-xs text-slate-900">{selectedTask.title}</p>
+                <p className="text-[11px] font-semibold text-emerald-800 mt-1">{selectedTask.subject} · Deadline: {formatDate(selectedTask.dueDate)}</p>
+                {selectedTask.description && <p className="text-xs text-slate-600 font-medium mt-2 leading-relaxed">{selectedTask.description}</p>}
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Jawaban / Keterangan</label>
+                <label className="block text-xs font-extrabold text-slate-800 mb-1.5">Jawaban / Catatan Pengumpulan</label>
                 <textarea rows={4} value={answer} onChange={e => setAnswer(e.target.value)}
-                  placeholder="Tulis jawaban atau keterangan pengumpulan..."
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none" />
+                  placeholder="Tulis ringkasan atau keterangan pengumpulan tugas..."
+                  className="w-full px-4 py-2.5 rounded-2xl border border-emerald-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 resize-none shadow-2xs" />
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Upload File (opsional)</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-xl p-5 text-center hover:border-green-400 cursor-pointer transition-colors">
-                  <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-500">Klik atau drag & drop</p>
-                  <p className="text-xs text-gray-400 mt-1">PDF, DOC, DOCX, JPG, PNG (max 10MB)</p>
-                </div>
+                <label className="block text-xs font-extrabold text-slate-800 mb-1.5">Upload Berkas Tugas (PDF/DOC/PNG)</label>
+                <CustomImageUploader
+                  endpoint="assignmentFile"
+                  label="Upload Berkas Tugas Siswa"
+                  onUploadComplete={(url) => setUploadedUrl(url)}
+                  className="w-full px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition-all shadow-2xs inline-flex items-center justify-center gap-2 cursor-pointer"
+                />
+                {uploadedUrl && <p className="text-xs font-extrabold text-emerald-700 mt-2">✓ Berkas berhasil diunggah</p>}
               </div>
+
               {isOverdue(selectedTask.dueDate) && (
-                <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl">
-                  <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
-                  <p className="text-xs text-red-600">Tugas ini sudah melewati deadline dan akan ditandai sebagai terlambat.</p>
+                <div className="flex items-center gap-2 p-3.5 bg-rose-50 border border-rose-200 rounded-2xl">
+                  <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                  <p className="text-xs font-bold text-rose-700">Tugas ini melewati tenggat waktu dan akan ditandai terlambat.</p>
                 </div>
               )}
             </div>
-            <div className="flex gap-3 px-5 pb-5">
+
+            <div className="flex gap-3 px-6 py-4 border-t border-emerald-100 bg-emerald-50/40">
               <button onClick={() => setSelectedTask(null)}
-                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50">
+                className="flex-1 py-2.5 rounded-2xl border border-emerald-200 text-xs font-bold text-slate-700 bg-white hover:bg-emerald-50 shadow-2xs">
                 Batal
               </button>
               <button onClick={handleSubmit} disabled={uploading}
-                className="flex-1 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white text-sm font-semibold transition-colors">
-                {uploading ? 'Mengumpulkan...' : '✅ Kumpulkan Tugas'}
+                className="flex-1 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white text-xs font-extrabold transition-all shadow-xs">
+                {uploading ? 'Mengumpulkan...' : 'Kumpulkan Tugas Sekarang'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 rounded-2xl p-1.5 w-fit flex-wrap">
+      {/* Tabs Filter */}
+      <div className="flex gap-1.5 bg-emerald-50/60 rounded-2xl p-1.5 w-fit flex-wrap border border-emerald-100">
         {([
           { key: 'semua', label: 'Semua' },
           { key: 'belum', label: 'Belum' },
@@ -123,11 +136,11 @@ export default function SiswaTugasPage() {
           { key: 'terlambat', label: 'Terlambat' },
         ] as { key: FilterTab; label: string }[]).map(t => (
           <button key={t.key} onClick={() => setActiveTab(t.key)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium transition-all ${
-              activeTab === t.key ? 'bg-white text-green-700 shadow-sm' : 'text-gray-500'
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-extrabold transition-all ${
+              activeTab === t.key ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-600 hover:text-emerald-800'
             }`}>
             {t.label}
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${activeTab === t.key ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-500'}`}>
+            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${activeTab === t.key ? 'bg-emerald-800 text-white' : 'bg-emerald-100 text-emerald-800'}`}>
               {counts[t.key]}
             </span>
           </button>
@@ -135,49 +148,50 @@ export default function SiswaTugasPage() {
       </div>
 
       {/* Task list */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {filtered.map(task => {
           const cfg = STATUS_CONFIG[task.status];
           const overdue = isOverdue(task.dueDate) && task.status === 'BELUM_SUBMIT';
           return (
             <div key={task.id}
-              className={`bg-white rounded-2xl border overflow-hidden ${overdue ? 'border-red-200' : 'border-gray-200'}`}>
-              <div className="p-5">
+              className={`bg-white rounded-3xl border shadow-2xs overflow-hidden ${overdue ? 'border-rose-200' : 'border-emerald-100'}`}>
+              <div className="p-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
-                    <FileText className="w-5 h-5 text-gray-500" />
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center flex-shrink-0 text-emerald-700 shadow-2xs">
+                    <FileText className="w-6 h-6" />
                   </div>
+
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <h3 className="font-semibold text-sm text-gray-900 leading-snug">{task.title}</h3>
-                        <p className="text-xs text-gray-500 mt-0.5">{task.subject} · {task.teacher}</p>
+                        <h3 className="font-extrabold text-sm text-slate-900 leading-snug">{task.title}</h3>
+                        <p className="text-xs font-semibold text-slate-500 mt-0.5">{task.subject} · {task.teacher}</p>
                       </div>
-                      <span className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ${cfg.color}`}>
+                      <span className={`flex items-center gap-1.5 text-[10px] font-extrabold px-3 py-1 rounded-full border flex-shrink-0 ${cfg.color}`}>
                         {cfg.icon} {cfg.label}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-4 mt-3">
-                      <span className={`flex items-center gap-1 text-xs ${overdue ? 'text-red-500 font-medium' : 'text-gray-400'}`}>
-                        <Clock className="w-3 h-3" />
+                      <span className={`flex items-center gap-1 text-xs font-semibold ${overdue ? 'text-rose-600 font-extrabold' : 'text-slate-500'}`}>
+                        <Clock className="w-3.5 h-3.5" />
                         Deadline: {formatDate(task.dueDate)}
                         {overdue && ' (Terlambat!)'}
                       </span>
-                      <span className="text-xs text-gray-400">Nilai maks: {task.maxScore}</span>
+                      <span className="text-xs font-bold text-slate-400">Nilai Maks: {task.maxScore}</span>
                     </div>
 
                     {/* Score & feedback */}
                     {task.status === 'DINILAI' && (
-                      <div className="mt-3 p-3 bg-green-50 rounded-xl border border-green-200">
+                      <div className="mt-4 p-4 bg-emerald-50/80 rounded-2xl border border-emerald-200">
                         <div className="flex items-center gap-2 mb-1">
-                          <CheckCircle2 className="w-4 h-4 text-green-600" />
-                          <span className="text-sm font-bold text-green-700">
-                            Nilai: {(task as typeof task & { score?: number }).score} / {task.maxScore}
+                          <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+                          <span className="text-xs font-black text-emerald-900">
+                            Nilai Diterima: {(task as typeof task & { score?: number }).score} / {task.maxScore}
                           </span>
                         </div>
                         {(task as typeof task & { feedback?: string }).feedback && (
-                          <p className="text-xs text-green-700 italic">
+                          <p className="text-xs font-medium text-emerald-800 italic mt-1">
                             "{(task as typeof task & { feedback?: string }).feedback}"
                           </p>
                         )}
@@ -187,16 +201,16 @@ export default function SiswaTugasPage() {
                 </div>
               </div>
 
-              {/* Action */}
+              {/* Action button */}
               {task.status === 'BELUM_SUBMIT' && (
-                <div className="px-5 pb-4">
+                <div className="px-6 pb-5">
                   <button onClick={() => setSelectedTask(task)}
-                    className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                    className={`w-full py-2.5 rounded-2xl text-xs font-extrabold transition-all shadow-2xs ${
                       overdue
-                        ? 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200'
-                        : 'bg-green-600 hover:bg-green-700 text-white'
+                        ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200'
+                        : 'bg-emerald-600 hover:bg-emerald-700 text-white'
                     }`}>
-                    {overdue ? '⚠️ Kumpulkan Sekarang (Terlambat)' : '📤 Kumpulkan Tugas'}
+                    {overdue ? 'Kumpulkan Sekarang (Terlambat)' : 'Kumpulkan Tugas Sekarang'}
                   </button>
                 </div>
               )}
@@ -205,9 +219,9 @@ export default function SiswaTugasPage() {
         })}
 
         {filtered.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-2xl border border-gray-200">
-            <span className="text-4xl block mb-3">✅</span>
-            <p className="text-sm text-gray-500">Tidak ada tugas di kategori ini</p>
+          <div className="text-center py-16 bg-white rounded-3xl border border-emerald-100 shadow-2xs text-slate-400">
+            <CheckCircle2 className="w-12 h-12 mx-auto mb-2 text-emerald-600 opacity-30" />
+            <p className="text-xs font-semibold text-slate-500">Tidak ada tugas di kategori ini</p>
           </div>
         )}
       </div>
