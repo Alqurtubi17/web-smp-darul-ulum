@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Users, GraduationCap, BookOpen, Bell, UserCheck, BarChart3, TrendingUp, Clock } from 'lucide-react';
 import { useDashboardStats } from '@/hooks/useApi';
 import { useAuth } from '@/hooks/useAuth';
@@ -158,13 +159,13 @@ export default function AdminDashboard() {
               { label: '📊 Lihat Laporan Rekap', href: '/admin/laporan', color: 'bg-purple-50 border-purple-100 text-purple-900 hover:bg-purple-100' },
               { label: '⚙️ Pengaturan Sistem', href: '/admin/pengaturan', color: 'bg-slate-50 border-slate-200 text-slate-900 hover:bg-slate-100' },
             ].map((action) => (
-              <a
+              <Link
                 key={action.href}
                 href={action.href}
                 className={`block px-4 py-2.5 rounded-2xl border text-xs font-bold transition-all shadow-2xs ${action.color}`}
               >
                 {action.label}
-              </a>
+              </Link>
             ))}
           </div>
         </div>

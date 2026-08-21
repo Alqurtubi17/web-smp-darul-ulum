@@ -76,10 +76,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (status === 'unauthenticated') router.push('/auth/login');
-  }, [status, router]);
-
   // Close search dropdown on click outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
