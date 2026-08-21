@@ -112,47 +112,42 @@ export default function SiswaAbsensiPage() {
         </div>
       </div>
 
-      {/* Semester summary banner */}
+      {/* Semester & Monthly summary banner */}
       <div className="bg-gradient-to-r from-emerald-800 via-teal-800 to-emerald-950 text-white rounded-3xl p-6 shadow-md border border-emerald-700/50">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
           <div>
             <p className="text-emerald-200 text-xs font-extrabold">Rekap Kehadiran Semester Ganjil 2024/2025</p>
-            <p className="text-3xl font-black mt-0.5">{semPct}% Kehadiran Siswa</p>
+            <p className="text-3xl font-black mt-0.5">{semPct}% Kehadiran Akademik</p>
           </div>
-          <TrendingUp className="w-9 h-9 text-emerald-300" />
+          <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-2xl border border-white/15 backdrop-blur-xs">
+            <TrendingUp className="w-5 h-5 text-emerald-300" />
+            <span className="text-xs font-extrabold text-white">Status Sangat Baik</span>
+          </div>
         </div>
         <div className="h-2.5 bg-emerald-950/60 rounded-full overflow-hidden border border-emerald-700/50">
           <div className="h-full bg-emerald-400 rounded-full transition-all" style={{ width: `${semPct}%` }} />
         </div>
-        <div className="grid grid-cols-4 gap-3 mt-4 text-center">
+      </div>
+
+      {/* Monthly Stats for Selected Month */}
+      <div className="space-y-2">
+        <p className="text-xs font-extrabold text-slate-700">
+          Statistik Presensi Bulan {MONTHS[parseInt(selectedMonth.split('-')[1])-1]} {selectedMonth.split('-')[0]}:
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label:'Hadir', val:semTotal.hadir, color:'text-emerald-300' },
-            { label:'Izin',  val:semTotal.izin,  color:'text-blue-300' },
-            { label:'Sakit', val:semTotal.sakit, color:'text-amber-300' },
-            { label:'Alpha', val:semTotal.alpha, color:'text-rose-300' },
-          ].map(s => (
-            <div key={s.label} className="bg-white/10 rounded-2xl p-2.5 backdrop-blur-xs border border-white/10">
-              <p className={`text-xl font-black ${s.color}`}>{s.val}</p>
-              <p className="text-[11px] text-emerald-100 font-extrabold mt-0.5">Hari {s.label}</p>
+            { key:'HADIR', val:rekap.hadir, cfg:STATUS_CONFIG.HADIR },
+            { key:'IZIN', val:rekap.izin, cfg:STATUS_CONFIG.IZIN },
+            { key:'SAKIT', val:rekap.sakit, cfg:STATUS_CONFIG.SAKIT },
+            { key:'ALPHA', val:rekap.alpha, cfg:STATUS_CONFIG.ALPHA },
+          ].map(item => (
+            <div key={item.key} className={`${item.cfg.color} rounded-3xl border p-5 text-center shadow-2xs hover:scale-[1.02] transition-transform`}>
+              <div className="flex justify-center mb-1.5">{item.cfg.icon}</div>
+              <p className="text-2xl sm:text-3xl font-black">{item.val}</p>
+              <p className="text-xs font-extrabold text-slate-700 mt-1">Hari {item.cfg.label}</p>
             </div>
           ))}
         </div>
-      </div>
-
-      {/* Monthly Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {[
-          { key:'HADIR', val:rekap.hadir, cfg:STATUS_CONFIG.HADIR },
-          { key:'IZIN', val:rekap.izin, cfg:STATUS_CONFIG.IZIN },
-          { key:'SAKIT', val:rekap.sakit, cfg:STATUS_CONFIG.SAKIT },
-          { key:'ALPHA', val:rekap.alpha, cfg:STATUS_CONFIG.ALPHA },
-        ].map(item => (
-          <div key={item.key} className={`${item.cfg.color} rounded-3xl border p-5 text-center shadow-2xs hover:scale-[1.02] transition-transform`}>
-            <div className="flex justify-center mb-1.5">{item.cfg.icon}</div>
-            <p className="text-2xl sm:text-3xl font-black">{item.val}</p>
-            <p className="text-xs font-extrabold text-slate-700 mt-1">Hari {item.cfg.label}</p>
-          </div>
-        ))}
       </div>
 
       {/* Table Container */}
