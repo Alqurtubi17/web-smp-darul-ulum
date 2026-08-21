@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+:root, .dark, [data-theme='dark'] {
+  color-scheme: light !important;
+  --background: #fcfdfd;
+  --foreground: #0f172a;
+}
+
+body {
+  background-color: #fcfdfd !important;
+  color: #0f172a !important;
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+}
+
+/* Scrollbar hide */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar for desktop */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #ecfdf5; }
+::-webkit-scrollbar-thumb { background: #6ee7b7; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #10b981; }
+
+/* Line clamp utilities */
+.line-clamp-1 { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
+.line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.line-clamp-3 { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+
+/* Form focus ring */
+input:focus, select:focus, textarea:focus {
+  outline: none;
+}
+
+/* Bright Pastel Card Styling */
+.pastel-card {
+  background-color: #ffffff;
+  border: 1px solid #d1fae5;
+  box-shadow: 0 4px 15px -2px rgba(16, 185, 129, 0.04);
+}
+
+.pastel-card:hover {
+  border-color: #6ee7b7;
+  box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.08);
+}

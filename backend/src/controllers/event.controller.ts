@@ -1,0 +1,86 @@
+// @ts-nocheck — Prisma client will be generated before compilation
+import { Request, Response } from 'express';
+import prisma from '../utils/prisma';
+import {
+  sendSuccess, sendCreated, sendError, sendNotFound,
+  buildPaginationMeta, parsePagination,
+} from '../utils/response';
+import { AuthRequest } from '../types';
+
+export const listEvents = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { page, limit, skip } = parsePagination(req.query as Record<string, string>);
+    const { month, year, category } = req.query as Record<string, string>;
+
+    const now = new Date();
+    const filterYear = year ? parseInt(year) : now.getFullYear();
+    const filterMonth = month ? parseInt(month) - 1 : undefined;
+
+    const startDate = filterMonth !== undefined
+      ? new Date(filterYear, filterMonth, 1)
+      : new Date(filterYear, 0, 1);
+    const endDate = filterMonth !== undefined
+      ? new Date(filterYear, filterMonth + 1, 0, 23, 59, 59)
+      : new Date(filterYear, 11, 31, 23, 59, 59);
+
+    const where = {
+      isPublic: true,
+      startDate: { gte: startDate, lte: endDate },
+      ...(category && { category }),
+    };
+
+    const [total, items] = await Promise.all([
+      prisma.event.count({ where }),
+      prisma.event.findMany({
+        where, skip, take: limit,
+        orderBy: { startDate: 'asc' },
+      }),
+    ]);
+
+    sendSuccess(res, items, 'Agenda berhasil diambil', 200, buildPaginationMeta(total, page, limit));
+  } catch { sendError(res, 'Gagal mengambil agenda'); }
+};
+
+export const getUpcomingEvents = async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const items = await prisma.event.findMany({
+      where: { isPublic: true, startDate: { gte: new Date() } },
+      orderBy: { startDate: 'asc' },
+      take: 5,
+    });
+    sendSuccess(res, items, 'Agenda mendatang berhasil diambil');
+  } catch { sendError(res, 'Gagal mengambil agenda mendatang'); }
+};
+
+export const getEventById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const item = await prisma.event.findFirst({ where: { id: req.params.id, isPublic: true } });
+    if (!item) { sendNotFound(res, 'Agenda tidak ditemukan'); return; }
+    sendSuccess(res, item);
+  } catch { sendError(res, 'Gagal mengambil agenda'); }
+};
+
+export const createEvent = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const item = await prisma.event.create({
+      data: { ...req.body, authorId: req.user?.userId },
+    });
+    sendCreated(res, item, 'Agenda berhasil dibuat');
+  } catch { sendError(res, 'Gagal membuat agenda'); }
+};
+
+export const updateEvent = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const existing = await prisma.event.findUnique({ where: { id: req.params.id } });
+    if (!existing) { sendNotFound(res); return; }
+    const updated = await prisma.event.update({ where: { id: req.params.id }, data: req.body });
+    sendSuccess(res, updated, 'Agenda diperbarui');
+  } catch { sendError(res, 'Gagal memperbarui agenda'); }
+};
+
+export const deleteEvent = async (req: Request, res: Response): Promise<void> => {
+  try {
+    await prisma.event.delete({ where: { id: req.params.id } });
+    sendSuccess(res, null, 'Agenda dihapus');
+  } catch { sendError(res, 'Gagal menghapus agenda'); }
+};

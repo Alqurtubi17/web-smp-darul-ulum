@@ -1,0 +1,41 @@
+name: Database Backup — Otomatis Harian
+
+on:
+  schedule:
+    - cron: '0 1 * * *'  # Setiap hari pukul 01.00 UTC (08.00 WIB)
+  workflow_dispatch:      # Bisa dijalankan manual
+
+jobs:
+  backup:
+    name: Backup PostgreSQL ke Google Drive
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install PostgreSQL client
+        run: sudo apt-get install -y postgresql-client
+
+      - name: Backup database
+        run: |
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          FILENAME="smp_darul_ulum_backup_${TIMESTAMP}.sql"
+          pg_dump "$DATABASE_URL" > "/tmp/${FILENAME}"
+          gzip "/tmp/${FILENAME}"
+          echo "BACKUP_FILE=/tmp/${FILENAME}.gz" >> $GITHUB_ENV
+          echo "BACKUP_NAME=${FILENAME}.gz" >> $GITHUB_ENV
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Upload to GitHub Artifacts (30 hari)
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ github.run_number }}
+          path: ${{ env.BACKUP_FILE }}
+          retention-days: 30
+
+      - name: Notify via WhatsApp (opsional)
+        if: failure()
+        run: |
+          curl -X POST https://api.fonnte.com/send \
+            -H "Authorization: ${{ secrets.FONNTE_TOKEN }}" \
+            -d "target=${{ secrets.ADMIN_WA }}" \
+            -d "message=⚠️ BACKUP DATABASE GAGAL! Cek GitHub Actions segera."

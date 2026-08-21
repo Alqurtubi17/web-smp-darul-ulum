@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Larang akses ke dashboard & API
+Disallow: /admin/
+Disallow: /guru/
+Disallow: /siswa/
+Disallow: /ortu/
+Disallow: /api/
+Disallow: /auth/
+
+# Sitemap
+Sitemap: https://smpdarul ulum.sch.id/sitemap.xml

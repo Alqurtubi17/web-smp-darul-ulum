@@ -1,0 +1,16 @@
+{
+  "name": "smp-darul-ulum",
+  "version": "1.0.0",
+  "description": "Website SMP Darul Ulum Surabaya",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently --names BACKEND,FRONTEND --prefix-colors green,blue \"cd backend && npm run dev\" \"cd frontend && npm run dev\"",
+    "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "setup": "npm run install:all && cd backend && npm run db:generate && npm run db:push && npm run db:seed",
+    "backend": "cd backend && npm run dev",
+    "frontend": "cd frontend && npm run dev"
+  },
+  "dependencies": {
+    "concurrently": "^9.0.1"
+  }
+}
