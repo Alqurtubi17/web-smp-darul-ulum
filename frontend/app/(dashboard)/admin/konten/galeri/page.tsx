@@ -84,8 +84,8 @@ export default function AdminGaleriPage() {
                     <label className="block text-xs font-extrabold text-slate-800 mb-1.5">Tipe Album</label>
                     <select value={form.type} onChange={e=>set('type',e.target.value)}
                       className="w-full px-4 py-2.5 rounded-2xl border border-emerald-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 shadow-2xs">
-                      <option value="FOTO">📷 Foto Dokumentasi</option>
-                      <option value="VIDEO">🎬 Video Kegiatan</option>
+                      <option value="FOTO">Album Foto Dokumentasi</option>
+                      <option value="VIDEO">Album Video Kegiatan</option>
                     </select>
                   </div>
                   <div className="flex items-center pt-5">

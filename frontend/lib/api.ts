@@ -1,5 +1,5 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { getSession } from 'next-auth/react';
+import { getSession, signOut } from 'next-auth/react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
@@ -17,13 +17,16 @@ apiClient.interceptors.request.use(async (config: InternalAxiosRequestConfig) =>
   return config;
 });
 
-// Handle 401
+let isSigningOut = false;
+
+// Handle 401: Gunakan signOut dari NextAuth agar cookie disapu bersih sebelum redirect
 apiClient.interceptors.response.use(
   (r) => r,
   async (error: AxiosError) => {
     if (error.response?.status === 401) {
-      if (typeof window !== 'undefined') {
-        window.location.href = '/auth/login';
+      if (typeof window !== 'undefined' && !isSigningOut) {
+        isSigningOut = true;
+        signOut({ callbackUrl: '/auth/login' });
       }
     }
     return Promise.reject(error);

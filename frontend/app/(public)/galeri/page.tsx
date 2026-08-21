@@ -58,7 +58,9 @@ export default async function GaleriPage() {
                         {album.cover ? (
                           <Image src={album.cover} alt={album.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300"/>
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-5xl">📷</div>
+                          <div className="w-full h-full flex items-center justify-center text-emerald-300">
+                            <Grid3X3 className="w-10 h-10" />
+                          </div>
                         )}
                         <span className="absolute bottom-2 right-2 text-xs bg-slate-900/70 text-white font-bold px-2 py-0.5 rounded-full">
                           {album._count.items} foto

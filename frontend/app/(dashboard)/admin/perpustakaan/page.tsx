@@ -2,13 +2,15 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Search, BookOpen, ArrowRightLeft, X, Loader2, CheckCircle2 } from 'lucide-react';
+import Image from 'next/image';
 import apiClient, { getErrorMessage } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
+import { CustomImageUploader } from '@/components/ui/CustomImageUploader';
 
 interface Book { id: string; title: string; author: string; isbn: string|null; category: string|null; stock: number; available: number; cover: string|null; }
 interface Borrowing { id: string; book: { title: string; author: string }; student: { fullName: string; nis: string; class: { name: string } }; borrowedAt: string; dueDate: string; returnedAt: string|null; status: string; fine: number; }
 
-const DEF_BOOK = { title:'', author:'', isbn:'', category:'', publisher:'', year:'', stock:'1', description:'' };
+const DEF_BOOK = { title:'', author:'', isbn:'', category:'', publisher:'', year:'', stock:'1', description:'', cover:'' };
 
 export default function AdminPerpustakaanPage() {
   const [tab, setTab] = useState<'books'|'borrowings'>('books');
@@ -61,15 +63,38 @@ export default function AdminPerpustakaanPage() {
             <div className="flex items-center justify-between px-6 py-4 border-b border-emerald-100 bg-emerald-50/50">
               <div>
                 <h2 className="font-extrabold text-slate-900 text-base">Tambah Koleksi Buku</h2>
-                <p className="text-[11px] font-semibold text-slate-500">Masukkan data buku baru ke katalog perpustakaan</p>
+                <p className="text-[11px] font-semibold text-slate-500">Masukkan data buku baru &amp; foto sampul ke katalog perpustakaan</p>
               </div>
               <button onClick={()=>setShowForm(false)} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-emerald-100/60 rounded-xl transition-colors"><X className="w-5 h-5"/></button>
             </div>
 
             <form onSubmit={e=>{ e.preventDefault(); if(!form.title.trim()||!form.author.trim()) { setErr('Judul dan pengarang wajib diisi'); return; } createBook.mutate({ ...form, stock:parseInt(form.stock), year:form.year?parseInt(form.year):undefined }); }}>
-              <div className="p-6 space-y-4">
+              <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
                 {err && <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-xs font-bold text-rose-700">{err}</div>}
                 
+                {/* Upload Foto Sampul Buku (Opsional) */}
+                <div>
+                  <label className="block text-xs font-extrabold text-slate-800 mb-2">Foto Sampul Buku (Opsional)</label>
+                  <div className="flex items-center gap-4">
+                    <div className="relative w-14 h-18 rounded-xl overflow-hidden bg-emerald-50 border border-emerald-200 flex items-center justify-center flex-shrink-0 shadow-2xs">
+                      {form.cover ? (
+                        <Image src={form.cover} alt="Sampul Buku" fill className="object-cover" />
+                      ) : (
+                        <BookOpen className="w-7 h-7 text-emerald-600" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <CustomImageUploader
+                        endpoint="newsImage"
+                        label="Unggah Sampul Buku"
+                        onUploadComplete={(url) => set('cover', url)}
+                        className="px-4 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition-all shadow-2xs inline-flex items-center justify-center gap-2 cursor-pointer"
+                      />
+                      <p className="text-[11px] text-slate-400 font-medium mt-1">Format JPG, PNG (Maks 4MB)</p>
+                    </div>
+                  </div>
+                </div>
+
                 {[
                   {label:'Judul Buku *',key:'title',placeholder:'cth: Sains & Teknologi SMP Kelas 7'},
                   {label:'Pengarang *',key:'author',placeholder:'Nama penulis / tim penyusun'},
@@ -201,8 +226,12 @@ export default function AdminPerpustakaanPage() {
           : <div className="divide-y divide-emerald-50">
               {books.map(b => (
                 <div key={b.id} className="flex items-center gap-4 px-6 py-4 hover:bg-emerald-50/30 transition-colors">
-                  <div className="w-10 h-12 bg-gradient-to-br from-emerald-600 to-teal-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-2xs text-white">
-                    <BookOpen className="w-5 h-5"/>
+                  <div className="relative w-10 h-14 rounded-xl overflow-hidden bg-emerald-50 border border-emerald-100 flex items-center justify-center flex-shrink-0 shadow-2xs text-emerald-700">
+                    {b.cover ? (
+                      <Image src={b.cover} alt={b.title} fill className="object-cover" />
+                    ) : (
+                      <BookOpen className="w-5 h-5"/>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-extrabold text-slate-900 truncate">{b.title}</p>

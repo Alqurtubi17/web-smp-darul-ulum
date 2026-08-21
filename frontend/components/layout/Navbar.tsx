@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { Menu, X, ChevronDown, Gamepad2, LogIn, LayoutDashboard } from 'lucide-react';
+import { Menu, X, ChevronDown, LogIn, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 const navItems = [
@@ -20,7 +20,7 @@ const navItems = [
   {
     label:'Akademik', href:'#',
     children:[
-      { label:'📚 E-Learning', href:'/elearning', badge:'Baru!' },
+      { label:'E-Learning', href:'/elearning' },
       { label:'Kurikulum', href:'/profil#kurikulum' },
     ],
   },
@@ -91,9 +91,6 @@ export function Navbar() {
                       <Link key={child.href} href={child.href}
                         className="flex items-center justify-between px-4 py-2.5 text-sm text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
                         {child.label}
-                        {(child as {badge?: string}).badge && (
-                          <span className="text-[10px] font-bold bg-emerald-600 text-white px-1.5 py-0.5 rounded-full">{(child as {badge?: string}).badge}</span>
-                        )}
                       </Link>
                     ))}
                   </div>
@@ -120,12 +117,6 @@ export function Navbar() {
       {/* Mobile menu */}
       {mobileOpen && (
         <div className="lg:hidden border-t border-emerald-100 bg-white px-4 py-3 space-y-1 max-h-[70vh] overflow-y-auto">
-          <Link href="/elearning"
-            className="flex items-center gap-2 px-4 py-3 rounded-xl bg-emerald-50 text-emerald-700 font-semibold text-sm border border-emerald-200"
-            onClick={() => setMobileOpen(false)}>
-            <Gamepad2 className="w-4 h-4"/> 🎮 E-Learning Interaktif
-            <span className="ml-auto text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded-full">Baru!</span>
-          </Link>
           {navItems.map(item => (
             item.children ? (
               <div key={item.label}>

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { CheckCircle2, Building2, Users, GraduationCap, MapPin, Phone, Globe, Calendar, FileText, BookOpen, ShieldCheck } from 'lucide-react';
+import Image from 'next/image';
+import { CheckCircle2, GraduationCap } from 'lucide-react';
 import { PageHero } from '@/components/public/PageHero';
 
 export const metadata: Metadata = {
@@ -23,8 +24,20 @@ const schoolData = [
 
 const rekapData = [
   { label: 'Guru & Tenaga Pendidik', value: '22 Orang' },
+  { label: 'Tenaga Kependidikan (Tendik)', value: '6 Orang' },
   { label: 'Peserta Didik (Siswa)', value: '226 Siswa' },
   { label: 'Rombongan Belajar', value: '8 Rombel' },
+];
+
+const staffShowcase = [
+  { name: 'Khusnul Khotimah, S.Pd.', role: 'Kepala Sekolah', category: 'Guru', subject: 'Manajemen Sekolah', photo: '' },
+  { name: 'Siti Rahayu, S.Pd.', role: 'Waka Akademik', category: 'Guru', subject: 'Matematika', photo: '' },
+  { name: 'Ahmad Fauzi, M.Pd.', role: 'Guru Pengajar', category: 'Guru', subject: 'IPA (Fisika & Biologi)', photo: '' },
+  { name: 'Nur Hidayah, S.Ag.', role: 'Guru Pengajar', category: 'Guru', subject: 'PAI & Ke-NU-an', photo: '' },
+  { name: 'Muhammad Ridwan, S.Kom.', role: 'Kepala Tata Usaha', category: 'Tendik', subject: 'Administrasi & IT', photo: '' },
+  { name: 'Siti Maryam, A.Md.', role: 'Pustakawan Sekolah', category: 'Tendik', subject: 'Perpustakaan Digital', photo: '' },
+  { name: 'Bambang Kurniawan, S.Pd.', role: 'Guru Pengajar', category: 'Guru', subject: 'Bahasa Indonesia', photo: '' },
+  { name: 'Agus Setiawan', role: 'Staf Keamanan', category: 'Tendik', subject: 'Ketertiban & Keamanan', photo: '' },
 ];
 
 const facilities = [
@@ -56,7 +69,7 @@ export default function ProfilPage() {
       {/* Header Hero */}
       <PageHero
         title="Profil SMP Darul Ulum Surabaya"
-        subtitle="Informasi kelembagaan, visi misi, statistik rekapitulasi, serta sarana dan prasarana sekolah."
+        subtitle="Informasi kelembagaan, visi misi, dewan guru &amp; tendik, statistik rekapitulasi, serta sarana dan prasarana sekolah."
         breadcrumbs={[
           { label: 'Beranda', href: '/' },
           { label: 'Profil Sekolah' },
@@ -69,7 +82,7 @@ export default function ProfilPage() {
           <div className="grid lg:grid-cols-12 gap-8 items-start">
             <div className="lg:col-span-7 space-y-4">
               <h2 className="text-2xl font-extrabold text-slate-900">
-                Sejarah Singkat & Pengelolaan
+                Sejarah Singkat &amp; Pengelolaan
               </h2>
               <p className="text-slate-600 text-sm leading-relaxed font-medium">
                 SMP Darul Ulum Surabaya berdiri sejak tanggal 29 Mei 1991 di Kecamatan Tandes, Surabaya. Sekolah ini beroperasi di bawah naungan LP Ma&apos;arif NU dan menyelenggarakan pendidikan jenjang SMP yang terakreditasi A oleh BAN-S/M.
@@ -93,6 +106,43 @@ export default function ProfilPage() {
                 ))}
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* ── DEWAN GURU & TENAGA KEPENDIDIKAN (TENDIK) ───────────────── */}
+        <section id="guru" className="bg-white rounded-3xl border border-emerald-100 p-8 shadow-xs scroll-mt-24 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-emerald-100 pb-4">
+            <div>
+              <h2 className="text-xl font-extrabold text-slate-900">Dewan Guru &amp; Tenaga Kependidikan (Tendik)</h2>
+              <p className="text-xs font-semibold text-slate-500 mt-1">Tenaga pendidik dan staf administrasi profesional SMP Darul Ulum Surabaya</p>
+            </div>
+            <Link href="/admin/pengguna/guru" className="text-xs font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-4 py-2 rounded-2xl hover:bg-emerald-100 transition-colors w-fit">
+              Kelola Data Guru &amp; Tendik
+            </Link>
+          </div>
+
+          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-5">
+            {staffShowcase.map((t) => (
+              <div key={t.name} className="bg-emerald-50/40 border border-emerald-100 rounded-3xl p-5 text-center flex flex-col items-center hover:border-emerald-300 hover:shadow-xs transition-all">
+                <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-white border border-emerald-200 shadow-2xs mb-3.5 flex items-center justify-center">
+                  {t.photo ? (
+                    <Image src={t.photo} alt={t.name} fill className="object-cover" />
+                  ) : (
+                    <GraduationCap className="w-9 h-9 text-emerald-600" />
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md ${t.category === 'Guru' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}`}>
+                    {t.category}
+                  </span>
+                  <span className="text-[10px] font-extrabold text-slate-600 bg-white border border-emerald-100 px-2 py-0.5 rounded-md">
+                    {t.role}
+                  </span>
+                </div>
+                <h3 className="font-extrabold text-slate-900 text-xs leading-snug mb-1">{t.name}</h3>
+                <p className="text-[11px] text-slate-500 font-semibold">{t.subject}</p>
+              </div>
+            ))}
           </div>
         </section>
 
