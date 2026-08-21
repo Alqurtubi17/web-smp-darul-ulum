@@ -5,7 +5,22 @@ import { CheckCircle, XCircle, AlertCircle, Clock, TrendingUp, Calendar, Search,
 import { useAuth } from '@/hooks/useAuth';
 import { Pagination } from '@/components/ui/Pagination';
 
-const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const MONTHS = [
+  { id: 1, name: 'Januari' },
+  { id: 2, name: 'Februari' },
+  { id: 3, name: 'Maret' },
+  { id: 4, name: 'April' },
+  { id: 5, name: 'Mei' },
+  { id: 6, name: 'Juni' },
+  { id: 7, name: 'Juli' },
+  { id: 8, name: 'Agustus' },
+  { id: 9, name: 'September' },
+  { id: 10, name: 'Oktober' },
+  { id: 11, name: 'November' },
+  { id: 12, name: 'Desember' },
+];
+
+const YEARS = ['2025', '2024', '2023'];
 
 interface AttendanceRecord {
   date: string;
@@ -52,12 +67,14 @@ const ITEMS_PER_PAGE = 5;
 
 export default function SiswaAbsensiPage() {
   const { user } = useAuth();
-  const [selectedMonth, setSelectedMonth] = useState('2025-06');
+  const [selectedMonthNum, setSelectedMonthNum] = useState<number>(6); // Juni
+  const [selectedYear, setSelectedYear] = useState<string>('2025');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('SEMUA');
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
-  const rawData = ATTENDANCE_DATA[selectedMonth] || [];
+  const selectedMonthKey = `${selectedYear}-${String(selectedMonthNum).padStart(2, '0')}`;
+  const rawData = ATTENDANCE_DATA[selectedMonthKey] || [];
 
   const filtered = rawData.filter(d => {
     const matchStatus = statusFilter === 'SEMUA' || d.status === statusFilter;
@@ -84,11 +101,12 @@ export default function SiswaAbsensiPage() {
     alpha: rawData.filter(d => d.status === 'ALPHA').length,
     total: rawData.length,
   };
-  const persentase = rekap.total > 0 ? Math.round((rekap.hadir / rekap.total) * 100) : 0;
 
   // Semester summary
   const semTotal = { hadir:82, izin:3, sakit:3, alpha:0, total:88 };
   const semPct = Math.round((semTotal.hadir / semTotal.total) * 100);
+
+  const currentMonthName = MONTHS.find(m => m.id === selectedMonthNum)?.name || 'Juni';
 
   return (
     <div className="space-y-6">
@@ -100,15 +118,35 @@ export default function SiswaAbsensiPage() {
           </p>
         </div>
 
-        <div className="relative">
-          <select value={selectedMonth} onChange={e => { setSelectedMonth(e.target.value); setCurrentPage(1); }}
-            className="pl-4 pr-9 py-2.5 rounded-2xl border border-emerald-200 bg-white text-xs font-extrabold text-slate-800 appearance-none focus:outline-none focus:ring-2 focus:ring-emerald-600 shadow-2xs">
-            {['2025-06','2025-05','2025-04','2025-03','2025-02','2025-01'].map(m => {
-              const [y,mo] = m.split('-');
-              return <option key={m} value={m}>{MONTHS[parseInt(mo)-1]} {y}</option>;
-            })}
-          </select>
-          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-600 pointer-events-none" />
+        {/* Separated Month & Year Filters */}
+        <div className="flex items-center gap-2">
+          {/* Dropdown Bulan */}
+          <div className="relative">
+            <select
+              value={selectedMonthNum}
+              onChange={e => { setSelectedMonthNum(Number(e.target.value)); setCurrentPage(1); }}
+              className="pl-4 pr-9 py-2.5 rounded-2xl border border-emerald-200 bg-white text-xs font-extrabold text-slate-800 appearance-none focus:outline-none focus:ring-2 focus:ring-emerald-600 shadow-2xs cursor-pointer"
+            >
+              {MONTHS.map(m => (
+                <option key={m.id} value={m.id}>{m.name}</option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-600 pointer-events-none" />
+          </div>
+
+          {/* Dropdown Tahun */}
+          <div className="relative">
+            <select
+              value={selectedYear}
+              onChange={e => { setSelectedYear(e.target.value); setCurrentPage(1); }}
+              className="pl-4 pr-9 py-2.5 rounded-2xl border border-emerald-200 bg-white text-xs font-extrabold text-slate-800 appearance-none focus:outline-none focus:ring-2 focus:ring-emerald-600 shadow-2xs cursor-pointer"
+            >
+              {YEARS.map(y => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-600 pointer-events-none" />
+          </div>
         </div>
       </div>
 
@@ -132,7 +170,7 @@ export default function SiswaAbsensiPage() {
       {/* Monthly Stats for Selected Month */}
       <div className="space-y-2">
         <p className="text-xs font-extrabold text-slate-700">
-          Statistik Presensi Bulan {MONTHS[parseInt(selectedMonth.split('-')[1])-1]} {selectedMonth.split('-')[0]}:
+          Statistik Presensi Bulan {currentMonthName} {selectedYear}:
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
@@ -234,7 +272,7 @@ export default function SiswaAbsensiPage() {
         {filtered.length === 0 && (
           <div className="text-center py-16 text-slate-400">
             <Calendar className="w-12 h-12 text-emerald-600 opacity-30 mx-auto mb-3" />
-            <p className="text-xs font-semibold text-slate-500">Tidak ada catatan absensi untuk kriteria ini</p>
+            <p className="text-xs font-semibold text-slate-500">Tidak ada catatan absensi untuk {currentMonthName} {selectedYear}</p>
           </div>
         )}
 
