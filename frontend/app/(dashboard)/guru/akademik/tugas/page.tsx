@@ -98,7 +98,7 @@ export default function GuruTugasPage() {
                 ) : (
                   <CustomImageUploader
                     endpoint="assignmentFile"
-                    label="📄 Upload File Soal (PDF / DOC)"
+                    label="Upload File Soal (PDF / DOC)"
                     accept=".pdf,.doc,.docx"
                     onUploadComplete={(url) => setFileUrl(url)}
                     className="w-full px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition-all shadow-2xs inline-flex items-center justify-center gap-2 cursor-pointer"
