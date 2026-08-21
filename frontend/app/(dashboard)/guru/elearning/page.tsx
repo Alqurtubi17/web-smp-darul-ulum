@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Plus, BookOpen, Play, Edit2, Trash2, Upload, Eye, Users, BarChart3, X, Loader2 } from 'lucide-react';
+import { Plus, BookOpen, Play, Edit2, Trash2, Eye, Users, BarChart3, X } from 'lucide-react';
 import { CustomImageUploader } from '@/components/ui/CustomImageUploader';
 
 interface Module {
@@ -97,7 +97,7 @@ export default function GuruElearningPage() {
                       <p className="text-xs font-extrabold text-slate-700 mb-1.5">Atau Upload Berkas Video Langsung:</p>
                       <CustomImageUploader
                         endpoint="materialFile"
-                        label="📹 Upload File Video"
+                        label="Upload File Video"
                         accept="video/*"
                         onUploadComplete={(url) => set('content', url)}
                         className="w-full px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition-all shadow-2xs inline-flex items-center justify-center gap-2 cursor-pointer"
@@ -117,7 +117,7 @@ export default function GuruElearningPage() {
                       <p className="text-xs font-extrabold text-slate-700 mb-1.5">Atau Upload File Dokumen (PDF/DOC):</p>
                       <CustomImageUploader
                         endpoint="materialFile"
-                        label="📄 Upload File Dokumen Materi"
+                        label="Upload File Dokumen Materi"
                         accept=".pdf,.doc,.docx,.ppt,.pptx"
                         onUploadComplete={(url) => set('fileUrl', url)}
                         className="w-full px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition-all shadow-2xs inline-flex items-center justify-center gap-2 cursor-pointer"
@@ -129,7 +129,7 @@ export default function GuruElearningPage() {
 
                 {form.type === 'QUIZ' && (
                   <div className="p-4 bg-amber-50/80 rounded-2xl border border-amber-200">
-                    <p className="text-xs font-extrabold text-amber-900 mb-1">📝 Mode Kuis Interaktif</p>
+                    <p className="text-xs font-extrabold text-amber-900 mb-1">Mode Kuis Interaktif</p>
                     <p className="text-[11px] font-semibold text-amber-700">Soal kuis interaktif akan dikonfigurasi melalui editor kuis setelah modul ini disimpan.</p>
                     <input type="text" value={form.content} onChange={e=>set('content',e.target.value)} placeholder="Deskripsi kuis (opsional)..."
                       className="w-full mt-2 px-3 py-2 rounded-xl border border-amber-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none"/>
@@ -159,14 +159,16 @@ export default function GuruElearningPage() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-5">
         {[
-          { label:'Total Modul', val:modules.length, icon:'📚', color:'text-blue-700 bg-blue-50/80 border-blue-100' },
-          { label:'Total Penonton', val:totalViews, icon:'👁️', color:'text-emerald-700 bg-emerald-50/80 border-emerald-100' },
-          { label:'Dipublikasikan', val:published, icon:'🌐', color:'text-purple-700 bg-purple-50/80 border-purple-100' },
+          { label:'Total Modul', val:modules.length, icon:<BookOpen className="w-6 h-6 text-blue-700"/>, color:'bg-blue-50/80 border-blue-100' },
+          { label:'Total Penonton', val:totalViews, icon:<Eye className="w-6 h-6 text-emerald-700"/>, color:'bg-emerald-50/80 border-emerald-100' },
+          { label:'Dipublikasikan', val:published, icon:<BarChart3 className="w-6 h-6 text-purple-700"/>, color:'bg-purple-50/80 border-purple-100' },
         ].map(s => (
           <div key={s.label} className={`${s.color} rounded-3xl border p-5 flex items-center gap-4 shadow-2xs`}>
-            <span className="text-3xl">{s.icon}</span>
+            <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-2xs flex-shrink-0">
+              {s.icon}
+            </div>
             <div>
-              <p className={`text-2xl font-black ${s.color.split(' ')[0]}`}>{s.val.toLocaleString('id-ID')}</p>
+              <p className="text-2xl font-black text-slate-900">{s.val.toLocaleString('id-ID')}</p>
               <p className="text-xs font-extrabold text-slate-700">{s.label}</p>
             </div>
           </div>

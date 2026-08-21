@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Filter, Download, Eye, CheckCircle, XCircle, Clock, Users, ChevronDown } from 'lucide-react';
+import { Search, Download, Eye, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
+import { Pagination } from '@/components/ui/Pagination';
 
 type Status = 'SEMUA' | 'PENDING' | 'VERIFIKASI' | 'LULUS' | 'DITOLAK';
 
@@ -12,25 +13,33 @@ const SAMPLE_ADMISSIONS = [
   { id:'3', regNum:'PDG-2025-00003', name:'Rizky Firmansyah', gender:'L', parentName:'Firmansyah, S.E.', parentPhone:'083456789012', school:'SDN Mojo 2', status:'LULUS', createdAt:'2025-06-13', score:88 },
   { id:'4', regNum:'PDG-2025-00004', name:'Dewi Kurniasari', gender:'P', parentName:'Kurniasari', parentPhone:'084567890123', school:'SD Islam Al-Azhar', status:'LULUS', createdAt:'2025-06-12', score:92 },
   { id:'5', regNum:'PDG-2025-00005', name:'Ahmad Zulkifli', gender:'L', parentName:'Zulkifli, S.Pd.', parentPhone:'085678901234', school:'SDN Kenjeran 3', status:'DITOLAK', createdAt:'2025-06-11' },
+  { id:'6', regNum:'PDG-2025-00006', name:'Nurul Hidayati', gender:'P', parentName:'Bambang Hidayat', parentPhone:'086789012345', school:'SDN Tandes 1', status:'PENDING', createdAt:'2025-06-10' },
+  { id:'7', regNum:'PDG-2025-00007', name:'Fikri Alamsyah', gender:'L', parentName:'Sutrisno', parentPhone:'087890123456', school:'SD Muhammadiyah 4', status:'VERIFIKASI', createdAt:'2025-06-09' },
+  { id:'8', regNum:'PDG-2025-00008', name:'Anisa Rahmawati', gender:'P', parentName:'H. Rahmawati', parentPhone:'088901234567', school:'MI NU Manukan', status:'LULUS', createdAt:'2025-06-08', score:95 },
 ];
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  PENDING: { label: 'Menunggu', color: 'bg-yellow-100 text-yellow-700', icon: <Clock className="w-3 h-3" /> },
-  VERIFIKASI: { label: 'Verifikasi', color: 'bg-blue-100 text-blue-700', icon: <Eye className="w-3 h-3" /> },
-  LULUS: { label: 'Diterima', color: 'bg-green-100 text-green-700', icon: <CheckCircle className="w-3 h-3" /> },
-  DITOLAK: { label: 'Ditolak', color: 'bg-red-100 text-red-700', icon: <XCircle className="w-3 h-3" /> },
-  DAFTAR_ULANG: { label: 'Daftar Ulang', color: 'bg-purple-100 text-purple-700', icon: <CheckCircle className="w-3 h-3" /> },
+  PENDING: { label: 'Menunggu', color: 'bg-amber-100 text-amber-800 border-amber-200', icon: <Clock className="w-3 h-3" /> },
+  VERIFIKASI: { label: 'Verifikasi', color: 'bg-blue-100 text-blue-800 border-blue-200', icon: <Eye className="w-3 h-3" /> },
+  LULUS: { label: 'Diterima', color: 'bg-emerald-100 text-emerald-800 border-emerald-200', icon: <CheckCircle className="w-3 h-3" /> },
+  DITOLAK: { label: 'Ditolak', color: 'bg-rose-100 text-rose-800 border-rose-200', icon: <XCircle className="w-3 h-3" /> },
 };
+
+const ITEMS_PER_PAGE = 5;
 
 export default function AdminPPDBPage() {
   const [activeStatus, setActiveStatus] = useState<Status>('SEMUA');
   const [search, setSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
   const [selected, setSelected] = useState<string[]>([]);
 
   const filtered = SAMPLE_ADMISSIONS.filter((a) =>
     (activeStatus === 'SEMUA' || a.status === activeStatus) &&
     (a.name.toLowerCase().includes(search.toLowerCase()) || a.regNum.includes(search))
   );
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const stats = {
     total: SAMPLE_ADMISSIONS.length,
@@ -46,51 +55,48 @@ export default function AdminPPDBPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Manajemen PPDB</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Tahun Ajaran 2025/2026</p>
+          <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Manajemen PPDB Online</h1>
+          <p className="text-xs text-slate-500 font-semibold mt-0.5">Penerimaan Peserta Didik Baru T.A. 2025/2026</p>
         </div>
         <div className="flex gap-2">
-          <button className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50">
-            <Download className="w-4 h-4" /> Export Excel
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50">
-            <Download className="w-4 h-4" /> Export PDF
+          <button className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-emerald-200 text-xs font-bold text-slate-700 bg-white hover:bg-emerald-50 transition-colors shadow-2xs">
+            <Download className="w-4 h-4 text-emerald-700" /> Export Excel
           </button>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
         {[
-          { label: 'Total Pendaftar', value: stats.total, color: 'text-gray-900', bg: 'bg-white' },
-          { label: 'Menunggu', value: stats.pending, color: 'text-yellow-600', bg: 'bg-yellow-50' },
-          { label: 'Verifikasi', value: stats.verifikasi, color: 'text-blue-600', bg: 'bg-blue-50' },
-          { label: 'Diterima', value: stats.lulus, color: 'text-green-600', bg: 'bg-green-50' },
-          { label: 'Ditolak', value: stats.ditolak, color: 'text-red-600', bg: 'bg-red-50' },
+          { label: 'Total Pendaftar', value: stats.total, color: 'text-slate-900', bg: 'bg-white border-emerald-100' },
+          { label: 'Menunggu', value: stats.pending, color: 'text-amber-700', bg: 'bg-amber-50/80 border-amber-100' },
+          { label: 'Verifikasi', value: stats.verifikasi, color: 'text-blue-700', bg: 'bg-blue-50/80 border-blue-100' },
+          { label: 'Diterima', value: stats.lulus, color: 'text-emerald-700', bg: 'bg-emerald-50/80 border-emerald-100' },
+          { label: 'Ditolak', value: stats.ditolak, color: 'text-rose-700', bg: 'bg-rose-50/80 border-rose-100' },
         ].map((s) => (
-          <div key={s.label} className={`${s.bg} rounded-2xl border border-gray-200 p-4 text-center`}>
-            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
+          <div key={s.label} className={`${s.bg} rounded-3xl border p-4 text-center shadow-2xs`}>
+            <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
+            <p className="text-xs font-extrabold text-slate-700 mt-1">{s.label}</p>
           </div>
         ))}
       </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-2xl border border-gray-200">
-        <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-3">
+      {/* Table Container */}
+      <div className="bg-white rounded-3xl border border-emerald-100 shadow-2xs overflow-hidden">
+        <div className="p-5 border-b border-emerald-100 bg-emerald-50/30 flex flex-col sm:flex-row gap-4 justify-between">
           <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input type="search" placeholder="Cari nama atau no. pendaftaran..."
-              value={search} onChange={e => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-600" />
+            <input type="search" placeholder="Cari nama calon siswa atau no. pendaftaran..."
+              value={search} onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
+              className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-emerald-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 shadow-2xs" />
           </div>
-          <div className="flex gap-1 bg-gray-50 rounded-xl p-1">
+          <div className="flex gap-1.5 bg-emerald-50 p-1 rounded-2xl border border-emerald-100 overflow-x-auto">
             {(['SEMUA', 'PENDING', 'VERIFIKASI', 'LULUS', 'DITOLAK'] as Status[]).map((s) => (
-              <button key={s} onClick={() => setActiveStatus(s)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  activeStatus === s ? 'bg-white text-green-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              <button key={s} onClick={() => { setActiveStatus(s); setCurrentPage(1); }}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap ${
+                  activeStatus === s ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-600 hover:text-emerald-950'
                 }`}>
                 {s === 'SEMUA' ? 'Semua' : STATUS_CONFIG[s]?.label}
               </button>
@@ -100,11 +106,11 @@ export default function AdminPPDBPage() {
 
         {/* Bulk actions */}
         {selected.length > 0 && (
-          <div className="px-4 py-2.5 bg-green-50 border-b border-green-100 flex items-center gap-3">
-            <span className="text-sm text-green-700 font-medium">{selected.length} dipilih</span>
-            <div className="flex gap-2 ml-auto">
-              <button className="text-xs px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700">Terima Semua</button>
-              <button className="text-xs px-3 py-1.5 rounded-lg bg-red-500 text-white hover:bg-red-600">Tolak Semua</button>
+          <div className="px-6 py-3 bg-emerald-50 border-b border-emerald-100 flex items-center justify-between">
+            <span className="text-xs text-emerald-950 font-extrabold">{selected.length} pendaftar dipilih</span>
+            <div className="flex gap-2">
+              <button className="text-xs px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white font-extrabold hover:bg-emerald-700 transition-colors shadow-2xs">Terima Semua</button>
+              <button className="text-xs px-3.5 py-1.5 rounded-xl bg-rose-600 text-white font-extrabold hover:bg-rose-700 transition-colors shadow-2xs">Tolak Semua</button>
             </div>
           </div>
         )}
@@ -113,62 +119,62 @@ export default function AdminPPDBPage() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-100">
-                <th className="px-4 py-3 text-left">
-                  <input type="checkbox" className="rounded text-green-600" onChange={(e) => {
-                    setSelected(e.target.checked ? filtered.map(f => f.id) : []);
+              <tr className="border-b border-emerald-100 bg-emerald-50/20">
+                <th className="px-5 py-3.5 text-left">
+                  <input type="checkbox" className="rounded text-emerald-600 focus:ring-emerald-600" onChange={(e) => {
+                    setSelected(e.target.checked ? paginated.map(f => f.id) : []);
                   }} />
                 </th>
-                {['No. Daftar', 'Nama Calon Siswa', 'Orang Tua', 'Asal Sekolah', 'Tanggal Daftar', 'Status', 'Aksi'].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 whitespace-nowrap">{h}</th>
+                {['No. Reg', 'Nama Calon Siswa', 'Orang Tua & HP', 'Asal Sekolah', 'Tgl Daftar', 'Status', 'Aksi'].map((h) => (
+                  <th key={h} className="px-5 py-3.5 text-left text-xs font-extrabold text-slate-700 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
-              {filtered.map((a) => {
+            <tbody className="divide-y divide-emerald-50">
+              {paginated.map((a) => {
                 const statusCfg = STATUS_CONFIG[a.status];
                 return (
-                  <tr key={a.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3.5">
-                      <input type="checkbox" className="rounded text-green-600"
+                  <tr key={a.id} className="hover:bg-emerald-50/30 transition-colors">
+                    <td className="px-5 py-4">
+                      <input type="checkbox" className="rounded text-emerald-600 focus:ring-emerald-600"
                         checked={selected.includes(a.id)}
                         onChange={() => toggleSelect(a.id)} />
                     </td>
-                    <td className="px-4 py-3.5">
-                      <span className="text-xs font-mono text-gray-500">{a.regNum}</span>
+                    <td className="px-5 py-4">
+                      <span className="text-xs font-mono font-bold text-slate-600">{a.regNum}</span>
                     </td>
-                    <td className="px-4 py-3.5">
+                    <td className="px-5 py-4">
                       <div>
-                        <p className="text-sm font-medium text-gray-900">{a.name}</p>
-                        <p className="text-xs text-gray-400">{a.gender === 'L' ? 'Laki-laki' : 'Perempuan'}</p>
+                        <p className="text-xs font-extrabold text-slate-900">{a.name}</p>
+                        <p className="text-[11px] font-bold text-slate-400">{a.gender === 'L' ? '👦 Laki-laki' : '👧 Perempuan'}</p>
                       </div>
                     </td>
-                    <td className="px-4 py-3.5">
+                    <td className="px-5 py-4">
                       <div>
-                        <p className="text-sm text-gray-700">{a.parentName}</p>
-                        <p className="text-xs text-gray-400">{a.parentPhone}</p>
+                        <p className="text-xs font-extrabold text-slate-800">{a.parentName}</p>
+                        <p className="text-[11px] font-mono text-slate-500">{a.parentPhone}</p>
                       </div>
                     </td>
-                    <td className="px-4 py-3.5 text-sm text-gray-600">{a.school}</td>
-                    <td className="px-4 py-3.5 text-xs text-gray-400">
+                    <td className="px-5 py-4 text-xs font-semibold text-emerald-800">{a.school}</td>
+                    <td className="px-5 py-4 text-xs text-slate-500 font-semibold font-mono">
                       {formatDate(a.createdAt, { day: 'numeric', month: 'short' })}
                     </td>
-                    <td className="px-4 py-3.5">
-                      <span className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full ${statusCfg?.color}`}>
+                    <td className="px-5 py-4">
+                      <span className={`inline-flex items-center gap-1.5 text-[10px] font-extrabold px-3 py-1 rounded-full border ${statusCfg?.color}`}>
                         {statusCfg?.icon} {statusCfg?.label}
                       </span>
                     </td>
-                    <td className="px-4 py-3.5">
+                    <td className="px-5 py-4">
                       <div className="flex items-center gap-1">
-                        <button className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg" title="Detail">
+                        <button className="p-2 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-colors" title="Detail Pendaftar">
                           <Eye className="w-4 h-4" />
                         </button>
                         {a.status === 'PENDING' || a.status === 'VERIFIKASI' ? (
                           <>
-                            <button className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg" title="Terima">
+                            <button className="p-2 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-colors" title="Terima Siswa">
                               <CheckCircle className="w-4 h-4" />
                             </button>
-                            <button className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg" title="Tolak">
+                            <button className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors" title="Tolak">
                               <XCircle className="w-4 h-4" />
                             </button>
                           </>
@@ -182,14 +188,13 @@ export default function AdminPPDBPage() {
           </table>
         </div>
 
-        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 text-xs text-gray-500">
-          <span>Menampilkan {filtered.length} dari {SAMPLE_ADMISSIONS.length} data</span>
-          <div className="flex gap-1">
-            {[1,2,3].map(p => (
-              <button key={p} className={`w-7 h-7 rounded-lg text-xs ${p===1 ? 'bg-green-600 text-white' : 'border border-gray-200 hover:bg-gray-50'}`}>{p}</button>
-            ))}
-          </div>
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalItems={filtered.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+        />
       </div>
     </div>
   );

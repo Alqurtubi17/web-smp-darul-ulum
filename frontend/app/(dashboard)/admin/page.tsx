@@ -153,11 +153,11 @@ export default function AdminDashboard() {
           <div className="p-4 space-y-2">
             {[
               { label: '+ Tambah Berita Baru', href: '/admin/konten/berita', color: 'bg-emerald-50 border-emerald-100 text-emerald-900 hover:bg-emerald-100' },
-              { label: '+ Buat Pengumuman', href: '/admin/konten/pengumuman', color: 'bg-amber-50 border-amber-100 text-amber-900 hover:bg-amber-100' },
-              { label: '📋 Kelola PPDB Online', href: '/admin/ppdb', color: 'bg-teal-50 border-teal-100 text-teal-900 hover:bg-teal-100' },
-              { label: '👥 Data Siswa & Guru', href: '/admin/pengguna/siswa', color: 'bg-blue-50 border-blue-100 text-blue-900 hover:bg-blue-100' },
-              { label: '📊 Lihat Laporan Rekap', href: '/admin/laporan', color: 'bg-purple-50 border-purple-100 text-purple-900 hover:bg-purple-100' },
-              { label: '⚙️ Pengaturan Sistem', href: '/admin/pengaturan', color: 'bg-slate-50 border-slate-200 text-slate-900 hover:bg-slate-100' },
+              { label: '+ Buat Pengumuman Baru', href: '/admin/konten/pengumuman', color: 'bg-amber-50 border-amber-100 text-amber-900 hover:bg-amber-100' },
+              { label: 'Kelola PPDB Online', href: '/admin/ppdb', color: 'bg-teal-50 border-teal-100 text-teal-900 hover:bg-teal-100' },
+              { label: 'Kelola Data Siswa & Guru', href: '/admin/pengguna/siswa', color: 'bg-blue-50 border-blue-100 text-blue-900 hover:bg-blue-100' },
+              { label: 'Lihat Laporan Rekap', href: '/admin/laporan', color: 'bg-purple-50 border-purple-100 text-purple-900 hover:bg-purple-100' },
+              { label: 'Pengaturan Sistem', href: '/admin/pengaturan', color: 'bg-slate-50 border-slate-200 text-slate-900 hover:bg-slate-100' },
             ].map((action) => (
               <Link
                 key={action.href}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Plus, Search, Edit2, Trash2, Eye, Download, ChevronDown, X } from 'lucide-react';
+import { Pagination } from '@/components/ui/Pagination';
 
 const STUDENTS = [
   { id:'1', nis:'2024001', name:'Ahmad Rizki Pratama', gender:'L', class:'7A', phone:'081234567890', status:true, enrolled:'2024-07-15' },
@@ -10,13 +11,21 @@ const STUDENTS = [
   { id:'4', nis:'2023001', name:'Dewi Anggraini',       gender:'P', class:'8A', phone:'083456789012', status:true, enrolled:'2023-07-17' },
   { id:'5', nis:'2022001', name:'Reza Firmansyah',      gender:'L', class:'9A', phone:'084567890123', status:true, enrolled:'2022-07-18' },
   { id:'6', nis:'2024004', name:'Fatimah Az-Zahra',    gender:'P', class:'7C', phone:'-',           status:false,enrolled:'2024-07-15' },
+  { id:'7', nis:'2024005', name:'Galih Permadi',       gender:'L', class:'7A', phone:'085678901234', status:true, enrolled:'2024-07-15' },
+  { id:'8', nis:'2024006', name:'Hani Ramadhani',      gender:'P', class:'7B', phone:'086789012345', status:true, enrolled:'2024-07-15' },
+  { id:'9', nis:'2023002', name:'Indra Kusuma',        gender:'L', class:'8B', phone:'087890123456', status:true, enrolled:'2023-07-17' },
+  { id:'10',nis:'2022002', name:'Jasmine Putri',       gender:'P', class:'9B', phone:'088901234567', status:true, enrolled:'2022-07-18' },
+  { id:'11',nis:'2024007', name:'Kafi Maulana',        gender:'L', class:'7C', phone:'089012345678', status:true, enrolled:'2024-07-15' },
+  { id:'12',nis:'2023003', name:'Larasati Utami',      gender:'P', class:'8A', phone:'081123456789', status:true, enrolled:'2023-07-17' },
 ];
 
 const CLASSES = ['Semua','7A','7B','7C','8A','8B','8C','9A','9B','9C'];
+const ITEMS_PER_PAGE = 5;
 
 export default function AdminSiswaPage() {
   const [search, setSearch] = useState('');
   const [classFilter, setClassFilter] = useState('Semua');
+  const [currentPage, setCurrentPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({ fullName:'', nis:'', email:'', gender:'LAKI_LAKI', classId:'', birthPlace:'', birthDate:'', address:'', phone:'' });
 
@@ -24,6 +33,9 @@ export default function AdminSiswaPage() {
     (classFilter === 'Semua' || s.class === classFilter) &&
     (s.name.toLowerCase().includes(search.toLowerCase()) || s.nis.includes(search))
   );
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const update = (k: string, v: string) => setFormData(p => ({ ...p, [k]: v }));
 
@@ -147,11 +159,11 @@ export default function AdminSiswaPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-600" />
             <input type="search" placeholder="Cari nama atau NIS siswa..." value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
               className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-emerald-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 shadow-2xs" />
           </div>
           <div className="relative">
-            <select value={classFilter} onChange={e => setClassFilter(e.target.value)}
+            <select value={classFilter} onChange={e => { setClassFilter(e.target.value); setCurrentPage(1); }}
               className="pl-4 pr-9 py-2.5 rounded-2xl border border-emerald-200 bg-white text-xs font-bold text-slate-800 appearance-none focus:outline-none focus:ring-2 focus:ring-emerald-600 shadow-2xs">
               {CLASSES.map(c => <option key={c}>{c}</option>)}
             </select>
@@ -169,7 +181,7 @@ export default function AdminSiswaPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-emerald-50">
-              {filtered.map(s => (
+              {paginated.map(s => (
                 <tr key={s.id} className="hover:bg-emerald-50/30 transition-colors">
                   <td className="px-5 py-4 text-xs font-mono font-bold text-slate-600">{s.nis}</td>
                   <td className="px-5 py-4">
@@ -203,14 +215,13 @@ export default function AdminSiswaPage() {
           </table>
         </div>
 
-        <div className="flex items-center justify-between px-6 py-4 border-t border-emerald-100 text-xs font-semibold text-slate-500 bg-emerald-50/20">
-          <span>Menampilkan {filtered.length} dari {STUDENTS.length} siswa</span>
-          <div className="flex gap-1.5">
-            {[1,2,3].map(p => (
-              <button key={p} className={`w-8 h-8 rounded-xl text-xs font-extrabold ${p===1 ? 'bg-emerald-600 text-white shadow-2xs' : 'border border-emerald-200 bg-white hover:bg-emerald-50 text-slate-700'}`}>{p}</button>
-            ))}
-          </div>
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalItems={filtered.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+        />
       </div>
     </div>
   );

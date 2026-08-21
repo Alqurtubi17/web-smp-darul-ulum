@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Search, Edit2, Trash2, GraduationCap, X, UserCheck, Download } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, GraduationCap, X, Download } from 'lucide-react';
 import Image from 'next/image';
 import { CustomImageUploader } from '@/components/ui/CustomImageUploader';
+import { Pagination } from '@/components/ui/Pagination';
 
 interface Staff {
   id: string;
@@ -29,10 +30,13 @@ const INITIAL_STAFF: Staff[] = [
   { id:'8', nip:'199709202022011008', name:'Agus Setiawan', category:'Tendik', role:'Staf Keamanan', subject:'Ketertiban & Keamanan', phone:'088901234567', status:true, joined:'2022-07-15', photoUrl:'' },
 ];
 
+const ITEMS_PER_PAGE = 5;
+
 export default function AdminGuruTendikPage() {
   const [staffList, setStaffList] = useState<Staff[]>(INITIAL_STAFF);
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState<'SEMUA' | 'Guru' | 'Tendik'>('SEMUA');
+  const [currentPage, setCurrentPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
   const [formData, setFormData] = useState({ fullName:'', nip:'', email:'', category:'Guru' as 'Guru'|'Tendik', role:'Guru Pengajar', subject:'', phone:'', photoUrl:'' });
@@ -42,6 +46,9 @@ export default function AdminGuruTendikPage() {
     const matchSearch = s.name.toLowerCase().includes(search.toLowerCase()) || s.nip.includes(search) || s.subject.toLowerCase().includes(search.toLowerCase()) || s.role.toLowerCase().includes(search.toLowerCase());
     return matchCat && matchSearch;
   });
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const update = (k: string, v: string) => setFormData(p => ({ ...p, [k]: v }));
 
@@ -211,13 +218,13 @@ export default function AdminGuruTendikPage() {
           <div className="relative flex-1 w-full">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-600" />
             <input type="search" placeholder="Cari nama, NIP, jabatan, atau mata pelajaran..." value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
               className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-emerald-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 shadow-2xs" />
           </div>
 
           <div className="flex gap-2 w-full sm:w-auto">
             {(['SEMUA','Guru','Tendik'] as const).map(cat => (
-              <button key={cat} onClick={() => setFilterCategory(cat)}
+              <button key={cat} onClick={() => { setFilterCategory(cat); setCurrentPage(1); }}
                 className={`flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-extrabold transition-all ${filterCategory === cat ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-white border border-emerald-200 text-slate-700 hover:bg-emerald-50'}`}>
                 {cat === 'SEMUA' ? 'Semua (' + staffList.length + ')' : cat}
               </button>
@@ -235,7 +242,7 @@ export default function AdminGuruTendikPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-emerald-50">
-              {filtered.map(g => (
+              {paginated.map(g => (
                 <tr key={g.id} className="hover:bg-emerald-50/30 transition-colors">
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
@@ -282,6 +289,14 @@ export default function AdminGuruTendikPage() {
             </tbody>
           </table>
         </div>
+
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalItems={filtered.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+        />
       </div>
     </div>
   );

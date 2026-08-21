@@ -94,7 +94,7 @@ export default function GuruMateriPage() {
                   ) : (
                     <CustomImageUploader
                       endpoint="materialFile"
-                      label={uploadType === 'video' ? '📹 Upload Video Materi' : '📄 Upload Dokumen Materi (PDF/DOC)'}
+                      label={uploadType === 'video' ? 'Upload Video Materi' : 'Upload Dokumen Materi (PDF/DOC)'}
                       accept={uploadType === 'video' ? 'video/*' : '.pdf,.doc,.docx,.ppt,.pptx'}
                       onUploadComplete={(url) => setFileUrl(url)}
                       className="w-full px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition-all shadow-2xs inline-flex items-center justify-center gap-2 cursor-pointer"
