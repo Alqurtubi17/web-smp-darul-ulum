@@ -1,275 +1,84 @@
-# 🏫 Website SMP Darul Ulum Surabaya
+# 🏫 Website & Portal Digital Terpadu SMP Darul Ulum Surabaya
 
-Portal resmi SMP Darul Ulum Surabaya — company profile, PPDB online, sistem akademik lengkap.
+Selamat datang di repositori resmi **Website & Portal Administrasi Digital SMP Darul Ulum Surabaya**.
 
----
-
-## 🚀 Tech Stack
-
-| Layer | Teknologi |
-|-------|-----------|
-| **Frontend** | Next.js 14 (App Router), TypeScript, Tailwind CSS |
-| **Auth** | **NextAuth.js v5** (credentials provider) |
-| **Backend** | Express.js, TypeScript, Prisma ORM |
-| **Database** | PostgreSQL via **Neon** (gratis) |
-| **Upload File** | **UploadThing** (gratis, tanpa konfigurasi server) |
-| **Email** | **Nodemailer + Gmail** (App Password) |
-| **State** | TanStack Query + React Hook Form |
-| **Deploy FE** | Vercel (gratis) |
-| **Deploy BE** | Railway / Render (gratis) |
+Platform ini dirancang khusus sebagai wadah informasi publik modern serta portal layanan digital terpadu bagi seluruh warga sekolah—mulai dari Calon Siswa Baru, Siswa Aktif, Orang Tua/Wali Murid, Guru & Tenaga Pendidik, hingga Manajemen Sekolah.
 
 ---
 
-## 📁 Struktur Proyek
+## 🌟 Tentang SMP Darul Ulum Surabaya
 
-```
-smp-darul-ulum/
-├── frontend/                   # Next.js 14
-│   ├── app/
-│   │   ├── (public)/          # Halaman publik
-│   │   ├── (dashboard)/       # Portal admin/guru/siswa/ortu
-│   │   ├── auth/              # Login
-│   │   └── api/               # Route handlers
-│   │       ├── auth/          # NextAuth handler
-│   │       ├── uploadthing/   # UploadThing handler
-│   │       ├── contact/       # Form kontak → Gmail
-│   │       └── send-email/    # Notifikasi internal
-│   ├── auth.ts                # Konfigurasi NextAuth
-│   ├── middleware.ts          # Route protection (NextAuth)
-│   ├── hooks/useAuth.ts       # Hook auth (wrap useSession)
-│   └── lib/uploadthing.ts     # UploadThing helpers
-│
-├── backend/                   # Express.js REST API
-│   ├── src/
-│   │   ├── controllers/       # 9 controllers
-│   │   ├── routes/            # Semua endpoint
-│   │   ├── middleware/        # JWT auth, error handler
-│   │   └── utils/             # prisma, jwt, email, qrcode
-│   └── prisma/
-│       ├── schema.prisma      # 28 tabel
-│       └── seed.ts            # Data awal
-│
-└── .github/workflows/         # CI/CD + auto backup
-```
+**SMP Darul Ulum Surabaya** adalah sekolah menengah pertama Swasta Islam terdepan di wilayah Tandes, Surabaya, yang berakreditasi **A (Sangat Baik)** oleh BAN-S/M dan berada di bawah naungan **LP Ma'arif NU**. 
+
+Sekolah mengintegrasikan Kurikulum Merdeka Nasional dengan pembiasaan nilai-nilai Keislaman, baca tulis Al-Qur'an, pembiasaan ibadah rutin, serta pelatihan akademik & teknologi digital sejak dini.
+
+- 📍 **Alamat**: Jl. Raya Manukan Kulon No. 98-100, Manukan Kulon, Tandes, Surabaya, Jawa Timur 60185
+- 🏫 **NPSN**: 20532649
+- 📜 **Akreditasi**: A BAN-S/M
 
 ---
 
-## ⚡ Cara Menjalankan (Tanpa Docker)
+## 💻 Fitur Utama Platform Digital
 
-### Prasyarat
-- Node.js ≥ 20
-- Akun [Neon](https://neon.tech) (database gratis)
-- Akun [UploadThing](https://uploadthing.com) (upload gratis)
-- Gmail dengan App Password aktif
+Website ini terbagi menjadi dua bagian utama: **Website Informasi Publik** dan **Portal Digital Dashboard Multi-Role**.
 
----
+### 🌐 1. Website Publik (Layanan Informasi Sekolah)
+Masyarakat umum, orang tua, dan calon siswa dapat mengakses informasi sekolah dengan mudah:
 
-### 1. Clone & Setup
-
-```bash
-git clone https://github.com/your-repo/smp-darul-ulum.git
-cd smp-darul-ulum
-```
-
----
-
-### 2. Setup Backend
-
-```bash
-cd backend
-cp .env.example .env
-```
-
-Edit `.env`:
-```env
-DATABASE_URL="postgresql://user:pass@ep-xxx.neon.tech/smp_darul_ulum?sslmode=require"
-JWT_SECRET=isi-random-string-panjang
-JWT_REFRESH_SECRET=isi-random-string-panjang-lain
-EMAIL_USER="emailkamu@gmail.com"
-EMAIL_PASS="xxxx xxxx xxxx xxxx"   # Gmail App Password
-EMAIL_PENERIMA="admin@sekolah.sch.id"
-CLIENT_URL=http://localhost:3000
-```
-
-```bash
-npm install
-npm run db:generate   # generate Prisma client
-npm run db:push       # push schema ke Neon
-npm run db:seed       # isi data awal
-npm run dev           # jalankan di port 5000
-```
+* **🏠 Beranda Interaktif**: Gambaran umum keunggulan sekolah, statistik siswa & guru, sambutan Kepala Sekolah, pilar pendidikan, dan sarana fasilitas.
+* **📋 Penerimaan Peserta Didik Baru (PPDB) Online**:
+  * Formulir pendaftaran siswa baru secara online tanpa harus antre.
+  * Fitur **Cek Status Pendaftaran** mandiri dengan nomor registrasi.
+  * Informasi syarat pendaftaran, rincian biaya, dan brosur unduhan.
+* **📰 Berita & Informasi Terkini**: Artikel kegiatan sekolah, prestasi akademik & non-akademik, serta pengumuman resmi.
+* **📅 Kalender Agenda Sekolah**: Jadwal kegiatan harian, ujian tengah/akhir semester, kegiatan PHBI, dan hari libur sekolah.
+* **🖼️ Galeri Dokumentasi & Kegiatan**: Foto dan video dokumentasi kegiatan siswa (Pramuka, Pencak Silat Pagar Nusa, Futsal, Pembiasaan Sholat Berjamaah, Outbound LDKS, dll).
+* **📁 Pusat Unduhan Dokumen (Download Center)**: Akses cepat untuk mengunduh formulir PPDB, tata tertib, dan surat edaran resmi sekolah.
+* **📞 Layanan Kontak & Konsultasi**: Formulir kontak langsung yang terintegrasi dengan email sekolah dan tombol WhatsApp Customer Service.
 
 ---
 
-### 3. Setup Frontend
+### 🔑 2. Portal Digital Dashboard (Akses Berdasarkan Peran)
 
-```bash
-cd ../frontend
-cp .env.example .env.local
-```
+Sistem portal ini dilengkapi dengan 4 peran pengguna (*multi-role*) yang terintegrasi:
 
-Edit `.env.local`:
-```env
-NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
-NEXTAUTH_SECRET=isi-random-string-panjang   # openssl rand -base64 32
-AUTH_URL=http://localhost:3000
-EMAIL_USER="emailkamu@gmail.com"
-EMAIL_PASS="xxxx xxxx xxxx xxxx"
-EMAIL_PENERIMA="admin@sekolah.sch.id"
-UPLOADTHING_SECRET=sk_live_xxx              # dari dashboard uploadthing.com
-UPLOADTHING_APP_ID=xxxxx
-NEXT_PUBLIC_UPLOADTHING_APP_ID=xxxxx
-```
+#### 👨‍💼 A. Portal Administrator (Manajemen Sekolah)
+* **Pusat Informasi & Statistik**: Dashboard ringkasan jumlah siswa, guru, pendaftar PPDB, dan rekapitulasi harian.
+* **Kelola PPDB Online**: Verifikasi berkas pendaftaran calon siswa baru, penerimaan/penolakan, dan ekspor data pendaftar.
+* **Manajemen Pengguna**: Pengelolaan data akun Siswa, Guru, dan Orang Tua/Wali Murid.
+* **Manajemen Konten Publik**: Publikasi artikel berita, pengumuman resmi, agenda kegiatan, galeri foto, dan dokumen unduhan.
+* **Manajemen Keuangan**: Rekapitulasi pembayaran SPP dan tagihan sekolah.
+* **Perpustakaan Digital**: Katalog buku perpustakaan dan pencatatan transaksi peminjaman/pengembalian buku siswa.
 
-```bash
-npm install
-npm run dev           # jalankan di port 3000
-```
+#### 👨‍🏫 B. Portal Guru & Tenaga Pendidik
+* **Absensi Digital**: Pencatatan kehadiran harian siswa di kelas secara praktis.
+* **Penilaian Akademik**: Input nilai tugas, ujian, dan rekapitulasi nilai rapor siswa.
+* **Modul E-Learning & Materi**: Pembagian bahan ajar dalam bentuk dokumen (PDF), video tutorial, atau tautan bacaan.
+* **Manajemen Tugas**: Pemberian tugas online lengkap dengan batas waktu pengumpulan (deadline).
 
----
+#### 🎒 C. Portal Siswa
+* **Akses Modul E-Learning**: Membaca materi pelajaran dan menyaksikan video pembelajaran dari guru.
+* **Pengumpulan Tugas Online**: Mengunggah berkas tugas sekolah langsung dari portal.
+* **Rekap Akademik & Kehadiran**: Melihat riwayat presensi harian, nilai tugas, dan rekap nilai rapor.
+* **Kartu Pelajar Digital**: Cetak dan unduh Kartu Tanda Pelajar (KTP) resmi sekolah.
 
-### 4. Buka Browser
-
-- **Website publik:** http://localhost:3000
-- **Login portal:** http://localhost:3000/auth/login
-- **API:** http://localhost:5000/api/v1
-- **API health:** http://localhost:5000/health
+#### 👨‍👩‍👧 D. Portal Orang Tua / Wali Murid
+* **Pantau Kehadiran Anak**: Laporan real-time kehadiran anak di sekolah (Hadir, Izin, Sakit, atau Alpa).
+* **Pantau Capaian Belajar**: Melihat grafik perkembangan nilai dan hasil evaluasi belajar anak.
+* **Informasi Tagihan & SPP**: Cek status pembayaran SPP dan tagihan administrasi sekolah secara transparan.
 
 ---
 
-## 🔑 Akun Default (setelah seed)
+## 📞 Informasi Kontak & Kesekretariatan
 
-| Role | Email | Password |
-|------|-------|----------|
-| Super Admin | `superadmin@smpdarul ulum.sch.id` | `Admin@123456!` |
-| Admin | `admin@smpdarul ulum.sch.id` | `Admin@123456!` |
-| Guru | `siti.rahayu@smpdarul ulum.sch.id` | `Guru@123456!` |
-| Siswa | `ahmad.rizki@siswa.smpdarul ulum.sch.id` | `Siswa@2024001` |
+Untuk informasi lebih lanjut mengenai pendaftaran siswa baru atau layanan sekolah:
 
----
-
-## 📧 Setup Gmail App Password
-
-1. Buka [myaccount.google.com](https://myaccount.google.com)
-2. **Security → 2-Step Verification** (aktifkan dulu)
-3. **Security → App passwords**
-4. Pilih **Mail** → **Other** → nama "SMP Darul Ulum"
-5. Copy 16-digit password → isi di `EMAIL_PASS`
-
-Format di `.env`: `EMAIL_PASS="xxxx xxxx xxxx xxxx"` (dengan spasi)
+* 🏢 **Sekretariat PPDB**: Gedung Utama SMP Darul Ulum Surabaya  
+  Jl. Raya Manukan Kulon No. 98-100, Tandes, Surabaya
+* ⏰ **Jam Layanan Kantor**: Senin – Sabtu | Pukul 07.30 – 13.00 WIB
+* 📧 **Email**: smpdarululum98@gmail.com
+* 🟢 **WhatsApp / CS**: 0812-3456-7890
 
 ---
 
-## 📤 Setup UploadThing
-
-1. Daftar di [uploadthing.com](https://uploadthing.com)
-2. Buat app baru
-3. Copy **Secret Key** dan **App ID** ke `.env.local`
-4. Upload langsung dari browser — tidak perlu server upload
-
----
-
-## 🗄️ Setup Database (Neon)
-
-1. Daftar di [neon.tech](https://neon.tech) (gratis)
-2. Buat project baru → copy **Connection String**
-3. Paste ke `DATABASE_URL` di `.env`
-4. Jalankan: `npm run db:push && npm run db:seed`
-
----
-
-## 🚀 Deploy ke Production
-
-### Frontend → Vercel (gratis)
-```bash
-cd frontend
-npx vercel
-# set env vars di Vercel Dashboard
-```
-
-### Backend → Railway (gratis)
-```bash
-# install railway CLI
-npm i -g @railway/cli
-railway login
-cd backend
-railway init
-railway up
-# set env vars di Railway Dashboard
-```
-
----
-
-## 📋 API Endpoints Utama
-
-```
-# Auth
-POST   /api/v1/auth/login
-POST   /api/v1/auth/register  
-GET    /api/v1/auth/profile
-
-# Publik
-GET    /api/v1/news
-GET    /api/v1/news/:slug
-GET    /api/v1/announcements
-GET    /api/v1/events
-GET    /api/v1/gallery
-
-# PPDB
-POST   /api/v1/admissions/submit
-GET    /api/v1/admissions/status/:regNumber
-GET    /api/v1/admissions              [admin]
-PATCH  /api/v1/admissions/:id/status   [admin]
-
-# Akademik
-GET    /api/v1/grades/student/:id      [auth]
-POST   /api/v1/grades                  [guru]
-POST   /api/v1/grades/batch            [guru]
-GET    /api/v1/attendance/student/:id  [auth]
-POST   /api/v1/attendance              [guru]
-
-# Tugas & Materi (URL dari UploadThing)
-GET    /api/v1/assignments             [auth]
-POST   /api/v1/assignments             [guru]
-POST   /api/v1/assignments/:id/submit  [siswa]
-
-# Keuangan
-GET    /api/v1/payments/student/:id    [auth]
-POST   /api/v1/payments/bulk-spp       [admin]
-
-# Perpustakaan
-GET    /api/v1/books
-POST   /api/v1/borrowings              [admin]
-
-# Admin
-GET    /api/v1/dashboard/stats         [admin]
-GET    /api/v1/students                [admin]
-GET    /api/v1/teachers                [admin]
-```
-
----
-
-## 🔧 Scripts
-
-```bash
-# Backend
-npm run dev          # development server
-npm run build        # compile TypeScript
-npm run start        # production server
-npm run db:generate  # generate Prisma client
-npm run db:push      # push schema ke database
-npm run db:seed      # seed data awal
-npm run db:studio    # Prisma Studio (GUI database)
-npm run typecheck    # cek TypeScript
-
-# Frontend
-npm run dev          # development server
-npm run build        # build production
-npm run start        # production server
-```
-
----
-
-## 📄 Lisensi
-
-MIT — SMP Darul Ulum Surabaya © 2025
+*© 2026 SMP Darul Ulum Surabaya. Seluruh Hak Cipta Dilindungi Undang-Undang.*
