@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { Menu, X, ChevronDown, Gamepad2, LogIn } from 'lucide-react';
-import { DarkModeToggle } from '@/components/ui/DarkModeToggle';
+import { Menu, X, ChevronDown, Gamepad2, LogIn, LayoutDashboard } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 const navItems = [
   { label:'Beranda', href:'/' },
@@ -38,6 +38,9 @@ export function Navbar() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
+  const { role, isAuthenticated } = useAuth();
+
+  const portalPath = role === 'GURU' ? '/guru' : role === 'SISWA' ? '/siswa' : role === 'ORANG_TUA' ? '/ortu' : '/admin';
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 8);
@@ -101,9 +104,10 @@ export function Navbar() {
 
           {/* Right side */}
           <div className="flex items-center gap-2">
-            <Link href="/auth/login"
+            <Link href={isAuthenticated ? portalPath : "/auth/login"}
               className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-colors shadow-xs">
-              <LogIn className="w-3.5 h-3.5"/> Portal Login
+              {isAuthenticated ? <LayoutDashboard className="w-3.5 h-3.5"/> : <LogIn className="w-3.5 h-3.5"/>}
+              {isAuthenticated ? 'Ke Portal Dashboard' : 'Portal Login'}
             </Link>
             <button className="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-emerald-50"
               onClick={() => setMobileOpen(!mobileOpen)}>
@@ -143,10 +147,11 @@ export function Navbar() {
             )
           ))}
           <div className="pt-2 pb-1">
-            <Link href="/auth/login"
+            <Link href={isAuthenticated ? portalPath : "/auth/login"}
               className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-xs"
               onClick={() => setMobileOpen(false)}>
-              <LogIn className="w-4 h-4"/> Login Portal Siswa / Guru
+              {isAuthenticated ? <LayoutDashboard className="w-4 h-4"/> : <LogIn className="w-4 h-4"/>}
+              {isAuthenticated ? 'Ke Portal Dashboard' : 'Login Portal Siswa / Guru'}
             </Link>
           </div>
         </div>
