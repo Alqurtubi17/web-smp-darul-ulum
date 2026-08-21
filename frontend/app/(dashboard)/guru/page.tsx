@@ -38,7 +38,7 @@ export default function GuruDashboard() {
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-800 to-indigo-900 rounded-2xl p-6 text-white">
         <p className="text-blue-200 text-sm">Portal Guru</p>
-        <h1 className="text-xl font-bold mt-0.5">{user?.teacher?.fullName || 'Guru'} 👋</h1>
+        <h1 className="text-xl font-bold mt-0.5">{user?.teacher?.fullName || 'Guru'}</h1>
         <div className="flex flex-wrap gap-3 mt-3">
           <span className="text-sm bg-white/10 rounded-lg px-3 py-1">📚 {user?.teacher?.subject}</span>
           <span className="text-sm bg-white/10 rounded-lg px-3 py-1">📅 {formatDate(new Date(), { weekday: 'long', day: 'numeric', month: 'long' })}</span>

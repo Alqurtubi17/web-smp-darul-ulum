@@ -45,7 +45,7 @@ export default function SiswaElearningPage() {
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/5 rounded-full"/>
         <div className="absolute -bottom-8 right-20 w-28 h-28 bg-white/5 rounded-full"/>
         <div className="relative">
-          <h1 className="text-xl font-bold mb-0.5">Halo, {(user as any)?.student?.fullName?.split(' ')[0] || 'Siswa'}! 👋</h1>
+          <h1 className="text-xl font-bold mb-0.5">Halo, {(user as any)?.student?.fullName?.split(' ')[0] || 'Siswa'}!</h1>
           <p className="text-green-200 text-sm">Lanjutkan perjalanan belajarmu hari ini</p>
           <div className="mt-4 grid grid-cols-3 gap-4">
             <div className="bg-white/10 rounded-xl p-3 text-center">

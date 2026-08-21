@@ -118,7 +118,7 @@ export default function SiswaDashboard() {
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
-              Ruang Belajar Siswa — {studentName} 👋
+              Ruang Belajar Siswa — {studentName}
             </h1>
             <p className="text-xs sm:text-sm text-emerald-100 font-medium max-w-xl">
               Tingkatkan XP kamu dengan menyelesaikan tantangan kuis harian &amp; simak modul E-Learning interaktif!
