@@ -27,10 +27,17 @@ html {
 }
 
 /* Custom scrollbar for desktop */
-::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: #ecfdf5; }
 ::-webkit-scrollbar-thumb { background: #6ee7b7; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #10b981; }
+
+/* Hide horizontal scrollbar for clean UI cards */
+.no-scrollbar-x::-webkit-scrollbar:horizontal {
+  display: none;
+  height: 0;
+}
+
 
 /* Line clamp utilities */
 .line-clamp-1 { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }

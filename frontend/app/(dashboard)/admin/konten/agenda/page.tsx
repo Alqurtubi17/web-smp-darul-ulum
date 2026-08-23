@@ -848,7 +848,7 @@ export default function AdminAgendaPage() {
                       )}
                     </div>
 
-                    <div className="space-y-1.5 overflow-y-auto max-h-20 no-scrollbar">
+                    <div className="space-y-1.5 overflow-y-auto overflow-x-hidden max-h-20 w-full">
                       {cell.events.map((ev) => (
                         <div
                           key={ev.id}
@@ -857,17 +857,18 @@ export default function AdminAgendaPage() {
                             setSelectedAgenda(ev);
                             setShowDetailModal(true);
                           }}
-                          className={`p-1.5 rounded-xl border text-[11px] font-bold truncate transition-all hover:scale-102 ${
+                          className={`p-1.5 rounded-xl border text-[11px] font-bold w-full max-w-full overflow-hidden transition-all hover:scale-101 ${
                             ev.category === 'Kalender Akademik Sekolah'
                               ? 'bg-indigo-50 border-indigo-200 text-indigo-900'
                               : 'bg-emerald-50 border-emerald-200 text-emerald-900'
                           }`}
                         >
-                          <p className="truncate font-extrabold">{ev.title}</p>
-                          <p className="text-[10px] font-medium text-slate-500">⏱️ {ev.startTime} - {ev.endTime}</p>
+                          <p className="truncate font-extrabold w-full">{ev.title}</p>
+                          <p className="text-[10px] font-medium text-slate-500 truncate w-full">⏱️ {ev.startTime} - {ev.endTime}</p>
                         </div>
                       ))}
                     </div>
+
                   </div>
                 );
               })}
