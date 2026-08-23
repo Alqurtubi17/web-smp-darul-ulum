@@ -111,12 +111,12 @@ export default function AdminPengumumanPage() {
 
   const [announcements, setAnnouncements] = useState<AnnouncementItem[]>(INITIAL_ANNOUNCEMENTS);
 
-  // Fetch live backend announcements
+  // Fetch live backend announcements from Express PostgreSQL API
   useEffect(() => {
     const fetchAnnouncementsBackend = async () => {
       try {
         const res = await contentService.getAnnouncements();
-        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+        if (res?.data && Array.isArray(res.data)) {
           const mapped: AnnouncementItem[] = res.data.map((item: any) => ({
             id: item.id,
             title: item.title,
@@ -136,6 +136,7 @@ export default function AdminPengumumanPage() {
     };
     fetchAnnouncementsBackend();
   }, []);
+
 
 
 

@@ -96,7 +96,7 @@ export default function PengumumanPublicPage() {
     const fetchPublicAnnouncements = async () => {
       try {
         const res = await contentService.getAnnouncements();
-        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+        if (res?.data && Array.isArray(res.data)) {
           const mapped: Ann[] = res.data.map((item: any) => ({
             id: item.id,
             title: item.title,
@@ -114,6 +114,7 @@ export default function PengumumanPublicPage() {
     };
     fetchPublicAnnouncements();
   }, []);
+
 
 
 

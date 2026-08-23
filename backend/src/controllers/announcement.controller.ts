@@ -11,6 +11,63 @@ export const listAnnouncements = async (req: Request, res: Response) => {
     const isPublic = req.query.isPublic === 'true';
     const now = new Date();
 
+    // Check if initial announcements seed is needed
+    const countTotalAll = await prisma.announcement.count();
+    if (countTotalAll === 0) {
+      await prisma.announcement.createMany({
+        data: [
+          {
+            title: 'Pengumuman Libur Hari Besar: HUT Republik Indonesia ke-81',
+            content: 'Diberitahukan kepada seluruh siswa, guru, dan orang tua/wali murid SMP Darul Ulum Surabaya bahwa dalam rangka Peringatan Hari Ulang Tahun Kemerdekaan RI ke-81 pada 17 Agustus 2026, kegiatan pembelajaran diliburkan.',
+            isPinned: false,
+            targetRoles: ['SEMUA'],
+            expiresAt: new Date('2026-08-17'),
+            publishedAt: new Date('2026-08-10'),
+          },
+          {
+            title: 'Pengumuman Libur Hari Besar: Maulid Nabi Muhammad SAW',
+            content: 'Diberitahukan bahwa pada hari Selasa, 25 Agustus 2026, kegiatan belajar mengajar SMP Darul Ulum Surabaya diliburkan dalam rangka peringatan Maulid Nabi Muhammad SAW 1448 H.',
+            isPinned: false,
+            targetRoles: ['SEMUA'],
+            expiresAt: new Date('2026-08-25'),
+            publishedAt: new Date('2026-08-20'),
+          },
+          {
+            title: 'Jadwal Penilaian Tengah Semester (PTS) Ganjil T.A. 2026/2027',
+            content: 'Diberitahukan kepada seluruh siswa kelas 7, 8, dan 9 bahwa Penilaian Tengah Semester (PTS) Ganjil akan dilaksanakan mulai tanggal 5 s.d. 12 September 2026. Harap mempersiapkan diri dan melunasi kewajiban administrasi.',
+            isPinned: false,
+            targetRoles: ['SISWA', 'ORANG_TUA'],
+            expiresAt: new Date('2026-09-12'),
+            publishedAt: new Date('2026-08-20'),
+          },
+          {
+            title: 'Pengumuman Libur Semester 1 (Ganjil) T.A. 2026/2027',
+            content: 'Pelaksanaan Libur Semester 1 (Ganjil) bagi murid SMP Darul Ulum Surabaya berlangsung mulai tanggal 21 s.d. 31 Desember 2026. Masuk kembali semester genap pada bulan Januari 2027.',
+            isPinned: false,
+            targetRoles: ['SEMUA'],
+            expiresAt: new Date('2026-12-31'),
+            publishedAt: new Date('2026-12-15'),
+          },
+          {
+            title: 'Kegiatan Permulaan Puasa (KPP) Ramadhan 1448 H',
+            content: 'Kegiatan Permulaan Puasa (KPP) Ramadhan 1448 H bagi seluruh siswa-siswi SMP Darul Ulum dilaksanakan pada tanggal 8 s.d. 10 Februari 2027 di kampus & Masjid Darul Ulum.',
+            isPinned: false,
+            targetRoles: ['SEMUA'],
+            expiresAt: new Date('2027-02-10'),
+            publishedAt: new Date('2027-02-01'),
+          },
+          {
+            title: 'Pengumuman Libur Hari Raya Idul Fitri 1448 H',
+            content: 'Diberitahukan bahwa libur Hari Raya Idul Fitri 1448 H dan cuti bersama berlangsung pada tanggal 10 s.d. 11 Maret 2027.',
+            isPinned: false,
+            targetRoles: ['SEMUA'],
+            expiresAt: new Date('2027-03-11'),
+            publishedAt: new Date('2027-03-01'),
+          },
+        ],
+      });
+    }
+
     const whereCondition: any = { isActive: true };
     if (isPublic) {
       whereCondition.OR = [{ expiresAt: null }, { expiresAt: { gte: now } }];
@@ -27,6 +84,7 @@ export const listAnnouncements = async (req: Request, res: Response) => {
     sendSuccess(res, items, 'Pengumuman berhasil diambil', 200, buildPaginationMeta(total, page, limit));
   } catch { sendError(res, 'Gagal mengambil pengumuman'); }
 };
+
 
 
 
