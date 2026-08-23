@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Calendar, Search, ChevronDown } from 'lucide-react';
+import { Calendar, Search, ChevronDown, Pin } from 'lucide-react';
+
 import { PageHero } from '@/components/public/PageHero';
 import { contentService } from '@/lib/services/content.service';
 
@@ -101,7 +102,7 @@ export default function PengumumanPublicPage() {
             id: item.id,
             title: item.title,
             content: item.content,
-            isPinned: false,
+            isPinned: Boolean(item.isPinned),
             targetRoles: Array.isArray(item.targetRole) ? item.targetRole : [item.targetRole || 'SEMUA'],
             publishedAt: item.createdAt ? String(item.createdAt).split('T')[0] : '2026-08-01',
             expiresAt: item.expiresAt ? String(item.expiresAt).split('T')[0] : null,
@@ -115,54 +116,62 @@ export default function PengumumanPublicPage() {
     fetchPublicAnnouncements();
   }, []);
 
-  // Filter & Search & H+1 Auto-Expiry Logic
+  // Filter & Search & H+1 Auto-Expiry & Pinned First Sorting Logic
   const filteredList = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    return list.filter((item) => {
-      // 1. Auto-remove if date is H+1 or later (i.e. event date has passed + 1 day)
-      if (item.expiresAt) {
-        const expDate = new Date(item.expiresAt);
-        expDate.setHours(0, 0, 0, 0);
+    return list
+      .filter((item) => {
+        // 1. Auto-remove if date is H+1 or later (i.e. event date has passed + 1 day)
+        if (item.expiresAt) {
+          const expDate = new Date(item.expiresAt);
+          expDate.setHours(0, 0, 0, 0);
 
-        // H+1 Date (Next day after event date -> auto remove on H+1)
-        const hPlus1 = new Date(expDate);
-        hPlus1.setDate(hPlus1.getDate() + 1);
+          // H+1 Date (Next day after event date -> auto remove on H+1)
+          const hPlus1 = new Date(expDate);
+          hPlus1.setDate(hPlus1.getDate() + 1);
 
-        // If today is H+1 or later, filter it out automatically!
-        if (today >= hPlus1) {
-          return false;
+          // If today is H+1 or later, filter it out automatically!
+          if (today >= hPlus1) {
+            return false;
+          }
         }
-      }
 
-      // 2. Search match
-      const matchSearch =
-        item.title.toLowerCase().includes(search.toLowerCase()) ||
-        item.content.toLowerCase().includes(search.toLowerCase());
+        // 2. Search match
+        const matchSearch =
+          item.title.toLowerCase().includes(search.toLowerCase()) ||
+          item.content.toLowerCase().includes(search.toLowerCase());
 
-      if (!matchSearch) return false;
+        if (!matchSearch) return false;
 
-      const targetDateStr = item.expiresAt || item.publishedAt;
-      const dateObj = new Date(targetDateStr);
+        const targetDateStr = item.expiresAt || item.publishedAt;
+        const dateObj = new Date(targetDateStr);
 
-      // 3. Month Filter check
-      if (selectedMonth !== 'SEMUA') {
-        if (dateObj.getMonth().toString() !== selectedMonth) {
-          return false;
+        // 3. Month Filter check
+        if (selectedMonth !== 'SEMUA') {
+          if (dateObj.getMonth().toString() !== selectedMonth) {
+            return false;
+          }
         }
-      }
 
-      // 4. Year Filter check
-      if (selectedYear !== 'SEMUA') {
-        if (dateObj.getFullYear().toString() !== selectedYear) {
-          return false;
+        // 4. Year Filter check
+        if (selectedYear !== 'SEMUA') {
+          if (dateObj.getFullYear().toString() !== selectedYear) {
+            return false;
+          }
         }
-      }
 
-      return true;
-    });
+        return true;
+      })
+      .sort((a, b) => {
+        // Pinned announcements ALWAYS appear at the very top!
+        if (a.isPinned && !b.isPinned) return -1;
+        if (!a.isPinned && b.isPinned) return 1;
+        return 0;
+      });
   }, [list, search, selectedMonth, selectedYear]);
+
 
   // Extract unique available years dynamically from dataset
   const availableYears = useMemo(() => {
@@ -253,18 +262,27 @@ export default function PengumumanPublicPage() {
           ) : (
             <div className="divide-y divide-emerald-100 bg-white rounded-3xl border border-emerald-100 overflow-hidden shadow-2xs">
               {filteredList.map((a) => (
-                <div key={a.id} className="p-6 hover:bg-emerald-50/30 transition-colors">
+                <div key={a.id} className={`p-6 transition-colors ${a.isPinned ? 'bg-amber-50/40 hover:bg-amber-50/70 border-l-4 border-l-amber-500' : 'hover:bg-emerald-50/30'}`}>
                   <div className="space-y-2">
-                    {a.expiresAt && (
-                      <div className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-lg border border-emerald-200">
-                        <Calendar className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>Pelaksanaan / Libur: {fmtDate(a.expiresAt)}</span>
-                      </div>
-                    )}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {a.isPinned && (
+                        <div className="inline-flex items-center gap-1 text-[11px] font-extrabold text-amber-800 bg-amber-100/80 px-2.5 py-0.5 rounded-lg border border-amber-300">
+                          <Pin className="w-3.5 h-3.5 text-amber-600 fill-amber-500" />
+                          <span>Disematkan di Atas</span>
+                        </div>
+                      )}
+                      {a.expiresAt && (
+                        <div className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-lg border border-emerald-200">
+                          <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Pelaksanaan / Libur: {fmtDate(a.expiresAt)}</span>
+                        </div>
+                      )}
+                    </div>
                     <h3 className="font-extrabold text-slate-900 text-base leading-snug">{a.title}</h3>
                     <p className="text-xs text-slate-600 leading-relaxed font-medium whitespace-pre-line">{a.content}</p>
                   </div>
                 </div>
+
               ))}
             </div>
           )}
