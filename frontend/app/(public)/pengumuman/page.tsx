@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Calendar, Search, Megaphone, CheckCircle2, ChevronDown } from 'lucide-react';
-
+import { Calendar, Search, ChevronDown } from 'lucide-react';
 import { PageHero } from '@/components/public/PageHero';
 import { contentService } from '@/lib/services/content.service';
 
@@ -91,6 +90,7 @@ export default function PengumumanPublicPage() {
   const [list, setList] = useState<Ann[]>(DEFAULT_ANNOUNCEMENTS);
   const [search, setSearch] = useState('');
   const [selectedMonth, setSelectedMonth] = useState<string>('SEMUA');
+  const [selectedYear, setSelectedYear] = useState<string>('SEMUA');
 
   useEffect(() => {
     const fetchPublicAnnouncements = async () => {
@@ -123,7 +123,7 @@ export default function PengumumanPublicPage() {
     fetchPublicAnnouncements();
   }, []);
 
-  // Filter & Search & H-3 Display Window Logic
+  // Filter & Search & Separate Month/Year Logic
   const filteredList = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -153,26 +153,37 @@ export default function PengumumanPublicPage() {
 
       if (!matchSearch) return false;
 
-      // 3. Month Filter match
-      if (selectedMonth === 'SEMUA') return true;
-
       const targetDateStr = item.expiresAt || item.publishedAt;
       const dateObj = new Date(targetDateStr);
-      const mYear = `${MONTH_NAMES[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
-      return mYear === selectedMonth;
-    });
-  }, [list, search, selectedMonth]);
 
-  // Extract unique available months for filter tabs
-  const availableMonths = useMemo(() => {
-    const monthsSet = new Set<string>();
+      // 3. Month Filter check
+      if (selectedMonth !== 'SEMUA') {
+        if (dateObj.getMonth().toString() !== selectedMonth) {
+          return false;
+        }
+      }
+
+      // 4. Year Filter check
+      if (selectedYear !== 'SEMUA') {
+        if (dateObj.getFullYear().toString() !== selectedYear) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [list, search, selectedMonth, selectedYear]);
+
+  // Extract unique available years dynamically from dataset
+  const availableYears = useMemo(() => {
+    const yearsSet = new Set<string>();
     list.forEach((item) => {
       const dateObj = new Date(item.expiresAt || item.publishedAt);
       if (!isNaN(dateObj.getTime())) {
-        monthsSet.add(`${MONTH_NAMES[dateObj.getMonth()]} ${dateObj.getFullYear()}`);
+        yearsSet.add(dateObj.getFullYear().toString());
       }
     });
-    return Array.from(monthsSet);
+    return Array.from(yearsSet).sort();
   }, [list]);
 
   return (
@@ -188,10 +199,10 @@ export default function PengumumanPublicPage() {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
         
-        {/* Search & Month Filter Toolbar */}
-        <div className="bg-white rounded-3xl border border-emerald-100 p-4 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-4">
+        {/* Search & Separate Month/Year Filter Toolbar */}
+        <div className="bg-white rounded-3xl border border-emerald-100 p-4 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-3">
           {/* Search Box */}
-          <div className="relative w-full sm:w-80">
+          <div className="relative flex-1 min-w-[200px] w-full">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
@@ -202,24 +213,41 @@ export default function PengumumanPublicPage() {
             />
           </div>
 
-          {/* Clean Month Filter Select Dropdown */}
-          <div className="relative w-full sm:w-56">
-            <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
-              className="w-full px-4 py-2 rounded-xl border border-emerald-200 bg-white text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 appearance-none cursor-pointer pr-9 shadow-2xs"
-            >
-              <option value="SEMUA">Semua Bulan</option>
-              {availableMonths.map((mStr) => (
-                <option key={mStr} value={mStr}>
-                  {mStr}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            {/* Separate Month Filter Dropdown */}
+            <div className="relative flex-1 sm:w-40">
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="w-full px-3.5 py-2 rounded-xl border border-emerald-200 bg-white text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 appearance-none cursor-pointer pr-8 shadow-2xs"
+              >
+                <option value="SEMUA">Semua Bulan</option>
+                {MONTH_NAMES.map((name, idx) => (
+                  <option key={name} value={idx.toString()}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            </div>
+
+            {/* Separate Year Filter Dropdown */}
+            <div className="relative flex-1 sm:w-36">
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+                className="w-full px-3.5 py-2 rounded-xl border border-emerald-200 bg-white text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 appearance-none cursor-pointer pr-8 shadow-2xs"
+              >
+                <option value="SEMUA">Semua Tahun</option>
+                {availableYears.map((yr) => (
+                  <option key={yr} value={yr}>
+                    {yr}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            </div>
           </div>
-
-
         </div>
 
         {/* Clean Unpinned Announcements List */}
@@ -233,7 +261,6 @@ export default function PengumumanPublicPage() {
               <p className="text-xs font-extrabold text-slate-700">Belum ada pengumuman aktif saat ini.</p>
             </div>
           ) : (
-
             <div className="divide-y divide-emerald-100 bg-white rounded-3xl border border-emerald-100 overflow-hidden shadow-2xs">
               {filteredList.map((a) => (
                 <div key={a.id} className="p-6 hover:bg-emerald-50/30 transition-colors">
