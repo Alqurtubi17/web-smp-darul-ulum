@@ -16,8 +16,64 @@ interface Ann {
   fileUrl?: string | null;
 }
 
-const MONTH_NAMES = [
+const DEFAULT_ANNOUNCEMENTS: Ann[] = [
+  {
+    id: 'ann-kaldik-1',
+    title: '[Libur Hari Besar] HUT Republik Indonesia ke-81',
+    content: 'Diberitahukan kepada seluruh siswa, guru, dan orang tua/wali murid SMP Darul Ulum Surabaya bahwa kegiatan pembelajaran diliburkan dalam rangka HUT RI ke-81.',
+    isPinned: false,
+    targetRoles: ['SEMUA'],
+    publishedAt: '2026-08-10',
+    expiresAt: '2026-08-17',
+  },
+  {
+    id: 'ann-kaldik-2',
+    title: '[Libur Hari Besar] Maulid Nabi Muhammad SAW 1448 H',
+    content: 'Diberitahukan bahwa kegiatan belajar mengajar SMP Darul Ulum Surabaya diliburkan dalam rangka peringatan Maulid Nabi Muhammad SAW 1448 H.',
+    isPinned: false,
+    targetRoles: ['SEMUA'],
+    publishedAt: '2026-08-20',
+    expiresAt: '2026-08-25',
+  },
+  {
+    id: 'ann-1',
+    title: 'Jadwal Penilaian Tengah Semester (PTS) Ganjil T.A. 2026/2027',
+    content: 'Penilaian Tengah Semester (PTS) Ganjil dilaksanakan mulai tanggal 5 s.d. 12 September 2026 bagi seluruh siswa kelas 7, 8, dan 9.',
+    isPinned: false,
+    targetRoles: ['SISWA', 'ORANG_TUA'],
+    publishedAt: '2026-08-20',
+    expiresAt: '2026-09-12',
+  },
+  {
+    id: 'ann-kaldik-3',
+    title: '[Libur Semester 1] Libur Semester Ganjil T.A. 2026/2027',
+    content: 'Pelaksanaan Libur Semester 1 (Ganjil) bagi murid SMP Darul Ulum Surabaya berlangsung mulai tanggal 21 s.d. 31 Desember 2026.',
+    isPinned: false,
+    targetRoles: ['SEMUA'],
+    publishedAt: '2026-12-15',
+    expiresAt: '2026-12-31',
+  },
+  {
+    id: 'ann-kaldik-4',
+    title: '[Kegiatan Puasa] Kegiatan Permulaan Puasa (KPP) Ramadhan 1448 H',
+    content: 'Kegiatan Permulaan Puasa (KPP) Ramadhan 1448 H bagi seluruh siswa SMP Darul Ulum dilaksanakan pada tanggal 8 s.d. 10 Februari 2027.',
+    isPinned: false,
+    targetRoles: ['SEMUA'],
+    publishedAt: '2027-02-01',
+    expiresAt: '2027-02-10',
+  },
+  {
+    id: 'ann-kaldik-5',
+    title: '[Libur Hari Besar] Hari Raya Idul Fitri 1448 H',
+    content: 'Diberitahukan bahwa libur Hari Raya Idul Fitri 1448 H dan Cuti Bersama berlangsung pada tanggal 10 s.d. 11 Maret 2027.',
+    isPinned: false,
+    targetRoles: ['SEMUA'],
+    publishedAt: '2027-03-01',
+    expiresAt: '2027-03-11',
+  },
+];
 
+const MONTH_NAMES = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
 ];
@@ -31,8 +87,7 @@ function fmtDate(d: string) {
 }
 
 export default function PengumumanPublicPage() {
-
-  const [list, setList] = useState<Ann[]>([]);
+  const [list, setList] = useState<Ann[]>(DEFAULT_ANNOUNCEMENTS);
   const [search, setSearch] = useState('');
   const [selectedMonth, setSelectedMonth] = useState<string>('SEMUA');
   const [selectedYear, setSelectedYear] = useState<string>('SEMUA');
@@ -41,7 +96,7 @@ export default function PengumumanPublicPage() {
     const fetchPublicAnnouncements = async () => {
       try {
         const res = await contentService.getAnnouncements();
-        if (res?.data && Array.isArray(res.data)) {
+        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
           const mapped: Ann[] = res.data.map((item: any) => ({
             id: item.id,
             title: item.title,
@@ -59,7 +114,6 @@ export default function PengumumanPublicPage() {
     };
     fetchPublicAnnouncements();
   }, []);
-
 
   // Filter & Search & H+1 Auto-Expiry Logic
   const filteredList = useMemo(() => {
@@ -109,7 +163,6 @@ export default function PengumumanPublicPage() {
       return true;
     });
   }, [list, search, selectedMonth, selectedYear]);
-
 
   // Extract unique available years dynamically from dataset
   const availableYears = useMemo(() => {
