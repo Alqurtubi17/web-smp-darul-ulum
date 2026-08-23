@@ -128,15 +128,22 @@ export default function AdminPengumumanPage() {
             isActive: true,
             viewCount: 150,
           }));
-          setAnnouncements(mapped);
+          // Merge backend announcements with INITIAL_ANNOUNCEMENTS so all Kaldik items are present & editable
+          const combined = [...mapped];
+          INITIAL_ANNOUNCEMENTS.forEach((defItem) => {
+            if (!combined.some((x) => x.title === defItem.title || x.id === defItem.id)) {
+              combined.push(defItem);
+            }
+          });
+          setAnnouncements(combined);
         }
       } catch (err) {
         console.warn('Backend announcements load warning:', err);
       }
-
     };
     fetchAnnouncementsBackend();
   }, []);
+
 
 
   const [search, setSearch] = useState('');

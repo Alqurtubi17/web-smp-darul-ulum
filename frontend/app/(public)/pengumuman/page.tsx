@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import Link from 'next/link';
-import { Pin, Calendar, FileText, Search, Megaphone, CheckCircle2, ChevronDown } from 'lucide-react';
+import { Calendar, Search, Megaphone, CheckCircle2 } from 'lucide-react';
 import { PageHero } from '@/components/public/PageHero';
 import { contentService } from '@/lib/services/content.service';
 
@@ -20,18 +19,18 @@ interface Ann {
 const DEFAULT_ANNOUNCEMENTS: Ann[] = [
   {
     id: 'ann-kaldik-1',
-    title: '[Pengumuman Resmi] Libur Hari Besar: HUT Republik Indonesia ke-81',
+    title: 'Pengumuman Libur Hari Besar: HUT Republik Indonesia ke-81',
     content: 'Diberitahukan kepada seluruh siswa, guru, dan orang tua/wali murid SMP Darul Ulum Surabaya bahwa dalam rangka Peringatan Hari Ulang Tahun Kemerdekaan RI ke-81 pada 17 Agustus 2026, kegiatan pembelajaran diliburkan.',
-    isPinned: true,
+    isPinned: false,
     targetRoles: ['SEMUA'],
     publishedAt: '2026-08-10',
     expiresAt: '2026-08-17',
   },
   {
     id: 'ann-kaldik-2',
-    title: '[Pengumuman Resmi] Libur Hari Besar: Maulid Nabi Muhammad SAW',
+    title: 'Pengumuman Libur Hari Besar: Maulid Nabi Muhammad SAW',
     content: 'Diberitahukan bahwa pada hari Selasa, 25 Agustus 2026, kegiatan belajar mengajar SMP Darul Ulum Surabaya diliburkan dalam rangka peringatan Maulid Nabi Muhammad SAW 1448 H.',
-    isPinned: true,
+    isPinned: false,
     targetRoles: ['SEMUA'],
     publishedAt: '2026-08-20',
     expiresAt: '2026-08-25',
@@ -40,14 +39,14 @@ const DEFAULT_ANNOUNCEMENTS: Ann[] = [
     id: 'ann-1',
     title: 'Jadwal Penilaian Tengah Semester (PTS) Ganjil T.A. 2026/2027',
     content: 'Diberitahukan kepada seluruh siswa kelas 7, 8, dan 9 bahwa Penilaian Tengah Semester (PTS) Ganjil akan dilaksanakan mulai tanggal 5 s.d. 12 September 2026. Harap mempersiapkan diri dan melunasi kewajiban administrasi.',
-    isPinned: true,
+    isPinned: false,
     targetRoles: ['SISWA', 'ORANG_TUA'],
     publishedAt: '2026-08-20',
     expiresAt: '2026-09-12',
   },
   {
     id: 'ann-kaldik-3',
-    title: '[Pengumuman Resmi] Libur Semester 1 (Ganjil) T.A. 2026/2027',
+    title: 'Pengumuman Libur Semester 1 (Ganjil) T.A. 2026/2027',
     content: 'Pelaksanaan Libur Semester 1 (Ganjil) bagi murid SMP Darul Ulum Surabaya berlangsung mulai tanggal 21 s.d. 31 Desember 2026. Masuk kembali semester genap pada bulan Januari 2027.',
     isPinned: false,
     targetRoles: ['SEMUA'],
@@ -56,7 +55,7 @@ const DEFAULT_ANNOUNCEMENTS: Ann[] = [
   },
   {
     id: 'ann-kaldik-4',
-    title: '[Pengumuman Resmi] Kegiatan Permulaan Puasa (KPP) Ramadhan 1448 H',
+    title: 'Kegiatan Permulaan Puasa (KPP) Ramadhan 1448 H',
     content: 'Kegiatan Permulaan Puasa (KPP) Ramadhan 1448 H bagi seluruh siswa-siswi SMP Darul Ulum dilaksanakan pada tanggal 8 s.d. 10 Februari 2027 di kampus & Masjid Darul Ulum.',
     isPinned: false,
     targetRoles: ['SEMUA'],
@@ -65,9 +64,9 @@ const DEFAULT_ANNOUNCEMENTS: Ann[] = [
   },
   {
     id: 'ann-kaldik-5',
-    title: '[Pengumuman Resmi] Libur Hari Raya Idul Fitri 1448 H',
+    title: 'Pengumuman Libur Hari Raya Idul Fitri 1448 H',
     content: 'Diberitahukan bahwa libur Hari Raya Idul Fitri 1448 H dan cuti bersama berlangsung pada tanggal 10 s.d. 11 Maret 2027.',
-    isPinned: true,
+    isPinned: false,
     targetRoles: ['SEMUA'],
     publishedAt: '2027-03-01',
     expiresAt: '2027-03-11',
@@ -101,7 +100,7 @@ export default function PengumumanPublicPage() {
             id: item.id,
             title: item.title,
             content: item.content,
-            isPinned: item.isPinned || false,
+            isPinned: false,
             targetRoles: Array.isArray(item.targetRole) ? item.targetRole : [item.targetRole || 'SEMUA'],
             publishedAt: item.createdAt ? String(item.createdAt).split('T')[0] : '2026-08-01',
             expiresAt: item.expiresAt ? String(item.expiresAt).split('T')[0] : null,
@@ -123,21 +122,27 @@ export default function PengumumanPublicPage() {
     fetchPublicAnnouncements();
   }, []);
 
-
-  const todayStr = useMemo(() => {
+  // Filter & Search & H-3 Display Window Logic
+  const filteredList = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return today;
-  }, []);
 
-  // Filter & Search & Auto-hide Expired Announcements
-  const filteredList = useMemo(() => {
     return list.filter((item) => {
-      // 1. Auto-hide if date has passed
+      // 1. H-3 Display Window & Auto-Expiry check for event/Kaldik announcements
       if (item.expiresAt) {
         const expDate = new Date(item.expiresAt);
         expDate.setHours(23, 59, 59, 999);
-        if (expDate < todayStr) return false; // Date passed -> auto remove
+
+        // Auto-remove if event date has passed
+        if (expDate < today) return false;
+
+        // Calculate H-3 start date (3 days before event/expiry)
+        const hMinus3 = new Date(expDate);
+        hMinus3.setDate(hMinus3.getDate() - 3);
+        hMinus3.setHours(0, 0, 0, 0);
+
+        // Only display starting from H-3!
+        if (today < hMinus3) return false;
       }
 
       // 2. Search match
@@ -150,27 +155,24 @@ export default function PengumumanPublicPage() {
       // 3. Month Filter match
       if (selectedMonth === 'SEMUA') return true;
 
-      const dateObj = new Date(item.publishedAt);
+      const targetDateStr = item.expiresAt || item.publishedAt;
+      const dateObj = new Date(targetDateStr);
       const mYear = `${MONTH_NAMES[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
       return mYear === selectedMonth;
     });
-  }, [list, search, selectedMonth, todayStr]);
-
+  }, [list, search, selectedMonth]);
 
   // Extract unique available months for filter tabs
   const availableMonths = useMemo(() => {
     const monthsSet = new Set<string>();
     list.forEach((item) => {
-      const dateObj = new Date(item.publishedAt);
+      const dateObj = new Date(item.expiresAt || item.publishedAt);
       if (!isNaN(dateObj.getTime())) {
         monthsSet.add(`${MONTH_NAMES[dateObj.getMonth()]} ${dateObj.getFullYear()}`);
       }
     });
     return Array.from(monthsSet);
   }, [list]);
-
-  const pinnedList = filteredList.filter((a) => a.isPinned);
-  const regularList = filteredList.filter((a) => !a.isPinned);
 
   return (
     <div className="bg-[#fcfdfd] text-slate-900 min-h-screen pb-16">
@@ -227,65 +229,35 @@ export default function PengumumanPublicPage() {
           </div>
         </div>
 
-        {/* Pinned Announcements */}
-        {pinnedList.length > 0 && (
-          <div className="space-y-3">
-            <h2 className="flex items-center gap-2 text-xs font-extrabold text-rose-700 uppercase tracking-wider">
-              <Pin className="w-4 h-4 text-rose-600 fill-rose-600" />
-              <span>Pengumuman Penting &amp; Libur Hari Besar</span>
-            </h2>
-
-            <div className="space-y-3.5">
-              {pinnedList.map((a) => (
-                <div key={a.id} className="bg-rose-50/70 border border-rose-200 rounded-3xl p-6 shadow-2xs">
-                  <div className="flex items-start gap-3.5">
-                    <Pin className="w-5 h-5 text-rose-600 flex-shrink-0 mt-0.5" />
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span className="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-black border border-rose-300">
-                          📌 PINNED / PENTING
-                        </span>
-                        <span className="text-xs font-mono font-bold text-slate-500">
-                          Tgl Siar: {fmtDate(a.publishedAt)}
-                        </span>
-                      </div>
-                      <h3 className="font-extrabold text-slate-900 text-base leading-snug">{a.title}</h3>
-                      <p className="text-xs text-slate-700 leading-relaxed font-medium whitespace-pre-line">{a.content}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Regular Announcements Grouped */}
+        {/* Clean Unpinned Announcements List */}
         <div className="space-y-4">
-          <h2 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">
-            Daftar Pengumuman Sekolah ({regularList.length})
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">
+              Pengumuman Aktif ({filteredList.length})
+            </h2>
+            <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+              ⚡ Ditampilkan Mulai H-3 Acara
+            </span>
+          </div>
 
-          {regularList.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-3xl border border-emerald-100 text-slate-400 font-medium shadow-2xs">
-              <p className="text-xs font-semibold text-slate-500">Tidak ada pengumuman untuk kriteria pencarian ini.</p>
+          {filteredList.length === 0 ? (
+            <div className="text-center py-12 bg-white rounded-3xl border border-emerald-100 text-slate-400 font-medium shadow-2xs space-y-1">
+              <p className="text-xs font-extrabold text-slate-700">Belum ada pengumuman aktif saat ini.</p>
+              <p className="text-[11px] font-semibold text-slate-400">Pengumuman agenda &amp; hari libur akan otomatis tampil di sini pada H-3 pelaksanaan.</p>
             </div>
           ) : (
             <div className="divide-y divide-emerald-100 bg-white rounded-3xl border border-emerald-100 overflow-hidden shadow-2xs">
-              {regularList.map((a) => (
-                <div key={a.id} className="p-5 hover:bg-emerald-50/40 transition-colors">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-400 flex items-center gap-1 font-medium">
-                        <Calendar className="w-3.5 h-3.5 text-emerald-600" /> {fmtDate(a.publishedAt)}
-                      </span>
-                      {a.expiresAt && (
-                        <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                          Berlaku s.d. {fmtDate(a.expiresAt)}
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="font-extrabold text-slate-900 text-sm leading-snug">{a.title}</h3>
-                    <p className="text-xs text-slate-600 leading-relaxed line-clamp-3 font-medium whitespace-pre-line">{a.content}</p>
+              {filteredList.map((a) => (
+                <div key={a.id} className="p-6 hover:bg-emerald-50/30 transition-colors">
+                  <div className="space-y-2">
+                    {a.expiresAt && (
+                      <div className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-lg border border-emerald-200">
+                        <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Pelaksanaan / Libur: {fmtDate(a.expiresAt)}</span>
+                      </div>
+                    )}
+                    <h3 className="font-extrabold text-slate-900 text-base leading-snug">{a.title}</h3>
+                    <p className="text-xs text-slate-600 leading-relaxed font-medium whitespace-pre-line">{a.content}</p>
                   </div>
                 </div>
               ))}
