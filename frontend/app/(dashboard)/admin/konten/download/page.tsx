@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Trash2, Download, FileText, X, Search, ChevronLeft, ChevronRight, Tag } from 'lucide-react';
+
 import { formatDate } from '@/lib/utils';
 import { useActivityLogStore } from '@/store/activity-log.store';
 import { toast } from '@/store/toast.store';
