@@ -200,8 +200,14 @@ export const listAnnouncements = async (req: Request, res: Response) => {
             publishedAt: kItem.publishedAt,
           },
         });
+      } else if (kItem.isPinned && !exists.isPinned) {
+        await prisma.announcement.update({
+          where: { id: exists.id },
+          data: { isPinned: true },
+        });
       }
     }
+
 
     // ─── DYNAMIC SYNC FROM KALENDER PEDIDIKAN (EVENTS) ──────────────────────
     try {

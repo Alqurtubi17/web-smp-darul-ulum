@@ -40,8 +40,9 @@ const DEFAULT_ANNOUNCEMENTS: Ann[] = [
     id: 'ann-1',
     title: 'Jadwal Penilaian Tengah Semester (PTS) Ganjil T.A. 2026/2027',
     content: 'Penilaian Tengah Semester (PTS) Ganjil dilaksanakan mulai tanggal 5 s.d. 12 September 2026 bagi seluruh siswa kelas 7, 8, dan 9.',
-    isPinned: false,
+    isPinned: true,
     targetRoles: ['SISWA', 'ORANG_TUA'],
+
     publishedAt: '2026-08-20',
     expiresAt: '2026-09-12',
   },
