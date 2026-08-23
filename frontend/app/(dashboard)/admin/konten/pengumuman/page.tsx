@@ -285,10 +285,11 @@ export default function AdminPengumumanPage() {
     );
 
     try {
-      await contentService.updateAnnouncement(item.id, { isPinned: nextState });
+      await contentService.updateAnnouncement(item.id, { title: item.title, isPinned: nextState });
     } catch (err) {
       console.warn('Backend toggle pin failed:', err);
     }
+
 
     addLog({
       user: actorName,

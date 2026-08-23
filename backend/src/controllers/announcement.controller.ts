@@ -26,6 +26,14 @@ export const listAnnouncements = async (req: Request, res: Response) => {
     // ─── AUTO-INSERT OFFICIAL KALDIK 2026/2027 ANNOUNCEMENTS INTO POSTGRESQL ─
     const kaldikItems = [
       {
+        title: 'Jadwal Penilaian Tengah Semester (PTS) Ganjil T.A. 2026/2027',
+        content: 'Penilaian Tengah Semester (PTS) Ganjil dilaksanakan mulai tanggal 5 s.d. 12 September 2026 bagi seluruh siswa kelas 7, 8, dan 9.',
+        isPinned: true,
+        targetRoles: ['SISWA', 'ORANG_TUA'],
+        expiresAt: new Date('2026-09-12T23:59:59Z'),
+        publishedAt: new Date('2026-08-20T08:00:00Z'),
+      },
+      {
         title: '[Libur Hari Besar] HUT Republik Indonesia ke-81',
         content: 'Diberitahukan kepada seluruh siswa, guru, dan orang tua/wali murid SMP Darul Ulum Surabaya bahwa kegiatan pembelajaran diliburkan dalam rangka HUT RI ke-81.',
         isPinned: false,
@@ -39,14 +47,6 @@ export const listAnnouncements = async (req: Request, res: Response) => {
         isPinned: false,
         targetRoles: ['ADMIN', 'GURU', 'SISWA', 'ORANG_TUA'],
         expiresAt: new Date('2026-08-25T23:59:59Z'),
-        publishedAt: new Date('2026-08-20T08:00:00Z'),
-      },
-      {
-        title: 'Jadwal Penilaian Tengah Semester (PTS) Ganjil T.A. 2026/2027',
-        content: 'Penilaian Tengah Semester (PTS) Ganjil dilaksanakan mulai tanggal 5 s.d. 12 September 2026 bagi seluruh siswa kelas 7, 8, dan 9.',
-        isPinned: true,
-        targetRoles: ['SISWA', 'ORANG_TUA'],
-        expiresAt: new Date('2026-09-12T23:59:59Z'),
         publishedAt: new Date('2026-08-20T08:00:00Z'),
       },
       {
@@ -237,7 +237,7 @@ export const listAnnouncements = async (req: Request, res: Response) => {
       prisma.announcement.count({ where: whereCondition }),
       prisma.announcement.findMany({
         where: whereCondition,
-        orderBy: [{ isPinned: 'desc' }, { createdAt: 'desc' }],
+        orderBy: [{ isPinned: 'desc' }, { publishedAt: 'desc' }, { createdAt: 'desc' }],
         skip, take: limit,
       }),
     ]);
@@ -248,11 +248,6 @@ export const listAnnouncements = async (req: Request, res: Response) => {
     sendError(res, 'Gagal mengambil pengumuman');
   }
 };
-
-
-
-
-
 
 export const getAnnouncementById = async (req: Request, res: Response) => {
   try {
@@ -275,7 +270,6 @@ export const createAnnouncement = async (req: AuthRequest, res: Response) => {
         fileUrl: fileUrl || null,
         publishedAt: new Date(),
         authorId: req.user?.userId,
-
       },
     });
 
@@ -305,19 +299,49 @@ export const createAnnouncement = async (req: AuthRequest, res: Response) => {
 
 export const updateAnnouncement = async (req: AuthRequest, res: Response) => {
   try {
-    const existing = await prisma.announcement.findUnique({ where: { id: req.params.id } });
-    if (!existing) { sendNotFound(res); return; }
+    const { id } = req.params;
+    let existing = await prisma.announcement.findUnique({ where: { id } });
+    if (!existing && req.body.title) {
+      existing = await prisma.announcement.findFirst({ where: { title: req.body.title } });
+    }
+    if (!existing) {
+      sendNotFound(res);
+      return;
+    }
+
+    const updateData: any = {};
+    if (typeof req.body.title === 'string') updateData.title = req.body.title;
+    if (typeof req.body.content === 'string') updateData.content = req.body.content;
+    if (typeof req.body.isPinned === 'boolean') updateData.isPinned = req.body.isPinned;
+    if (req.body.targetRoles || req.body.targetRole) {
+      updateData.targetRoles = sanitizeRoles(req.body.targetRoles || req.body.targetRole);
+    }
+    if (req.body.expiresAt !== undefined) {
+      updateData.expiresAt = req.body.expiresAt ? new Date(req.body.expiresAt) : null;
+    }
+
     const updated = await prisma.announcement.update({
-      where: { id: req.params.id },
-      data: { ...req.body, ...(req.body.expiresAt && { expiresAt: new Date(req.body.expiresAt) }) },
+      where: { id: existing.id },
+      data: updateData,
     });
     sendSuccess(res, updated, 'Pengumuman diperbarui');
-  } catch { sendError(res, 'Gagal memperbarui pengumuman'); }
+  } catch (err) {
+    console.error('Update announcement error:', err);
+    sendError(res, 'Gagal memperbarui pengumuman');
+  }
 };
 
 export const deleteAnnouncement = async (req: Request, res: Response) => {
   try {
-    await prisma.announcement.delete({ where: { id: req.params.id } });
+    const { id } = req.params;
+    let existing = await prisma.announcement.findUnique({ where: { id } });
+    if (!existing && (req.query.title || req.body?.title)) {
+      const titleSearch = String(req.query.title || req.body?.title);
+      existing = await prisma.announcement.findFirst({ where: { title: titleSearch } });
+    }
+    if (existing) {
+      await prisma.announcement.delete({ where: { id: existing.id } });
+    }
     sendSuccess(res, null, 'Pengumuman dihapus');
   } catch { sendError(res, 'Gagal menghapus pengumuman'); }
 };
