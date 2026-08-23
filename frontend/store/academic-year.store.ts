@@ -36,27 +36,7 @@ export const useAcademicYearStore = create<AcademicYearState>((set, get) => ({
   academicYears: DEFAULT_YEARS,
 
   initAcademicYear: () => {
-    if (typeof window === 'undefined') return;
-    const savedYear = localStorage.getItem('activeAcademicYear');
-    const savedSem = localStorage.getItem('activeSemester');
-    const savedYearsList = localStorage.getItem('academicYearsList');
-
-    if (savedYear) {
-      set({ activeYear: savedYear });
-    }
-    if (savedSem === 'Ganjil' || savedSem === 'Genap') {
-      set({ activeSemester: savedSem });
-    }
-    if (savedYearsList) {
-      try {
-        const parsed = JSON.parse(savedYearsList);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          set({ academicYears: parsed });
-        }
-      } catch {
-        // ignore parse error
-      }
-    }
+    // Memory state only - Zero localStorage
   },
 
   setActiveYear: (year: string, semester?: 'Ganjil' | 'Genap') => {
@@ -66,12 +46,6 @@ export const useAcademicYearStore = create<AcademicYearState>((set, get) => ({
       isActive: item.year === year && item.semester === sem,
       status: item.year === year && item.semester === sem ? ('Aktif' as const) : item.status === 'Aktif' ? ('Arsip' as const) : item.status,
     }));
-
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('activeAcademicYear', year);
-      localStorage.setItem('activeSemester', sem);
-      localStorage.setItem('academicYearsList', JSON.stringify(updatedList));
-    }
 
     set({ activeYear: year, activeSemester: sem, academicYears: updatedList });
   },
@@ -89,9 +63,6 @@ export const useAcademicYearStore = create<AcademicYearState>((set, get) => ({
       status: 'Mendatang',
     };
     const updated = [newItem, ...get().academicYears];
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('academicYearsList', JSON.stringify(updated));
-    }
     set({ academicYears: updated });
   },
 
@@ -100,9 +71,6 @@ export const useAcademicYearStore = create<AcademicYearState>((set, get) => ({
     if (!target) return;
 
     const updated = get().academicYears.filter((y) => y.id !== id);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('academicYearsList', JSON.stringify(updated));
-    }
 
     // If target was active and there are remaining years, pick the first
     if (target.year === get().activeYear && target.semester === get().activeSemester && updated.length > 0) {

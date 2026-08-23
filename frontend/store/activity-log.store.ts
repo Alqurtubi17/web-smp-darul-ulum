@@ -62,16 +62,26 @@ export const useActivityLogStore = create<ActivityLogState>((set, get) => ({
       // Fallback
     }
 
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('real_audit_logs');
-      if (saved !== null) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed)) set({ logs: parsed });
-        } catch {
-          // ignore
-        }
+  initLogs: async () => {
+    try {
+      const res = await apiClient.get('/audit-logs');
+      if (res?.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
+        const mapped: AuditLogItem[] = res.data.data.map((l: any) => ({
+          id: l.id,
+          timestamp: l.createdAt ? String(l.createdAt).split('T')[0] : '2026-08-01',
+          user: (l.user?.fullName || l.user?.email || 'System') as string,
+          role: (l.user?.role as any) || 'ADMIN',
+          action: l.action || 'Aktivitas Sistem',
+          module: (l.resource as any) || 'Pengaturan',
+          ipAddress: l.ipAddress || '127.0.0.1',
+          device: l.userAgent ? (l.userAgent.includes('Chrome') ? 'Chrome Browser' : 'Web Browser') : 'Web Client',
+          severity: 'INFO',
+          details: l.newData ? JSON.stringify(l.newData) : (l.oldData ? JSON.stringify(l.oldData) : undefined),
+        }));
+        set({ logs: mapped });
       }
+    } catch {
+      // Memory initial logs state
     }
   },
 
@@ -96,9 +106,6 @@ export const useActivityLogStore = create<ActivityLogState>((set, get) => ({
     };
 
     const updated = [newLog, ...get().logs];
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('real_audit_logs', JSON.stringify(updated.slice(0, 200)));
-    }
     set({ logs: updated });
 
     // Async call to backend audit log
@@ -110,14 +117,15 @@ export const useActivityLogStore = create<ActivityLogState>((set, get) => ({
   },
 
   clearLogs: async () => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('real_audit_logs', JSON.stringify([]));
-    }
     set({ logs: [] });
 
     try {
       await apiClient.delete('/audit-logs/clear');
     } catch {
+      // ignore
+    }
+  },
+
       // ignore
     }
   },

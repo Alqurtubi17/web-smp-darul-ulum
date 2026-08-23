@@ -14,37 +14,21 @@ interface AuthState {
   initAuth: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   accessToken: null,
   isLoading: false,
   isAuthenticated: false,
 
   initAuth: () => {
-    if (typeof window === 'undefined') return;
-    const token = localStorage.getItem('accessToken');
-    const userStr = localStorage.getItem('user');
-    if (token && userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        set({ user, accessToken: token, isAuthenticated: true });
-      } catch {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
-      }
-    }
+    // Memory state only - Zero localStorage
   },
 
   login: async (email: string, password: string) => {
     set({ isLoading: true });
     try {
       const response = await apiClient.post('/auth/login', { email, password });
-      const { user, accessToken, refreshToken } = response.data.data as { user: User } & AuthTokens;
-
-      localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
-      localStorage.setItem('user', JSON.stringify(user));
+      const { user, accessToken } = response.data.data as { user: User } & AuthTokens;
 
       set({ user, accessToken, isAuthenticated: true, isLoading: false });
     } catch (error) {
@@ -59,15 +43,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch {
       // Ignore errors on logout
     } finally {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
       set({ user: null, accessToken: null, isAuthenticated: false });
     }
   },
 
   setUser: (user: User) => {
-    localStorage.setItem('user', JSON.stringify(user));
     set({ user });
   },
 }));

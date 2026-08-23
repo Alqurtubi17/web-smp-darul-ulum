@@ -114,39 +114,21 @@ export default function AdminPengumumanPage() {
   // Fetch live backend announcements
   useEffect(() => {
     const fetchAnnouncementsBackend = async () => {
-      let deletedList: string[] = [];
-      try {
-        deletedList = JSON.parse(localStorage.getItem('smp_deleted_announcements') || '[]');
-      } catch (e) {}
-
       try {
         const res = await contentService.getAnnouncements();
-        if (res?.data && Array.isArray(res.data)) {
-          const mapped: AnnouncementItem[] = res.data
-            .filter((item: any) => !deletedList.includes(item.title) && !deletedList.includes(item.id))
-            .map((item: any) => ({
-              id: item.id,
-              title: item.title,
-              content: item.content,
-              isPinned: item.isPinned || false,
-              targetRoles: Array.isArray(item.targetRole) ? item.targetRole : [item.targetRole || 'SEMUA'],
-              publishedAt: item.createdAt ? String(item.createdAt).split('T')[0] : '2026-08-01',
-              expiresAt: item.expiresAt ? String(item.expiresAt).split('T')[0] : null,
-              isActive: true,
-              viewCount: 150,
-            }));
-
-          const combined = [...mapped];
-          for (const defItem of INITIAL_ANNOUNCEMENTS) {
-            if (
-              !deletedList.includes(defItem.title) &&
-              !deletedList.includes(defItem.id) &&
-              !combined.some((x) => x.title === defItem.title)
-            ) {
-              combined.push(defItem);
-            }
-          }
-          setAnnouncements(combined);
+        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+          const mapped: AnnouncementItem[] = res.data.map((item: any) => ({
+            id: item.id,
+            title: item.title,
+            content: item.content,
+            isPinned: item.isPinned || false,
+            targetRoles: Array.isArray(item.targetRole) ? item.targetRole : [item.targetRole || 'SEMUA'],
+            publishedAt: item.createdAt ? String(item.createdAt).split('T')[0] : '2026-08-01',
+            expiresAt: item.expiresAt ? String(item.expiresAt).split('T')[0] : null,
+            isActive: true,
+            viewCount: 150,
+          }));
+          setAnnouncements(mapped);
         }
       } catch (err) {
         console.warn('Backend announcements load warning:', err);
@@ -154,6 +136,7 @@ export default function AdminPengumumanPage() {
     };
     fetchAnnouncementsBackend();
   }, []);
+
 
 
 
@@ -340,20 +323,6 @@ export default function AdminPengumumanPage() {
     if (!deletingId) return;
     const target = announcements.find((a) => a.id === deletingId);
 
-    if (target) {
-      try {
-        const deletedStr = localStorage.getItem('smp_deleted_announcements') || '[]';
-        const deletedArr: string[] = JSON.parse(deletedStr);
-        if (!deletedArr.includes(target.title)) {
-          deletedArr.push(target.title);
-        }
-        if (!deletedArr.includes(target.id)) {
-          deletedArr.push(target.id);
-        }
-        localStorage.setItem('smp_deleted_announcements', JSON.stringify(deletedArr));
-      } catch (e) {}
-    }
-
     setAnnouncements((prev) => prev.filter((a) => a.id !== deletingId));
 
     try {
@@ -361,6 +330,7 @@ export default function AdminPengumumanPage() {
     } catch (err) {
       console.warn('Backend delete announcement failed:', err);
     }
+
 
 
     if (target) {
