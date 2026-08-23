@@ -58,8 +58,8 @@ const DEFAULT_CATEGORIES = ['Sains', 'Matematika', 'Bahasa', 'IPS & Sejarah', 'A
 export default function AdminPerpustakaanPage() {
   const { addLog } = useActivityLogStore();
 
-  const [books, setBooks] = useState<BookItem[]>(INITIAL_BOOKS);
-  const [borrowings, setBorrowings] = useState<BorrowingItem[]>(INITIAL_BORROWINGS);
+  const [books, setBooks] = useState<BookItem[]>([]);
+  const [borrowings, setBorrowings] = useState<BorrowingItem[]>([]);
   const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
 
   // Load live data from Backend API
@@ -68,7 +68,7 @@ export default function AdminPerpustakaanPage() {
     const fetchLibraryBackend = async () => {
       try {
         const booksRes = await libraryService.getBooks();
-        if (booksRes?.data && Array.isArray(booksRes.data) && booksRes.data.length > 0) {
+        if (booksRes?.data && Array.isArray(booksRes.data)) {
           const mappedBooks: BookItem[] = booksRes.data.map((b: any) => ({
             id: b.id,
             title: b.title,
@@ -86,7 +86,8 @@ export default function AdminPerpustakaanPage() {
         }
 
         const borrowingsRes = await libraryService.getBorrowings();
-        if (borrowingsRes?.data && Array.isArray(borrowingsRes.data) && borrowingsRes.data.length > 0) {
+        if (borrowingsRes?.data && Array.isArray(borrowingsRes.data)) {
+
           const mappedBorrowings: BorrowingItem[] = borrowingsRes.data.map((br: any) => ({
             id: br.id,
             bookTitle: br.book?.title || 'Buku Perpustakaan',

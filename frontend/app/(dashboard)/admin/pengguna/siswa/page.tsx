@@ -48,7 +48,7 @@ export default function AdminSiswaPage() {
     const fetchStudentsBackend = async () => {
       try {
         const res = await userService.getStudents();
-        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+        if (res?.data && Array.isArray(res.data)) {
           const mapped: Student[] = res.data.map((s: any) => ({
             id: s.id,
             nis: s.nis || '2025' + String(s.id).slice(-3),
@@ -63,6 +63,7 @@ export default function AdminSiswaPage() {
           }));
           setStudents(mapped);
         }
+
       } catch (err) {
         console.warn('Backend students load warning:', err);
       }

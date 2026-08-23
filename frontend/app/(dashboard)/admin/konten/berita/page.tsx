@@ -93,14 +93,14 @@ export default function AdminBeritaPage() {
   const { user } = useAuth();
   const actorName = (user as any)?.teacher?.fullName || (user as any)?.email || 'Admin Utama';
 
-  const [newsList, setNewsList] = useState<NewsItem[]>(INITIAL_NEWS);
+  const [newsList, setNewsList] = useState<NewsItem[]>([]);
 
   // Fetch live backend news
   useEffect(() => {
     const fetchNewsBackend = async () => {
       try {
         const res = await contentService.getNews();
-        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+        if (res?.data && Array.isArray(res.data)) {
           const mapped: NewsItem[] = res.data.map((n: any) => ({
             id: n.id,
             title: n.title,
@@ -120,6 +120,7 @@ export default function AdminBeritaPage() {
       } catch (err) {
         console.warn('Backend news load warning:', err);
       }
+
 
     };
     fetchNewsBackend();

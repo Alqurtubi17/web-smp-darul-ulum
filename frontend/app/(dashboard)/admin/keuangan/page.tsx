@@ -54,7 +54,8 @@ const SAMPLE_STUDENTS_ALL_CLASSES = [
 
 export default function AdminKeuanganPage() {
   const { addLog } = useActivityLogStore();
-  const [bills, setBills] = useState<BillItem[]>(INITIAL_BILLS);
+  const [bills, setBills] = useState<BillItem[]>([]);
+
 
   // Load live data from Backend Express API
 
@@ -62,7 +63,7 @@ export default function AdminKeuanganPage() {
     const fetchPaymentsBackend = async () => {
       try {
         const stats = await paymentService.getPaymentStats();
-        if (stats && stats.bills && Array.isArray(stats.bills) && stats.bills.length > 0) {
+        if (stats && stats.bills && Array.isArray(stats.bills)) {
           const mapped: BillItem[] = stats.bills.map((b: any) => ({
             id: b.id,
             student: b.student?.fullName || b.studentName || 'Siswa',
@@ -79,6 +80,7 @@ export default function AdminKeuanganPage() {
           }));
           setBills(mapped);
         }
+
       } catch (err) {
         console.warn('Menggunakan data tagihan SPP lokal:', err);
       }

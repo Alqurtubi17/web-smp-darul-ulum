@@ -54,14 +54,14 @@ export default function AdminPPDBPage() {
   const { user } = useAuth();
   const actorName = (user as any)?.teacher?.fullName || (user as any)?.email || 'Admin Utama';
 
-  const [admissions, setAdmissions] = useState<AdmissionItem[]>(INITIAL_ADMISSIONS);
+  const [admissions, setAdmissions] = useState<AdmissionItem[]>([]);
 
   // Fetch live backend admissions
   useEffect(() => {
     const fetchAdmissionsBackend = async () => {
       try {
         const res = await ppdbService.getAdmissions();
-        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+        if (res?.data && Array.isArray(res.data)) {
           const mapped: AdmissionItem[] = res.data.map((item: any) => ({
             id: item.id,
             regNum: item.registrationNumber,
@@ -79,6 +79,7 @@ export default function AdminPPDBPage() {
           setAdmissions(mapped);
           return;
         }
+
       } catch (err) {
         console.warn('Backend PPDB data load warning:', err);
       }

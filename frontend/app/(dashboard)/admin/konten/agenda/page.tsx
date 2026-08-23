@@ -332,7 +332,7 @@ export default function AdminAgendaPage() {
     const fetchAgendasBackend = async () => {
       try {
         const res = await contentService.getEvents();
-        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+        if (res?.data && Array.isArray(res.data)) {
           const mapped: AcademicAgendaItem[] = res.data.map((ev: any) => ({
             id: ev.id,
             title: ev.title,
@@ -347,6 +347,7 @@ export default function AdminAgendaPage() {
           setAgendas(mapped);
         }
       } catch (err) {
+
         console.warn('Backend agenda load warning:', err);
       }
     };

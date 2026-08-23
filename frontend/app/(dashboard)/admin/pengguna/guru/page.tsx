@@ -48,7 +48,7 @@ export default function AdminGuruTendikPage() {
     const fetchTeachersBackend = async () => {
       try {
         const res = await userService.getTeachers();
-        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+        if (res?.data && Array.isArray(res.data)) {
           const mapped: Staff[] = res.data.map((t: any) => ({
             id: t.id,
             nip: t.nip || t.nuptk || '19900101202001',
@@ -64,6 +64,7 @@ export default function AdminGuruTendikPage() {
           }));
           setStaffList(mapped);
         }
+
       } catch (err) {
         console.warn('Backend teachers load warning:', err);
       }

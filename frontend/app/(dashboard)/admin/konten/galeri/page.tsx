@@ -74,14 +74,14 @@ export default function AdminGaleriPage() {
   const { user } = useAuth();
   const actorName = (user as any)?.teacher?.fullName || (user as any)?.email || 'Admin Utama';
 
-  const [albums, setAlbums] = useState<Album[]>(INITIAL_ALBUMS);
+  const [albums, setAlbums] = useState<Album[]>([]);
 
   // Fetch live backend albums
   useEffect(() => {
     const fetchAlbumsBackend = async () => {
       try {
         const res = await contentService.getAlbums();
-        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+        if (res?.data && Array.isArray(res.data)) {
           const mapped: Album[] = res.data.map((alb: any) => ({
             id: alb.id,
             title: alb.title,
@@ -95,6 +95,7 @@ export default function AdminGaleriPage() {
           setAlbums(mapped);
         }
       } catch (err) {
+
         console.warn('Backend gallery load warning:', err);
       }
 

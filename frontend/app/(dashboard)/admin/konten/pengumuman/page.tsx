@@ -86,14 +86,14 @@ export default function AdminPengumumanPage() {
   const { user } = useAuth();
   const actorName = (user as any)?.teacher?.fullName || (user as any)?.email || 'Admin Utama';
 
-  const [announcements, setAnnouncements] = useState<AnnouncementItem[]>(INITIAL_ANNOUNCEMENTS);
+  const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
 
   // Fetch live backend announcements from Express PostgreSQL API
   useEffect(() => {
     const fetchAnnouncementsBackend = async () => {
       try {
         const res = await contentService.getAnnouncements();
-        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+        if (res?.data && Array.isArray(res.data)) {
           const mapped: AnnouncementItem[] = res.data.map((item: any) => ({
             id: item.id,
             title: item.title,
@@ -108,6 +108,7 @@ export default function AdminPengumumanPage() {
           setAnnouncements(mapped);
         }
       } catch (err) {
+
         console.warn('Backend announcements load warning:', err);
       }
     };
