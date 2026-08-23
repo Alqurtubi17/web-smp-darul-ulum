@@ -123,10 +123,28 @@ export default function PengumumanPublicPage() {
     fetchPublicAnnouncements();
   }, []);
 
-  // Filter & Search Logic
+  // Filter & Search & H+1 Auto-Expiry Logic
   const filteredList = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     return list.filter((item) => {
-      // 1. Search match
+      // 1. Auto-remove if date is H+1 or later (i.e. event date has passed + 1 day)
+      if (item.expiresAt) {
+        const expDate = new Date(item.expiresAt);
+        expDate.setHours(0, 0, 0, 0);
+
+        // H+1 Date (Next day after event date -> auto remove on H+1)
+        const hPlus1 = new Date(expDate);
+        hPlus1.setDate(hPlus1.getDate() + 1);
+
+        // If today is H+1 or later, filter it out automatically!
+        if (today >= hPlus1) {
+          return false;
+        }
+      }
+
+      // 2. Search match
       const matchSearch =
         item.title.toLowerCase().includes(search.toLowerCase()) ||
         item.content.toLowerCase().includes(search.toLowerCase());
@@ -136,14 +154,14 @@ export default function PengumumanPublicPage() {
       const targetDateStr = item.expiresAt || item.publishedAt;
       const dateObj = new Date(targetDateStr);
 
-      // 2. Month Filter check
+      // 3. Month Filter check
       if (selectedMonth !== 'SEMUA') {
         if (dateObj.getMonth().toString() !== selectedMonth) {
           return false;
         }
       }
 
-      // 3. Year Filter check
+      // 4. Year Filter check
       if (selectedYear !== 'SEMUA') {
         if (dateObj.getFullYear().toString() !== selectedYear) {
           return false;
@@ -153,6 +171,7 @@ export default function PengumumanPublicPage() {
       return true;
     });
   }, [list, search, selectedMonth, selectedYear]);
+
 
   // Extract unique available years dynamically from dataset
   const availableYears = useMemo(() => {
