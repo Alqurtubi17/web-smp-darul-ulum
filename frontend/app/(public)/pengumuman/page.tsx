@@ -123,27 +123,26 @@ export default function PengumumanPublicPage() {
     fetchPublicAnnouncements();
   }, []);
 
-  // Filter & Search & Separate Month/Year Logic
+  // Filter & Search & H-3 to H+1 Auto-Expiry Logic
   const filteredList = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     return list.filter((item) => {
-      // 1. H-3 Display Window & Auto-Expiry check for event/Kaldik announcements
+      // 1. H-3 Display Start & H+1 Auto-Expiry Removal Check
       if (item.expiresAt) {
-        const expDate = new Date(item.expiresAt);
-        expDate.setHours(23, 59, 59, 999);
+        const eventDate = new Date(item.expiresAt);
+        eventDate.setHours(0, 0, 0, 0);
 
-        // Auto-remove if event date has passed
-        if (expDate < today) return false;
+        // H+1 Date (Next day after event date -> auto remove on H+1)
+        const hPlus1 = new Date(eventDate);
+        hPlus1.setDate(hPlus1.getDate() + 1);
+        if (today >= hPlus1) return false; // H+1 reached -> auto removed!
 
-        // Calculate H-3 start date (3 days before event/expiry)
-        const hMinus3 = new Date(expDate);
+        // H-3 Date (3 days before event date -> display starting on H-3)
+        const hMinus3 = new Date(eventDate);
         hMinus3.setDate(hMinus3.getDate() - 3);
-        hMinus3.setHours(0, 0, 0, 0);
-
-        // Only display starting from H-3!
-        if (today < hMinus3) return false;
+        if (today < hMinus3) return false; // Before H-3 -> hide for now
       }
 
       // 2. Search match
@@ -173,6 +172,7 @@ export default function PengumumanPublicPage() {
       return true;
     });
   }, [list, search, selectedMonth, selectedYear]);
+
 
   // Extract unique available years dynamically from dataset
   const availableYears = useMemo(() => {

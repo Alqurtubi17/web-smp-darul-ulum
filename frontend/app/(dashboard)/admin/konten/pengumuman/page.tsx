@@ -128,13 +128,24 @@ export default function AdminPengumumanPage() {
             isActive: true,
             viewCount: 150,
           }));
-          // Merge backend announcements with INITIAL_ANNOUNCEMENTS so all Kaldik items are present & editable
+          // Merge & Auto-sync missing Kaldik announcements to Express Backend API
           const combined = [...mapped];
-          INITIAL_ANNOUNCEMENTS.forEach((defItem) => {
-            if (!combined.some((x) => x.title === defItem.title || x.id === defItem.id)) {
+          for (const defItem of INITIAL_ANNOUNCEMENTS) {
+            if (!combined.some((x) => x.title === defItem.title)) {
               combined.push(defItem);
+              try {
+                await contentService.createAnnouncement({
+                  title: defItem.title,
+                  content: defItem.content,
+                  isPinned: defItem.isPinned,
+                  targetRole: defItem.targetRoles[0] || 'SEMUA',
+                  expiresAt: defItem.expiresAt,
+                });
+              } catch (e) {
+                // Async background sync
+              }
             }
-          });
+          }
           setAnnouncements(combined);
         }
       } catch (err) {
@@ -143,6 +154,7 @@ export default function AdminPengumumanPage() {
     };
     fetchAnnouncementsBackend();
   }, []);
+
 
 
 
