@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Calendar, Search, Megaphone, CheckCircle2 } from 'lucide-react';
+import { Calendar, Search, Megaphone, CheckCircle2, ChevronDown } from 'lucide-react';
+
 import { PageHero } from '@/components/public/PageHero';
 import { contentService } from '@/lib/services/content.service';
 
@@ -201,51 +202,38 @@ export default function PengumumanPublicPage() {
             />
           </div>
 
-          {/* Month Filter Selector */}
-          <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar">
-            <button
-              onClick={() => setSelectedMonth('SEMUA')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer whitespace-nowrap ${
-                selectedMonth === 'SEMUA'
-                  ? 'bg-emerald-600 text-white shadow-2xs'
-                  : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
-              }`}
+          {/* Clean Month Filter Select Dropdown */}
+          <div className="relative w-full sm:w-56">
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="w-full px-4 py-2 rounded-xl border border-emerald-200 bg-white text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 appearance-none cursor-pointer pr-9 shadow-2xs"
             >
-              Semua Bulan
-            </button>
-            {availableMonths.map((mStr) => (
-              <button
-                key={mStr}
-                onClick={() => setSelectedMonth(mStr)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer whitespace-nowrap ${
-                  selectedMonth === mStr
-                    ? 'bg-emerald-600 text-white shadow-2xs'
-                    : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
-                }`}
-              >
-                {mStr}
-              </button>
-            ))}
+              <option value="SEMUA">Semua Bulan</option>
+              {availableMonths.map((mStr) => (
+                <option key={mStr} value={mStr}>
+                  {mStr}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
           </div>
+
+
         </div>
 
         {/* Clean Unpinned Announcements List */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">
-              Pengumuman Aktif ({filteredList.length})
-            </h2>
-            <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-              ⚡ Ditampilkan Mulai H-3 Acara
-            </span>
-          </div>
+          <h2 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">
+            Pengumuman Aktif ({filteredList.length})
+          </h2>
 
           {filteredList.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-3xl border border-emerald-100 text-slate-400 font-medium shadow-2xs space-y-1">
+            <div className="text-center py-12 bg-white rounded-3xl border border-emerald-100 text-slate-400 font-medium shadow-2xs">
               <p className="text-xs font-extrabold text-slate-700">Belum ada pengumuman aktif saat ini.</p>
-              <p className="text-[11px] font-semibold text-slate-400">Pengumuman agenda &amp; hari libur akan otomatis tampil di sini pada H-3 pelaksanaan.</p>
             </div>
           ) : (
+
             <div className="divide-y divide-emerald-100 bg-white rounded-3xl border border-emerald-100 overflow-hidden shadow-2xs">
               {filteredList.map((a) => (
                 <div key={a.id} className="p-6 hover:bg-emerald-50/30 transition-colors">
