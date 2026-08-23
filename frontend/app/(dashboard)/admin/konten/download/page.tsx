@@ -88,8 +88,9 @@ export default function AdminDownloadPage() {
   const { user } = useAuth();
   const actorName = (user as any)?.teacher?.fullName || (user as any)?.email || 'Admin Utama';
 
-  const [downloads, setDownloads] = useState<DlFile[]>(INITIAL_DOWNLOADS);
+  const [downloads, setDownloads] = useState<DlFile[]>([]);
   const [categories, setCategories] = useState<string[]>(INITIAL_CATEGORIES);
+
 
   // Fetch live downloads from Express PostgreSQL API
   useEffect(() => {

@@ -1,51 +1,12 @@
 // @ts-nocheck
 import { Request, Response } from 'express';
 import prisma from '../utils/prisma';
-import { sendSuccess, sendCreated, sendError, sendNotFound, parsePagination, buildPaginationMeta } from '../utils/response';
+import { sendSuccess, sendCreated, sendError, parsePagination, buildPaginationMeta } from '../utils/response';
 import { AuthRequest } from '../types';
 
 export const listDownloads = async (req: Request, res: Response) => {
   try {
     const { page, limit, skip } = parsePagination(req.query);
-
-    // Auto-seed initial downloads if table is empty
-    const count = await prisma.download.count({ where: { isActive: true } });
-    if (count === 0) {
-      const initialSeed = [
-        {
-          title: 'Formulir Pendaftaran & Berkas Fisik PPDB T.A. 2026/2027',
-          description: 'Dokumen cetak formulir pendaftaran serta kelengkapan syarat berkas calon siswa baru.',
-          category: 'Formulir PPDB',
-          fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-          downloadCount: 340,
-        },
-        {
-          title: 'Buku Panduan Tata Tertib & Kode Etik Siswa SMP Darul Ulum',
-          description: 'Buku saku elektronik panduan disiplin, atribut seragam, dan aturan tata tertib siswa.',
-          category: 'Panduan & Buku',
-          fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-          downloadCount: 820,
-        },
-        {
-          title: 'Dokumen Kalender Pendidikan Resmi Kota Surabaya 2026/2027',
-          description: 'Kalender pendidikan resmi mengenai tanggal libur hari besar dan pekan efektif belajar.',
-          category: 'Akademik',
-          fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-          downloadCount: 1150,
-        },
-        {
-          title: 'Surat Pernyataan Bebas Narkoba & Kesediaan Tatap Muka',
-          description: 'Template surat pernyataan wali murid dan persetujuan tata tertib sekolah.',
-          category: 'Administrasi Siswa',
-          fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-          downloadCount: 290,
-        },
-      ];
-
-      for (const item of initialSeed) {
-        await prisma.download.create({ data: item });
-      }
-    }
 
     const [total, items] = await Promise.all([
       prisma.download.count({ where: { isActive: true } }),
