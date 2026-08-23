@@ -94,23 +94,34 @@ export default function PengumumanPublicPage() {
 
   useEffect(() => {
     const fetchPublicAnnouncements = async () => {
+      let deletedList: string[] = [];
+      try {
+        deletedList = JSON.parse(localStorage.getItem('smp_deleted_announcements') || '[]');
+      } catch (e) {}
+
       try {
         const res = await contentService.getAnnouncements();
-        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
-          const mapped: Ann[] = res.data.map((item: any) => ({
-            id: item.id,
-            title: item.title,
-            content: item.content,
-            isPinned: false,
-            targetRoles: Array.isArray(item.targetRole) ? item.targetRole : [item.targetRole || 'SEMUA'],
-            publishedAt: item.createdAt ? String(item.createdAt).split('T')[0] : '2026-08-01',
-            expiresAt: item.expiresAt ? String(item.expiresAt).split('T')[0] : null,
-          }));
+        if (res?.data && Array.isArray(res.data)) {
+          const mapped: Ann[] = res.data
+            .filter((item: any) => !deletedList.includes(item.title) && !deletedList.includes(item.id))
+            .map((item: any) => ({
+              id: item.id,
+              title: item.title,
+              content: item.content,
+              isPinned: false,
+              targetRoles: Array.isArray(item.targetRole) ? item.targetRole : [item.targetRole || 'SEMUA'],
+              publishedAt: item.createdAt ? String(item.createdAt).split('T')[0] : '2026-08-01',
+              expiresAt: item.expiresAt ? String(item.expiresAt).split('T')[0] : null,
+            }));
 
-          // Merge backend items with default Kaldik items, avoiding duplicates
+          // Merge backend items with default Kaldik items, avoiding duplicates or deleted items
           const combined = [...mapped];
           DEFAULT_ANNOUNCEMENTS.forEach((defItem) => {
-            if (!combined.some((x) => x.title === defItem.title || x.id === defItem.id)) {
+            if (
+              !deletedList.includes(defItem.title) &&
+              !deletedList.includes(defItem.id) &&
+              !combined.some((x) => x.title === defItem.title || x.id === defItem.id)
+            ) {
               combined.push(defItem);
             }
           });
@@ -122,6 +133,7 @@ export default function PengumumanPublicPage() {
     };
     fetchPublicAnnouncements();
   }, []);
+
 
   // Filter & Search & H-3 to H+1 Auto-Expiry Logic
   const filteredList = useMemo(() => {
