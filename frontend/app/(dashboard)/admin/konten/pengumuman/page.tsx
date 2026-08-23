@@ -22,94 +22,14 @@ interface AnnouncementItem {
 
 const ROLES_LIST = ['SEMUA', 'SISWA', 'GURU', 'ORANG_TUA', 'ADMIN'];
 
-const INITIAL_ANNOUNCEMENTS: AnnouncementItem[] = [
-  {
-    id: 'ann-kaldik-1',
-    title: '[Pengumuman Resmi] Libur Hari Besar: HUT Republik Indonesia ke-81',
-    content: 'Diberitahukan kepada seluruh siswa, guru, dan orang tua/wali murid SMP Darul Ulum Surabaya bahwa dalam rangka Peringatan Hari Ulang Tahun Kemerdekaan RI ke-81 pada 17 Agustus 2026, kegiatan pembelajaran diliburkan.',
-    isPinned: true,
-    targetRoles: ['SEMUA'],
-    publishedAt: '2026-08-10T08:00:00Z',
-    expiresAt: '2026-08-17',
-    isActive: true,
-    viewCount: 720,
-  },
-  {
-    id: 'ann-kaldik-2',
-    title: '[Pengumuman Resmi] Libur Hari Besar: Maulid Nabi Muhammad SAW',
-    content: 'Diberitahukan bahwa pada hari Selasa, 25 Agustus 2026, kegiatan belajar mengajar SMP Darul Ulum Surabaya diliburkan dalam rangka peringatan Maulid Nabi Muhammad SAW 1448 H.',
-    isPinned: true,
-    targetRoles: ['SEMUA'],
-    publishedAt: '2026-08-20T08:00:00Z',
-    expiresAt: '2026-08-25',
-    isActive: true,
-    viewCount: 540,
-  },
-  {
-    id: 'ann-1',
-    title: 'Jadwal Penilaian Tengah Semester (PTS) Ganjil T.A. 2026/2027',
-    content: 'Diberitahukan kepada seluruh siswa kelas 7, 8, dan 9 bahwa Penilaian Tengah Semester (PTS) Ganjil akan dilaksanakan mulai tanggal 5 s.d. 12 September 2026. Harap mempersiapkan diri dan melunasi kewajiban administrasi.',
-    isPinned: true,
-    targetRoles: ['SISWA', 'ORANG_TUA'],
-    publishedAt: '2026-08-20T08:00:00Z',
-    expiresAt: '2026-09-12',
-    isActive: true,
-    viewCount: 680,
-  },
-  {
-    id: 'ann-kaldik-3',
-    title: '[Pengumuman Resmi] Libur Semester 1 (Ganjil) T.A. 2026/2027',
-    content: 'Pelaksanaan Libur Semester 1 (Ganjil) bagi murid SMP Darul Ulum Surabaya berlangsung mulai tanggal 21 s.d. 31 Desember 2026. Masuk kembali semester genap pada bulan Januari 2027.',
-    isPinned: false,
-    targetRoles: ['SEMUA'],
-    publishedAt: '2026-12-15T08:00:00Z',
-    expiresAt: '2026-12-31',
-    isActive: true,
-    viewCount: 890,
-  },
-  {
-    id: 'ann-kaldik-4',
-    title: '[Pengumuman Resmi] Kegiatan Permulaan Puasa (KPP) Ramadhan 1448 H',
-    content: 'Kegiatan Permulaan Puasa (KPP) Ramadhan 1448 H bagi seluruh siswa-siswi SMP Darul Ulum dilaksanakan pada tanggal 8 s.d. 10 Februari 2027 di kampus & Masjid Darul Ulum.',
-    isPinned: false,
-    targetRoles: ['SEMUA'],
-    publishedAt: '2027-02-01T08:00:00Z',
-    expiresAt: '2027-02-10',
-    isActive: true,
-    viewCount: 430,
-  },
-  {
-    id: 'ann-kaldik-5',
-    title: '[Pengumuman Resmi] Libur Hari Raya Idul Fitri 1448 H',
-    content: 'Diberitahukan bahwa libur Hari Raya Idul Fitri 1448 H dan cuti bersama berlangsung pada tanggal 10 s.d. 11 Maret 2027.',
-    isPinned: true,
-    targetRoles: ['SEMUA'],
-    publishedAt: '2027-03-01T08:00:00Z',
-    expiresAt: '2027-03-11',
-    isActive: true,
-    viewCount: 950,
-  },
-  {
-    id: 'ann-2',
-    title: 'Informasi Verifikasi Berkas & Daftar Ulang Siswa Baru PPDB',
-    content: 'Wali murid calon siswa baru yang dinyatakan LULUS pada PPDB Gelombang 1 diwajibkan menyerahkan berkas fisik ke sekretariat PPDB paling lambat 28 Agustus 2026.',
-    isPinned: false,
-    targetRoles: ['ORANG_TUA'],
-    publishedAt: '2026-08-15T09:00:00Z',
-    expiresAt: '2026-08-28',
-    isActive: true,
-    viewCount: 410,
-  },
-];
-
-
 export default function AdminPengumumanPage() {
 
   const { addLog } = useActivityLogStore();
   const { user } = useAuth();
   const actorName = (user as any)?.teacher?.fullName || (user as any)?.email || 'Admin Utama';
 
-  const [announcements, setAnnouncements] = useState<AnnouncementItem[]>(INITIAL_ANNOUNCEMENTS);
+  const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
+
 
   // Fetch live backend announcements from Express PostgreSQL API
   useEffect(() => {

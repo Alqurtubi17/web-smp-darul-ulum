@@ -16,64 +16,8 @@ interface Ann {
   fileUrl?: string | null;
 }
 
-const DEFAULT_ANNOUNCEMENTS: Ann[] = [
-  {
-    id: 'ann-kaldik-1',
-    title: 'Pengumuman Libur Hari Besar: HUT Republik Indonesia ke-81',
-    content: 'Diberitahukan kepada seluruh siswa, guru, dan orang tua/wali murid SMP Darul Ulum Surabaya bahwa dalam rangka Peringatan Hari Ulang Tahun Kemerdekaan RI ke-81 pada 17 Agustus 2026, kegiatan pembelajaran diliburkan.',
-    isPinned: false,
-    targetRoles: ['SEMUA'],
-    publishedAt: '2026-08-10',
-    expiresAt: '2026-08-17',
-  },
-  {
-    id: 'ann-kaldik-2',
-    title: 'Pengumuman Libur Hari Besar: Maulid Nabi Muhammad SAW',
-    content: 'Diberitahukan bahwa pada hari Selasa, 25 Agustus 2026, kegiatan belajar mengajar SMP Darul Ulum Surabaya diliburkan dalam rangka peringatan Maulid Nabi Muhammad SAW 1448 H.',
-    isPinned: false,
-    targetRoles: ['SEMUA'],
-    publishedAt: '2026-08-20',
-    expiresAt: '2026-08-25',
-  },
-  {
-    id: 'ann-1',
-    title: 'Jadwal Penilaian Tengah Semester (PTS) Ganjil T.A. 2026/2027',
-    content: 'Diberitahukan kepada seluruh siswa kelas 7, 8, dan 9 bahwa Penilaian Tengah Semester (PTS) Ganjil akan dilaksanakan mulai tanggal 5 s.d. 12 September 2026. Harap mempersiapkan diri dan melunasi kewajiban administrasi.',
-    isPinned: false,
-    targetRoles: ['SISWA', 'ORANG_TUA'],
-    publishedAt: '2026-08-20',
-    expiresAt: '2026-09-12',
-  },
-  {
-    id: 'ann-kaldik-3',
-    title: 'Pengumuman Libur Semester 1 (Ganjil) T.A. 2026/2027',
-    content: 'Pelaksanaan Libur Semester 1 (Ganjil) bagi murid SMP Darul Ulum Surabaya berlangsung mulai tanggal 21 s.d. 31 Desember 2026. Masuk kembali semester genap pada bulan Januari 2027.',
-    isPinned: false,
-    targetRoles: ['SEMUA'],
-    publishedAt: '2026-12-15',
-    expiresAt: '2026-12-31',
-  },
-  {
-    id: 'ann-kaldik-4',
-    title: 'Kegiatan Permulaan Puasa (KPP) Ramadhan 1448 H',
-    content: 'Kegiatan Permulaan Puasa (KPP) Ramadhan 1448 H bagi seluruh siswa-siswi SMP Darul Ulum dilaksanakan pada tanggal 8 s.d. 10 Februari 2027 di kampus & Masjid Darul Ulum.',
-    isPinned: false,
-    targetRoles: ['SEMUA'],
-    publishedAt: '2027-02-01',
-    expiresAt: '2027-02-10',
-  },
-  {
-    id: 'ann-kaldik-5',
-    title: 'Pengumuman Libur Hari Raya Idul Fitri 1448 H',
-    content: 'Diberitahukan bahwa libur Hari Raya Idul Fitri 1448 H dan cuti bersama berlangsung pada tanggal 10 s.d. 11 Maret 2027.',
-    isPinned: false,
-    targetRoles: ['SEMUA'],
-    publishedAt: '2027-03-01',
-    expiresAt: '2027-03-11',
-  },
-];
-
 const MONTH_NAMES = [
+
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
 ];
@@ -87,7 +31,8 @@ function fmtDate(d: string) {
 }
 
 export default function PengumumanPublicPage() {
-  const [list, setList] = useState<Ann[]>(DEFAULT_ANNOUNCEMENTS);
+
+  const [list, setList] = useState<Ann[]>([]);
   const [search, setSearch] = useState('');
   const [selectedMonth, setSelectedMonth] = useState<string>('SEMUA');
   const [selectedYear, setSelectedYear] = useState<string>('SEMUA');
@@ -96,7 +41,7 @@ export default function PengumumanPublicPage() {
     const fetchPublicAnnouncements = async () => {
       try {
         const res = await contentService.getAnnouncements();
-        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+        if (res?.data && Array.isArray(res.data)) {
           const mapped: Ann[] = res.data.map((item: any) => ({
             id: item.id,
             title: item.title,
@@ -106,15 +51,7 @@ export default function PengumumanPublicPage() {
             publishedAt: item.createdAt ? String(item.createdAt).split('T')[0] : '2026-08-01',
             expiresAt: item.expiresAt ? String(item.expiresAt).split('T')[0] : null,
           }));
-
-          // Merge backend items with default Kaldik items, avoiding duplicates
-          const combined = [...mapped];
-          DEFAULT_ANNOUNCEMENTS.forEach((defItem) => {
-            if (!combined.some((x) => x.title === defItem.title || x.id === defItem.id)) {
-              combined.push(defItem);
-            }
-          });
-          setList(combined);
+          setList(mapped);
         }
       } catch (err) {
         console.warn('Backend public announcements load warning:', err);
@@ -122,6 +59,7 @@ export default function PengumumanPublicPage() {
     };
     fetchPublicAnnouncements();
   }, []);
+
 
   // Filter & Search & H+1 Auto-Expiry Logic
   const filteredList = useMemo(() => {
