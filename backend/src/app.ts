@@ -11,6 +11,7 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import authRoutes from './routes/auth.routes';
 import newsRoutes from './routes/news.routes';
 import admissionRoutes from './routes/admission.routes';
+import downloadRoutes from './routes/download.route';
 import {
   announcementRouter, eventRouter, galleryRouter,
   gradeRouter, attendanceRouter,
@@ -22,6 +23,7 @@ import {
 const app = express();
 const PORT = process.env.PORT || 5000;
 const API = process.env.API_PREFIX || '/api/v1';
+
 
 // ─── MIDDLEWARE ───────────────────────────────────────────────────────────────
 app.use(helmet());
@@ -63,7 +65,9 @@ app.get('/health', (_req, res) => {
 app.use(`${API}/auth`, authRoutes);
 app.use(`${API}/news`, newsRoutes);
 app.use(`${API}/admissions`, admissionRoutes);
+app.use(`${API}/downloads`, downloadRoutes);
 app.use(`${API}/announcements`, announcementRouter);
+
 app.use(`${API}/events`, eventRouter);
 app.use(`${API}/gallery`, galleryRouter);
 app.use(`${API}/grades`, gradeRouter);

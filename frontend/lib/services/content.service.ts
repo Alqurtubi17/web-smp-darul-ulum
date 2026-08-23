@@ -68,4 +68,19 @@ export const contentService = {
     const { data } = await apiClient.delete(`/gallery/${id}`);
     return data;
   },
+
+  // ── UNDUHAN (DOWNLOADS) ──────────────────────────────────────────────────────
+  async getDownloads() {
+    const { data } = await apiClient.get('/downloads');
+    return data;
+  },
+  async createDownload(payload: any) {
+    const { data } = await apiClient.post('/downloads', payload);
+    return data;
+  },
+  async deleteDownload(id: string, params?: any) {
+    const { data } = await apiClient.delete(`/downloads/${id}`, { params });
+    return data;
+  },
 };
+

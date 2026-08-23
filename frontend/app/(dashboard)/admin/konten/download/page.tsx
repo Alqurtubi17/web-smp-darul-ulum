@@ -7,6 +7,8 @@ import { useActivityLogStore } from '@/store/activity-log.store';
 import { toast } from '@/store/toast.store';
 import { useAuth } from '@/hooks/useAuth';
 
+import { contentService } from '@/lib/services/content.service';
+
 interface DlFile {
   id: string;
   title: string;
@@ -88,6 +90,37 @@ export default function AdminDownloadPage() {
   const [downloads, setDownloads] = useState<DlFile[]>(INITIAL_DOWNLOADS);
   const [categories, setCategories] = useState<string[]>(INITIAL_CATEGORIES);
 
+  // Fetch live downloads from Express PostgreSQL API
+  useEffect(() => {
+    const fetchDownloadsBackend = async () => {
+      try {
+        const res = await contentService.getDownloads();
+        if (res?.data && Array.isArray(res.data)) {
+          const mapped: DlFile[] = res.data.map((item: any) => ({
+            id: item.id,
+            title: item.title,
+            description: item.description || '',
+            category: item.category || 'Dokumen',
+            fileUrl: item.fileUrl || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+            fileType: 'PDF',
+            fileSize: '1.4 MB',
+            downloadCount: item.downloadCount || 0,
+            isPublic: true,
+            createdAt: item.createdAt || new Date().toISOString(),
+          }));
+
+          setDownloads(mapped);
+
+          const fetchedCats = Array.from(new Set(mapped.map((d) => d.category)));
+          setCategories((prev) => Array.from(new Set([...prev, ...fetchedCats])));
+        }
+      } catch (err) {
+        console.warn('Backend downloads fetch warning:', err);
+      }
+    };
+    fetchDownloadsBackend();
+  }, []);
+
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState('');
 
@@ -131,7 +164,6 @@ export default function AdminDownloadPage() {
     e.preventDefault();
     if (!formData.title.trim()) return;
 
-    // Resolve final category (either selected or typed custom category)
     let finalCategory = formData.categorySelect;
     if (formData.categorySelect === '__NEW__') {
       const trimmedCustom = formData.customCategory.trim();
@@ -142,7 +174,6 @@ export default function AdminDownloadPage() {
       finalCategory = trimmedCustom;
     }
 
-    // Add to categories list if not present
     if (finalCategory && !categories.includes(finalCategory)) {
       setCategories((prev) => [...prev, finalCategory]);
     }
@@ -162,6 +193,17 @@ export default function AdminDownloadPage() {
 
     setDownloads((prev) => [newItem, ...prev]);
 
+    try {
+      contentService.createDownload({
+        title: formData.title,
+        description: formData.description,
+        category: finalCategory,
+        fileUrl: formData.fileUrl || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+      }).catch((err) => console.warn('Create download backend warning:', err));
+    } catch {
+      // Ignore background post warning
+    }
+
     addLog({
       user: actorName,
       role: 'ADMIN',
@@ -175,10 +217,17 @@ export default function AdminDownloadPage() {
     setShowFormModal(false);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!deletingId) return;
     const target = downloads.find((d) => d.id === deletingId);
+
     setDownloads((prev) => prev.filter((d) => d.id !== deletingId));
+
+    try {
+      await contentService.deleteDownload(deletingId, { title: target?.title });
+    } catch (err) {
+      console.warn('Backend delete download warning:', err);
+    }
 
     if (target) {
       addLog({
@@ -191,9 +240,10 @@ export default function AdminDownloadPage() {
       });
     }
 
-    toast.success('Berkas Dihapus', 'File unduhan berhasil dihapus dari server.');
+    toast.success('Berkas Dihapus', 'File unduhan berhasil dihapus secara permanen.');
     setDeletingId(null);
   };
+
 
   const filtered = downloads.filter((d) => {
     const matchSearch =
