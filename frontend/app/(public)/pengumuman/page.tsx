@@ -124,22 +124,38 @@ export default function PengumumanPublicPage() {
   }, []);
 
 
-  // Filter & Search Logic
+  const todayStr = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  }, []);
+
+  // Filter & Search & Auto-hide Expired Announcements
   const filteredList = useMemo(() => {
     return list.filter((item) => {
+      // 1. Auto-hide if date has passed
+      if (item.expiresAt) {
+        const expDate = new Date(item.expiresAt);
+        expDate.setHours(23, 59, 59, 999);
+        if (expDate < todayStr) return false; // Date passed -> auto remove
+      }
+
+      // 2. Search match
       const matchSearch =
         item.title.toLowerCase().includes(search.toLowerCase()) ||
         item.content.toLowerCase().includes(search.toLowerCase());
 
       if (!matchSearch) return false;
 
+      // 3. Month Filter match
       if (selectedMonth === 'SEMUA') return true;
 
       const dateObj = new Date(item.publishedAt);
       const mYear = `${MONTH_NAMES[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
       return mYear === selectedMonth;
     });
-  }, [list, search, selectedMonth]);
+  }, [list, search, selectedMonth, todayStr]);
+
 
   // Extract unique available months for filter tabs
   const availableMonths = useMemo(() => {

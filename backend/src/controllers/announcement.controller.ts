@@ -8,10 +8,18 @@ import { AuthRequest } from '../types';
 export const listAnnouncements = async (req: Request, res: Response) => {
   try {
     const { page, limit, skip } = parsePagination(req.query);
+    const isPublic = req.query.isPublic === 'true';
+    const now = new Date();
+
+    const whereCondition: any = { isActive: true };
+    if (isPublic) {
+      whereCondition.OR = [{ expiresAt: null }, { expiresAt: { gte: now } }];
+    }
+
     const [total, items] = await Promise.all([
-      prisma.announcement.count({ where: { isActive: true } }),
+      prisma.announcement.count({ where: whereCondition }),
       prisma.announcement.findMany({
-        where: { isActive: true },
+        where: whereCondition,
         orderBy: [{ isPinned: 'desc' }, { createdAt: 'desc' }],
         skip, take: limit,
       }),
@@ -19,6 +27,7 @@ export const listAnnouncements = async (req: Request, res: Response) => {
     sendSuccess(res, items, 'Pengumuman berhasil diambil', 200, buildPaginationMeta(total, page, limit));
   } catch { sendError(res, 'Gagal mengambil pengumuman'); }
 };
+
 
 
 export const getAnnouncementById = async (req: Request, res: Response) => {
