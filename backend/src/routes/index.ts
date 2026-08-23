@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { Router } from 'express';
-import { authenticate, isAdmin, isGuru } from '../middleware/auth';
+import { authenticate, optionalAuth, isAdmin, isGuru } from '../middleware/auth';
+
 import * as announcementCtrl from '../controllers/announcement.controller';
 import * as eventCtrl from '../controllers/event.controller';
 import * as galleryCtrl from '../controllers/gallery.controller';
