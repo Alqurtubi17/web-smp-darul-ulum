@@ -317,3 +317,41 @@ export const clearAuditLogs = async (req: AuthRequest, res: Response): Promise<v
   } catch { sendError(res, 'Gagal mengosongkan audit log'); }
 };
 
+// ─── SITE SETTINGS / ACADEMIC YEAR ──────────────────────────────────────────
+export const getSettings = async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const settings = await prisma.siteSetting.findMany();
+    const result: Record<string, string> = {};
+    settings.forEach((s) => {
+      result[s.key] = s.value;
+    });
+
+    if (!result.active_academic_year) result.active_academic_year = '2024/2025';
+    if (!result.active_academic_semester) result.active_academic_semester = 'Ganjil';
+
+    sendSuccess(res, result, 'Pengaturan berhasil diambil');
+  } catch {
+    sendError(res, 'Gagal mengambil pengaturan');
+  }
+};
+
+export const updateSettings = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const dataObj = req.body;
+    if (dataObj && typeof dataObj === 'object') {
+      const keys = Object.keys(dataObj);
+      for (const k of keys) {
+        await prisma.siteSetting.upsert({
+          where: { key: k },
+          update: { value: String(dataObj[k]) },
+          create: { key: k, value: String(dataObj[k]), group: 'general' },
+        });
+      }
+    }
+    sendSuccess(res, null, 'Pengaturan berhasil disimpan');
+  } catch {
+    sendError(res, 'Gagal menyimpan pengaturan');
+  }
+};
+
+

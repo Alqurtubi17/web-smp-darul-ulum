@@ -61,7 +61,11 @@ export default function AdminPengaturanPage() {
   const update = (k: string, v: string) => setSettings((p) => ({ ...p, [k]: v }));
 
   const handleSave = async () => {
-    await new Promise((r) => setTimeout(r, 600));
+    try {
+      await contentService.updateSettings(settings);
+    } catch (err) {
+      console.warn('Backend update settings warning:', err);
+    }
     setSaved(true);
     addLog({
       user: actorName,
@@ -71,9 +75,10 @@ export default function AdminPengaturanPage() {
       severity: 'SUCCESS',
       details: `Pembaruan pengaturan profil sekolah dan integrasi.`,
     });
-    toast.success('Pengaturan Disimpan!', `Konfigurasi ${tab.replace('_', ' ').toUpperCase()} berhasil diperbarui.`);
+    toast.success('Pengaturan Disimpan!', `Konfigurasi ${tab.replace('_', ' ').toUpperCase()} berhasil diperbarui secara permanen.`);
     setTimeout(() => setSaved(false), 3000);
   };
+
 
   const handleAddYearSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -82,5 +82,16 @@ export const contentService = {
     const { data } = await apiClient.delete(`/downloads/${id}`, { params });
     return data;
   },
+
+  // ── PENGATURAN (SETTINGS) ──────────────────────────────────────────────────
+  async getSettings() {
+    const { data } = await apiClient.get('/settings');
+    return data;
+  },
+  async updateSettings(payload: any) {
+    const { data } = await apiClient.post('/settings', payload);
+    return data;
+  },
 };
+
 

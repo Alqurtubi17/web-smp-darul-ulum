@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { contentService } from '@/lib/services/content.service';
 
 export interface AcademicYearItem {
   id: string;
@@ -14,13 +15,14 @@ interface AcademicYearState {
   activeYear: string;
   activeSemester: 'Ganjil' | 'Genap';
   academicYears: AcademicYearItem[];
+  isLoaded: boolean;
 
   setActiveYear: (year: string, semester?: 'Ganjil' | 'Genap') => void;
   setActiveSemester: (semester: 'Ganjil' | 'Genap') => void;
   addAcademicYear: (year: string, semester: 'Ganjil' | 'Genap') => void;
   deleteAcademicYear: (id: string) => void;
   toggleYearStatus: (id: string) => void;
-  initAcademicYear: () => void;
+  initAcademicYear: () => Promise<void>;
 }
 
 const DEFAULT_YEARS: AcademicYearItem[] = [
@@ -34,9 +36,40 @@ export const useAcademicYearStore = create<AcademicYearState>((set, get) => ({
   activeYear: '2024/2025',
   activeSemester: 'Ganjil',
   academicYears: DEFAULT_YEARS,
+  isLoaded: false,
 
-  initAcademicYear: () => {
-    // Memory state only - Zero localStorage
+  initAcademicYear: async () => {
+    try {
+      const res = await contentService.getSettings();
+      if (res?.data) {
+        const backendYear = res.data.active_academic_year;
+        const backendSemester = res.data.active_academic_semester as 'Ganjil' | 'Genap';
+        let parsedYears = get().academicYears;
+
+        if (res.data.academic_years_json) {
+          try {
+            parsedYears = JSON.parse(res.data.academic_years_json);
+          } catch {
+            // fallback
+          }
+        }
+
+        const updatedYears = parsedYears.map((item) => ({
+          ...item,
+          isActive: item.year === backendYear && item.semester === backendSemester,
+          status: item.year === backendYear && item.semester === backendSemester ? ('Aktif' as const) : item.status,
+        }));
+
+        set({
+          activeYear: backendYear || get().activeYear,
+          activeSemester: backendSemester || get().activeSemester,
+          academicYears: updatedYears,
+          isLoaded: true,
+        });
+      }
+    } catch (err) {
+      console.warn('Academic year init backend warning:', err);
+    }
   },
 
   setActiveYear: (year: string, semester?: 'Ganjil' | 'Genap') => {
@@ -48,6 +81,13 @@ export const useAcademicYearStore = create<AcademicYearState>((set, get) => ({
     }));
 
     set({ activeYear: year, activeSemester: sem, academicYears: updatedList });
+
+    // Persist to PostgreSQL via Express API
+    contentService.updateSettings({
+      active_academic_year: year,
+      active_academic_semester: sem,
+      academic_years_json: JSON.stringify(updatedList),
+    }).catch((err) => console.warn('Save academic year warning:', err));
   },
 
   setActiveSemester: (semester: 'Ganjil' | 'Genap') => {
@@ -64,6 +104,10 @@ export const useAcademicYearStore = create<AcademicYearState>((set, get) => ({
     };
     const updated = [newItem, ...get().academicYears];
     set({ academicYears: updated });
+
+    contentService.updateSettings({
+      academic_years_json: JSON.stringify(updated),
+    }).catch((err) => console.warn('Save academic years list warning:', err));
   },
 
   deleteAcademicYear: (id: string) => {
@@ -72,11 +116,13 @@ export const useAcademicYearStore = create<AcademicYearState>((set, get) => ({
 
     const updated = get().academicYears.filter((y) => y.id !== id);
 
-    // If target was active and there are remaining years, pick the first
     if (target.year === get().activeYear && target.semester === get().activeSemester && updated.length > 0) {
       get().setActiveYear(updated[0].year, updated[0].semester);
     } else {
       set({ academicYears: updated });
+      contentService.updateSettings({
+        academic_years_json: JSON.stringify(updated),
+      }).catch((err) => console.warn('Save academic years delete warning:', err));
     }
   },
 
