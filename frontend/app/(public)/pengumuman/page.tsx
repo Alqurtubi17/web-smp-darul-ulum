@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Calendar, Search, ChevronDown, Pin } from 'lucide-react';
-
+import { Search, ChevronDown } from 'lucide-react';
 import { PageHero } from '@/components/public/PageHero';
+
 import { contentService } from '@/lib/services/content.service';
 
 interface Ann {
@@ -263,28 +263,14 @@ export default function PengumumanPublicPage() {
           ) : (
             <div className="divide-y divide-emerald-100 bg-white rounded-3xl border border-emerald-100 overflow-hidden shadow-2xs">
               {filteredList.map((a) => (
-                <div key={a.id} className={`p-6 transition-colors ${a.isPinned ? 'bg-amber-50/40 hover:bg-amber-50/70 border-l-4 border-l-amber-500' : 'hover:bg-emerald-50/30'}`}>
+                <div key={a.id} className="p-6 hover:bg-emerald-50/30 transition-colors">
                   <div className="space-y-2">
-                    <div className="flex flex-wrap items-center gap-2">
-                      {a.isPinned && (
-                        <div className="inline-flex items-center gap-1 text-[11px] font-extrabold text-amber-800 bg-amber-100/80 px-2.5 py-0.5 rounded-lg border border-amber-300">
-                          <Pin className="w-3.5 h-3.5 text-amber-600 fill-amber-500" />
-                          <span>Disematkan di Atas</span>
-                        </div>
-                      )}
-                      {a.expiresAt && (
-                        <div className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-lg border border-emerald-200">
-                          <Calendar className="w-3.5 h-3.5 text-emerald-600" />
-                          <span>Pelaksanaan / Libur: {fmtDate(a.expiresAt)}</span>
-                        </div>
-                      )}
-                    </div>
                     <h3 className="font-extrabold text-slate-900 text-base leading-snug">{a.title}</h3>
                     <p className="text-xs text-slate-600 leading-relaxed font-medium whitespace-pre-line">{a.content}</p>
                   </div>
                 </div>
-
               ))}
+
             </div>
           )}
         </div>
