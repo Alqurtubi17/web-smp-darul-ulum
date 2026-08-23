@@ -187,8 +187,9 @@ export default function KontakPage() {
                 </span>
                 <a href="https://maps.google.com/maps?q=-7.256,112.6649&hl=id" target="_blank" rel="noopener noreferrer"
                   className="text-xs font-bold text-emerald-700 hover:underline">
-                  Buka di Google Maps →
+                  Buka di Google Maps
                 </a>
+
               </div>
               <div className="h-60 rounded-2xl overflow-hidden border border-emerald-100">
                 <iframe

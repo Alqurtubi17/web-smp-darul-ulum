@@ -35,7 +35,7 @@ function ResetForm() {
   if (!token) return (
     <div className="text-center">
       <p className="text-red-600 mb-4">Token tidak valid.</p>
-      <Link href="/auth/forgot-password" className="text-green-600 hover:underline text-sm">Minta link baru →</Link>
+      <Link href="/auth/forgot-password" className="text-green-600 hover:underline text-sm">Minta link baru</Link>
     </div>
   );
 
@@ -46,7 +46,8 @@ function ResetForm() {
       </div>
       <h2 className="text-lg font-bold text-gray-900 mb-2">Password Berhasil Diubah!</h2>
       <p className="text-sm text-gray-500 mb-4">Anda akan diarahkan ke halaman login...</p>
-      <Link href="/auth/login" className="text-green-600 hover:underline text-sm">Login sekarang →</Link>
+      <Link href="/auth/login" className="text-green-600 hover:underline text-sm">Login sekarang</Link>
+
     </div>
   );
 

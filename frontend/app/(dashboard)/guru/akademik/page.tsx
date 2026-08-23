@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { Trophy, ClipboardList, FileText, BookOpen, ArrowRight } from 'lucide-react';
+import { Trophy, ClipboardList, FileText, BookOpen } from 'lucide-react';
+
 
 export default function GuruAkademikOverviewPage() {
   const academicModules = [
@@ -37,8 +38,8 @@ export default function GuruAkademikOverviewPage() {
 
               <div className="pt-2 border-t border-emerald-50 flex items-center justify-between text-xs font-bold text-emerald-700">
                 <span>Buka Modul</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
+
             </Link>
           );
         })}

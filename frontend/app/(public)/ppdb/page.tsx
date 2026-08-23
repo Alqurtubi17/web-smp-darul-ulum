@@ -206,7 +206,7 @@ export default function PPDBPage() {
                 </div>
                 <button onClick={() => setActiveTab('cek')}
                   className="px-6 py-3 rounded-xl bg-emerald-600 text-white font-bold text-sm hover:bg-emerald-700 transition-all">
-                  Cek Status Pendaftaran →
+                  Cek Status Pendaftaran
                 </button>
               </div>
             ) : (
@@ -347,7 +347,7 @@ export default function PPDBPage() {
                   {step < 4 ? (
                     <button onClick={handleNextStep}
                       className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm transition-colors">
-                      Lanjut →
+                      Lanjut
                     </button>
                   ) : (
                     <button onClick={handleSubmit} disabled={submitMutation.isPending}
@@ -358,6 +358,7 @@ export default function PPDBPage() {
                 </div>
               </div>
             )}
+
           </div>
         )}
 

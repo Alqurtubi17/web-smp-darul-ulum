@@ -204,7 +204,8 @@ export default function GuruElearningPage() {
               <div className="flex items-center gap-2 flex-shrink-0">
                 <button onClick={() => togglePublish(mod.id)}
                   className={`text-xs px-3.5 py-1.5 rounded-xl font-bold transition-all shadow-2xs ${mod.isPublished ? 'bg-emerald-100 text-emerald-900 hover:bg-rose-100 hover:text-rose-700' : 'bg-slate-100 text-slate-700 hover:bg-emerald-100 hover:text-emerald-900'}`}>
-                  {mod.isPublished ? '✓ Publik' : '→ Publish'}
+                  {mod.isPublished ? '✓ Publik' : 'Publish'}
+
                 </button>
                 <button className="p-2 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-colors"><Edit2 className="w-4 h-4"/></button>
                 <button onClick={() => deleteModule(mod.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"><Trash2 className="w-4 h-4"/></button>

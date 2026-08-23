@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Trophy, CalendarDays, ClipboardList, BookOpen, QrCode, ArrowRight, Gamepad2, Sparkles, CheckCircle2, Clock, Zap, Play, Flame, Award, ChevronRight, X, RotateCcw, Volume2 } from 'lucide-react';
+import { Trophy, CalendarDays, ClipboardList, BookOpen, QrCode, Gamepad2, Sparkles, CheckCircle2, Clock, Zap, Play, Flame, Award, ChevronRight, X, RotateCcw, Volume2 } from 'lucide-react';
+
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDate, DAY_NAMES } from '@/lib/utils';
@@ -205,7 +206,7 @@ export default function SiswaDashboard() {
                       onClick={handleNextQuestion}
                       className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-2xs transition-all"
                     >
-                      {currentQIndex + 1 < QUICK_QUIZ.length ? 'Lanjut ke Soal Berikutnya →' : 'Lihat Hasil Kuis ✨'}
+                      {currentQIndex + 1 < QUICK_QUIZ.length ? 'Lanjut ke Soal Berikutnya' : 'Lihat Hasil Kuis ✨'}
                     </button>
                   </div>
                 )}
@@ -242,7 +243,7 @@ export default function SiswaDashboard() {
             <h2 className="font-extrabold text-slate-900 text-base">Progress RuangBelajar Mata Pelajaran</h2>
           </div>
           <Link href="/siswa/materi" className="text-xs font-extrabold text-emerald-700 hover:underline">
-            Semua Materi →
+            Semua Materi
           </Link>
         </div>
 
@@ -331,7 +332,7 @@ export default function SiswaDashboard() {
                 <h2 className="font-extrabold text-slate-900 text-sm">Jadwal Pelajaran — {dayName}</h2>
               </div>
               <Link href="/siswa/jadwal" className="text-xs font-extrabold text-emerald-700 hover:underline flex items-center gap-1">
-                Lihat Semua <ArrowRight className="w-3.5 h-3.5" />
+                Lihat Semua
               </Link>
             </div>
 
@@ -362,11 +363,12 @@ export default function SiswaDashboard() {
           <div className="p-4 border-t border-emerald-50 flex items-center justify-between text-xs font-semibold text-slate-500">
             <span>Apel Pagi Pukul 06.30 WIB</span>
             <Link href="/siswa/jadwal" className="text-emerald-700 font-extrabold hover:underline">
-              Jadwal Lengkap →
+              Jadwal Lengkap
             </Link>
           </div>
         </div>
       </div>
+
     </div>
   );
 }

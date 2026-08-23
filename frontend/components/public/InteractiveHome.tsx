@@ -5,7 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import {
   GraduationCap, Users, Award, BookOpen, Calendar,
-  ArrowRight, ChevronRight, ShieldCheck, Monitor, FlaskConical,
+  ChevronRight, ShieldCheck, Monitor, FlaskConical,
+
   Building2, Sparkles, HeartHandshake, Compass, Quote, ChevronLeft,
   CheckCircle2, Clock, MapPin, ChevronDown
 } from 'lucide-react';
@@ -184,8 +185,8 @@ export function InteractiveHome() {
                   className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs sm:text-sm transition-all shadow-xs hover:shadow-md hover:-translate-y-0.5"
                 >
                   Pendaftaran PPDB Online
-                  <ArrowRight className="w-4 h-4" />
                 </Link>
+
                 <Link
                   href="/profil"
                   className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl border border-emerald-300 bg-white hover:bg-emerald-50 text-emerald-950 font-black text-xs sm:text-sm transition-all shadow-2xs"

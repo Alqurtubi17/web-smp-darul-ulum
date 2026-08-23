@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { Users, GraduationCap, ArrowRight } from 'lucide-react';
+import { Users, GraduationCap } from 'lucide-react';
+
 
 export default function AdminPenggunaOverviewPage() {
   const userModules = [
@@ -40,8 +41,8 @@ export default function AdminPenggunaOverviewPage() {
 
               <div className="pt-4 border-t border-emerald-50 flex items-center justify-between text-xs font-extrabold text-emerald-700">
                 <span>Kelola Data {item.title}</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
+
             </Link>
           );
         })}

@@ -169,9 +169,10 @@ export default function OrtuDashboard() {
           </div>
           <div className="p-3 border-t border-slate-100 bg-slate-50/30 text-center">
             <Link href="/ortu/nilai" className="text-xs text-emerald-700 hover:text-emerald-800 font-bold hover:underline">
-              Lihat Seluruh Rapor Digital Siswa →
+              Lihat Seluruh Rapor Digital Siswa
             </Link>
           </div>
+
         </div>
 
         {/* Riwayat SPP */}

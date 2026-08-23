@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { Newspaper, Megaphone, CalendarDays, Image as ImageIcon, Trophy, Download, ArrowRight } from 'lucide-react';
+import { Newspaper, Megaphone, CalendarDays, Image as ImageIcon, Trophy, Download } from 'lucide-react';
+
 
 export default function AdminKontenOverviewPage() {
   const contentModules = [
@@ -39,8 +40,8 @@ export default function AdminKontenOverviewPage() {
 
               <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-emerald-700">
                 <span>Buka Modul</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
+
             </Link>
           );
         })}

@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Calendar, Eye, Tag, ArrowRight } from 'lucide-react';
+import { Calendar, Eye, Tag } from 'lucide-react';
+
 
 export const metadata: Metadata = { title: 'Berita', description: 'Berita dan informasi terbaru dari SMP Darul Ulum Surabaya.' };
 
@@ -131,7 +132,8 @@ export default async function BeritaPage({ searchParams }: { searchParams: Promi
                     </div>
                     <div className="flex items-center justify-between pt-3 border-t border-slate-100">
                       <span className="text-xs text-slate-400 flex items-center gap-1 font-medium"><Calendar className="w-3 h-3 text-emerald-600"/>{formatDate(item.publishedAt)}</span>
-                      <span className="text-xs text-emerald-700 flex items-center gap-1 group-hover:gap-2 transition-all font-bold">Baca <ArrowRight className="w-3 h-3"/></span>
+                      <span className="text-xs text-emerald-700 font-bold">Baca Selengkapnya</span>
+
                     </div>
                   </div>
                 </Link>

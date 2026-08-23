@@ -4,7 +4,8 @@ import { useEffect, useState, useRef } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Sidebar } from '@/components/dashboard/Sidebar';
-import { Search, Menu, LogOut, X, ArrowRight, PanelLeftClose, Calendar, ChevronDown } from 'lucide-react';
+import { Search, Menu, LogOut, X, PanelLeftClose, Calendar, ChevronDown } from 'lucide-react';
+
 import { Skeleton } from '@/components/ui/Skeleton';
 import { ToastContainer } from '@/components/ui/ToastContainer';
 import { useAuth } from '@/hooks/useAuth';
@@ -244,7 +245,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             {item.category}
                           </span>
                         </div>
-                        <ArrowRight className="w-4 h-4 text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+
                       </button>
                     ))
                   ) : (
