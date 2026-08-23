@@ -106,7 +106,15 @@ export default function PengumumanPublicPage() {
             publishedAt: item.createdAt ? String(item.createdAt).split('T')[0] : '2026-08-01',
             expiresAt: item.expiresAt ? String(item.expiresAt).split('T')[0] : null,
           }));
-          setList(mapped);
+
+          // Merge backend items with default Kaldik items, avoiding duplicates
+          const combined = [...mapped];
+          DEFAULT_ANNOUNCEMENTS.forEach((defItem) => {
+            if (!combined.some((x) => x.title === defItem.title || x.id === defItem.id)) {
+              combined.push(defItem);
+            }
+          });
+          setList(combined);
         }
       } catch (err) {
         console.warn('Backend public announcements load warning:', err);
@@ -114,6 +122,7 @@ export default function PengumumanPublicPage() {
     };
     fetchPublicAnnouncements();
   }, []);
+
 
   // Filter & Search Logic
   const filteredList = useMemo(() => {

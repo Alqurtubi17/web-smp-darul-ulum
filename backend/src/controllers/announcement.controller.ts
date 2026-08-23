@@ -8,18 +8,18 @@ import { AuthRequest } from '../types';
 export const listAnnouncements = async (req: Request, res: Response) => {
   try {
     const { page, limit, skip } = parsePagination(req.query);
-    const now = new Date();
     const [total, items] = await Promise.all([
-      prisma.announcement.count({ where: { isActive: true, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] } }),
+      prisma.announcement.count({ where: { isActive: true } }),
       prisma.announcement.findMany({
-        where: { isActive: true, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
-        orderBy: [{ isPinned: 'desc' }, { publishedAt: 'desc' }],
+        where: { isActive: true },
+        orderBy: [{ isPinned: 'desc' }, { createdAt: 'desc' }],
         skip, take: limit,
       }),
     ]);
     sendSuccess(res, items, 'Pengumuman berhasil diambil', 200, buildPaginationMeta(total, page, limit));
   } catch { sendError(res, 'Gagal mengambil pengumuman'); }
 };
+
 
 export const getAnnouncementById = async (req: Request, res: Response) => {
   try {
