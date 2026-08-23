@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Plus, Trash2, Download, FileText, X, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+import { Plus, Trash2, Download, FileText, X, Search, ChevronLeft, ChevronRight, Tag } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { useActivityLogStore } from '@/store/activity-log.store';
 import { toast } from '@/store/toast.store';
@@ -20,7 +20,14 @@ interface DlFile {
   createdAt: string;
 }
 
-const CATEGORIES = ['Formulir PPDB', 'Administrasi Siswa', 'Panduan & Buku', 'Keuangan', 'Akademik', 'Lainnya'];
+const INITIAL_CATEGORIES = [
+  'Formulir PPDB',
+  'Administrasi Siswa',
+  'Panduan & Buku',
+  'Keuangan',
+  'Akademik',
+  'Lainnya',
+];
 
 const INITIAL_DOWNLOADS: DlFile[] = [
   {
@@ -79,7 +86,7 @@ export default function AdminDownloadPage() {
   const actorName = (user as any)?.teacher?.fullName || (user as any)?.email || 'Admin Utama';
 
   const [downloads, setDownloads] = useState<DlFile[]>(INITIAL_DOWNLOADS);
-
+  const [categories, setCategories] = useState<string[]>(INITIAL_CATEGORIES);
 
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState('');
@@ -96,7 +103,8 @@ export default function AdminDownloadPage() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    category: 'Formulir PPDB',
+    categorySelect: 'Formulir PPDB',
+    customCategory: '',
     fileUrl: '',
     fileType: 'PDF',
     fileSize: '1.2 MB',
@@ -109,7 +117,8 @@ export default function AdminDownloadPage() {
     setFormData({
       title: '',
       description: '',
-      category: 'Formulir PPDB',
+      categorySelect: categories[0] || 'Formulir PPDB',
+      customCategory: '',
       fileUrl: '',
       fileType: 'PDF',
       fileSize: '1.2 MB',
@@ -122,11 +131,27 @@ export default function AdminDownloadPage() {
     e.preventDefault();
     if (!formData.title.trim()) return;
 
+    // Resolve final category (either selected or typed custom category)
+    let finalCategory = formData.categorySelect;
+    if (formData.categorySelect === '__NEW__') {
+      const trimmedCustom = formData.customCategory.trim();
+      if (!trimmedCustom) {
+        toast.error('Kategori Kosong', 'Harap isi nama kategori baru.');
+        return;
+      }
+      finalCategory = trimmedCustom;
+    }
+
+    // Add to categories list if not present
+    if (finalCategory && !categories.includes(finalCategory)) {
+      setCategories((prev) => [...prev, finalCategory]);
+    }
+
     const newItem: DlFile = {
       id: `doc-${Date.now()}`,
       title: formData.title,
       description: formData.description,
-      category: formData.category,
+      category: finalCategory,
       fileUrl: formData.fileUrl || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
       fileType: formData.fileType,
       fileSize: formData.fileSize,
@@ -143,7 +168,7 @@ export default function AdminDownloadPage() {
       action: `Mengunggah Berkas Unduhan Baru "${formData.title}"`,
       module: 'Pengguna',
       severity: 'SUCCESS',
-      details: `Kategori: ${formData.category}, Tipe: ${formData.fileType}`,
+      details: `Kategori: ${finalCategory}, Tipe: ${formData.fileType}`,
     });
 
     toast.success('Berkas Ditambahkan', `File unduhan "${formData.title}" berhasil diunggah.`);
@@ -186,10 +211,9 @@ export default function AdminDownloadPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
             Pusat Berkas &amp; Dokumen Unduhan
           </h1>
-
           <p className="text-xs text-slate-500 font-medium mt-1">
             Kelola berkas publikasi, formulir PPDB, buku panduan, dan surat edaran sekolah.
           </p>
@@ -227,10 +251,10 @@ export default function AdminDownloadPage() {
               setCatFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 bg-white focus:outline-none cursor-pointer"
+            className="px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 bg-white focus:outline-none cursor-pointer shadow-2xs"
           >
             <option value="">Semua Kategori Dokumen</option>
-            {CATEGORIES.map((c) => (
+            {categories.map((c) => (
               <option key={c} value={c}>
                 {c}
               </option>
@@ -269,7 +293,8 @@ export default function AdminDownloadPage() {
                       </div>
                     </td>
                     <td className="px-5 py-4">
-                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-extrabold">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/80 text-[10px] font-extrabold whitespace-nowrap shadow-2xs">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                         {item.category}
                       </span>
                     </td>
@@ -347,7 +372,10 @@ export default function AdminDownloadPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
           <div className="bg-white rounded-3xl border border-slate-200 shadow-xl max-w-md w-full p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-extrabold text-slate-900 text-base">Upload Berkas Dokumen</h3>
+              <div className="flex items-center gap-2">
+                <Tag className="w-4 h-4 text-emerald-600" />
+                <h3 className="font-extrabold text-slate-900 text-base">Upload Berkas Dokumen</h3>
+              </div>
               <button onClick={() => setShowFormModal(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
@@ -369,16 +397,30 @@ export default function AdminDownloadPage() {
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Kategori Dokumen</label>
                 <select
-                  value={formData.category}
-                  onChange={(e) => updateForm('category', e.target.value)}
+                  value={formData.categorySelect}
+                  onChange={(e) => updateForm('categorySelect', e.target.value)}
                   className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:ring-2 focus:ring-emerald-600 focus:outline-none cursor-pointer"
                 >
-                  {CATEGORIES.map((c) => (
+                  {categories.map((c) => (
                     <option key={c} value={c}>
                       {c}
                     </option>
                   ))}
+                  <option value="__NEW__">+ Buat Kategori Baru...</option>
                 </select>
+
+                {formData.categorySelect === '__NEW__' && (
+                  <div className="mt-2 animate-in fade-in zoom-in-95 duration-150">
+                    <input
+                      type="text"
+                      required
+                      placeholder="Ketik nama kategori baru (Misal: Ekstrakurikuler, Alumni...)"
+                      value={formData.customCategory}
+                      onChange={(e) => updateForm('customCategory', e.target.value)}
+                      className="w-full px-3.5 py-2 rounded-xl border border-emerald-300 bg-emerald-50/40 text-xs font-extrabold text-emerald-900 focus:ring-2 focus:ring-emerald-600 focus:outline-none placeholder:text-emerald-600/50"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-3">
