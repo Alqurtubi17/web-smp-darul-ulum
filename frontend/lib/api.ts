@@ -5,9 +5,15 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1
 
 const apiClient = axios.create({
   baseURL: API_URL,
-  headers: { 'Content-Type': 'application/json' },
+  headers: {
+    'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+  },
   timeout: 15000,
 });
+
 
 // Inject token NextAuth ke setiap request
 apiClient.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
