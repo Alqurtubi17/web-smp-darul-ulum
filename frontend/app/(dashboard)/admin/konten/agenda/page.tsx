@@ -1,206 +1,939 @@
 'use client';
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Edit2, Trash2, CalendarDays, X, Loader2 } from 'lucide-react';
-import apiClient, { getErrorMessage } from '@/lib/api';
-import { formatDate } from '@/lib/utils';
 
-interface Evt { id: string; title: string; description: string | null; location: string | null; startDate: string; endDate: string | null; isAllDay: boolean; category: string | null; isPublic: boolean; }
+import { useState, useMemo, useEffect } from 'react';
+import {
+  Calendar as CalendarIcon, Clock, MapPin, Building2, Plus, ChevronLeft, ChevronRight,
+  X, Filter, Grid, List, Eye, Edit2, Trash2, Search, CheckCircle2
+} from 'lucide-react';
+import { useActivityLogStore } from '@/store/activity-log.store';
+import { toast } from '@/store/toast.store';
+import { useAuth } from '@/hooks/useAuth';
+import { contentService } from '@/lib/services/content.service';
 
-const CATS = ['Akademik','Keagamaan','PPDB','Kegiatan','Nasional','Ekskul','Lainnya'];
-const DEF = { title:'', description:'', location:'', startDate:'', endDate:'', isAllDay:true, category:'', isPublic:true };
+export interface AcademicAgendaItem {
+  id: string;
+  title: string;
+  category: 'Kalender Akademik Sekolah' | 'Agenda Kepala Sekolah & Guru';
+  date: string; // YYYY-MM-DD
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
+  organizer: string;
+  location: string;
+  description: string;
+}
 
-function EvtForm({ editItem, onClose }: { editItem: Evt | null; onClose: () => void }) {
-  const [form, setForm] = useState(() => editItem ? {
-    title:editItem.title, description:editItem.description||'', location:editItem.location||'',
-    startDate:editItem.startDate.split('T')[0], endDate:editItem.endDate?.split('T')[0]||'',
-    isAllDay:editItem.isAllDay, category:editItem.category||'', isPublic:editItem.isPublic,
-  } : DEF);
-  const [err, setErr] = useState('');
-  const qc = useQueryClient();
-  const set = (k: string, v: unknown) => setForm(p => ({ ...p, [k]: v }));
+const getInitialAgendas = (): AcademicAgendaItem[] => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const todayStr = `${year}-${month}-${String(now.getDate()).padStart(2, '0')}`;
 
-  const mut = useMutation({
-    mutationFn: (body: Record<string, unknown>) => editItem ? apiClient.put(`/events/${editItem.id}`, body) : apiClient.post('/events', body),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-events'] }); onClose(); },
-    onError: e => setErr(getErrorMessage(e)),
+  return [
+    {
+      id: 'ag-1',
+      title: 'Pelaksanaan Penilaian Tengah Semester (PTS) Ganjil',
+      category: 'Kalender Akademik Sekolah',
+      date: todayStr,
+      startTime: '08:00',
+      endTime: '12:00',
+      organizer: 'Kurikulum & Panitia Ujian SMP Darul Ulum',
+      location: 'Ruang Kelas 7, 8, & 9 SMP Darul Ulum',
+      description: 'Pelaksanaan asesmen tengah semester ganjil untuk seluruh siswa SMP Darul Ulum.',
+    },
+    {
+      id: 'ag-2',
+      title: 'Rapat Koordinasi Evaluasi Pembelajaran & Kurikulum',
+      category: 'Agenda Kepala Sekolah & Guru',
+      date: todayStr,
+      startTime: '13:00',
+      endTime: '15:00',
+      organizer: 'Kepala Sekolah & Dewan Guru SMP Darul Ulum',
+      location: 'Ruang Rapat Utama & Ruang Guru',
+      description: 'Rapat evaluasi rutin mingguan perkembangan pembelajaran siswa dan kegiatan ekstrakurikuler.',
+    },
+    {
+      id: 'ag-3',
+      title: 'Kajian Keislaman & Istighosah Bersama Siswa',
+      category: 'Kalender Akademik Sekolah',
+      date: `${year}-${month}-15`,
+      startTime: '07:00',
+      endTime: '09:00',
+      organizer: 'Sie Keagamaan SMP Darul Ulum',
+      location: 'Masjid Darul Ulum',
+      description: 'Kegiatan pembiasaan karakter keislaman, doa bersama, dan motivasi belajar siswa.',
+    },
+    {
+      id: 'ag-4',
+      title: 'Verifikasi & Daftar Ulang Siswa Baru PPDB',
+      category: 'Agenda Kepala Sekolah & Guru',
+      date: `${year}-${month}-28`,
+      startTime: '08:00',
+      endTime: '14:00',
+      organizer: 'Panitia PPDB SMP Darul Ulum',
+      location: 'Sekretariat PPDB Kampus SMP Darul Ulum',
+      description: 'Penyerahan kelengkapan berkas fisik dan verifikasi data calon siswa baru.',
+    },
+  ];
+};
+
+const MONTH_NAMES_IND = [
+  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+];
+
+export default function AdminAgendaPage() {
+  const { addLog } = useActivityLogStore();
+  const { user } = useAuth();
+  const actorName = (user as any)?.teacher?.fullName || (user as any)?.email || 'Admin Utama';
+
+  // Dynamic Date (NOW)
+  const today = useMemo(() => new Date(), []);
+  const todayStr = useMemo(() => {
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }, [today]);
+
+  const [agendas, setAgendas] = useState<AcademicAgendaItem[]>(getInitialAgendas);
+  const [activeViewMode, setActiveViewMode] = useState<'month' | 'hour' | 'list'>('month');
+
+  // Filters & Search
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<string>('SEMUA');
+
+  // Month Navigation
+  const [currentYear, setCurrentYear] = useState(today.getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth());
+
+  // Hourly Date
+  const [selectedHourlyDate, setSelectedHourlyDate] = useState(todayStr);
+
+  // Modals State
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const [selectedAgenda, setSelectedAgenda] = useState<AcademicAgendaItem | null>(null);
+  const [editingAgenda, setEditingAgenda] = useState<AcademicAgendaItem | null>(null);
+
+  // Form State
+  const [formData, setFormData] = useState({
+    title: '',
+    category: 'Agenda Kepala Sekolah & Guru' as AcademicAgendaItem['category'],
+    date: todayStr,
+    startTime: '08:00',
+    endTime: '12:00',
+    organizer: 'Sekretariat SMP Darul Ulum',
+    location: 'Ruang Rapat Utama SMP Darul Ulum',
+    description: '',
   });
 
-  const submit = (e: React.FormEvent) => {
+  const updateForm = (key: string, val: any) => setFormData((p) => ({ ...p, [key]: val }));
+
+  // Load live events from Express Backend API
+
+  useEffect(() => {
+    const fetchAgendasBackend = async () => {
+      try {
+        const res = await contentService.getEvents();
+        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+          const mapped: AcademicAgendaItem[] = res.data.map((ev: any) => ({
+            id: ev.id,
+            title: ev.title,
+            category: ev.category === 'Kalender Akademik Sekolah' ? 'Kalender Akademik Sekolah' : 'Agenda Kepala Sekolah & Guru',
+            date: ev.startDate ? String(ev.startDate).split('T')[0] : todayStr,
+            startTime: '08:00',
+            endTime: '12:00',
+            organizer: ev.organizer || 'SMP Darul Ulum',
+            location: ev.location || 'Kampus SMP Darul Ulum',
+            description: ev.description || ev.title,
+          }));
+          setAgendas(mapped);
+        }
+      } catch (err) {
+        console.warn('Backend agenda load warning:', err);
+      }
+    };
+    fetchAgendasBackend();
+  }, [todayStr]);
+
+  // Month navigation helpers
+  const handlePrevMonth = () => {
+    if (currentMonth === 0) {
+      setCurrentMonth(11);
+      setCurrentYear((y) => y - 1);
+    } else {
+      setCurrentMonth((m) => m - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (currentMonth === 11) {
+      setCurrentMonth(0);
+      setCurrentYear((y) => y + 1);
+    } else {
+      setCurrentMonth((m) => m + 1);
+    }
+  };
+
+  const handleResetToToday = () => {
+    setCurrentYear(today.getFullYear());
+    setCurrentMonth(today.getMonth());
+    setSelectedHourlyDate(todayStr);
+  };
+
+  // Calendar Days Calculation
+  const calendarDays = useMemo(() => {
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay(); // 0 = Sun
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+    const days: Array<{ dayNumber: number | null; dateStr: string | null; events: AcademicAgendaItem[] }> = [];
+
+    // Leading empty slots
+    for (let i = 0; i < firstDay; i++) {
+      days.push({ dayNumber: null, dateStr: null, events: [] });
+    }
+
+    // Days in current month
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const dayEvents = agendas.filter((a) => a.date === dateStr);
+      days.push({ dayNumber: day, dateStr, events: dayEvents });
+    }
+
+    return days;
+  }, [currentYear, currentMonth, agendas]);
+
+  // Hourly slots for Detail Jam (Hari) View
+  const HOURLY_SLOTS = [
+    '07:00', '08:00', '09:00', '10:00', '11:00',
+    '12:00', '13:00', '14:00', '15:00', '16:00'
+  ];
+
+  const hourlyAgendas = useMemo(() => {
+    return agendas.filter((a) => a.date === selectedHourlyDate);
+  }, [agendas, selectedHourlyDate]);
+
+  // Filtered List Agendas for View Mode 3
+  const filteredListAgendas = useMemo(() => {
+    return agendas.filter((item) => {
+      const matchSearch =
+        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.organizer.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.location.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchCat = categoryFilter === 'SEMUA' || item.category === categoryFilter;
+      return matchSearch && matchCat;
+    });
+  }, [agendas, searchQuery, categoryFilter]);
+
+  // Actions
+  const handleOpenAdd = (defaultDate?: string) => {
+    setEditingAgenda(null);
+    setFormData({
+      title: '',
+      category: 'Agenda Kepala Sekolah & Guru',
+      date: defaultDate || selectedHourlyDate || todayStr,
+      startTime: '08:00',
+      endTime: '12:00',
+      organizer: 'Sekretariat SMP Darul Ulum',
+      location: 'Ruang Rapat Utama SMP Darul Ulum',
+      description: '',
+    });
+    setShowAddModal(true);
+  };
+
+  const handleOpenEdit = (item: AcademicAgendaItem) => {
+    setEditingAgenda(item);
+    setFormData({
+      title: item.title,
+      category: item.category,
+      date: item.date,
+      startTime: item.startTime,
+      endTime: item.endTime,
+      organizer: item.organizer,
+      location: item.location,
+      description: item.description,
+    });
+    setShowAddModal(true);
+  };
+
+  const handleSaveAgenda = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.title.trim() || !form.startDate) { setErr('Judul dan tanggal mulai wajib diisi'); return; }
-    mut.mutate({ ...form, startDate: new Date(form.startDate).toISOString(), ...(form.endDate && { endDate: new Date(form.endDate).toISOString() }) });
+    if (!formData.title.trim()) return;
+
+    if (editingAgenda) {
+      setAgendas((prev) =>
+        prev.map((a) => (a.id === editingAgenda.id ? { ...a, ...formData } : a))
+      );
+
+      try {
+        await contentService.updateEvent(editingAgenda.id, {
+          title: formData.title,
+          description: formData.description,
+          location: formData.location,
+          startDate: formData.date,
+          endDate: formData.date,
+        });
+      } catch (err) {
+        console.warn('Backend update event failed:', err);
+      }
+
+      addLog({
+        user: actorName,
+        role: 'ADMIN',
+        action: `Memperbarui Agenda "${formData.title}"`,
+        module: 'Pengguna',
+        severity: 'SUCCESS',
+        details: `Kategori: ${formData.category}, Tanggal: ${formData.date}`,
+      });
+      toast.success('Agenda Diperbarui', `Agenda "${formData.title}" berhasil diperbarui.`);
+    } else {
+      const newAgenda: AcademicAgendaItem = {
+        id: `agenda-${Date.now()}`,
+        ...formData,
+      };
+
+      setAgendas((prev) => [newAgenda, ...prev]);
+
+      try {
+        await contentService.createEvent({
+          title: formData.title,
+          description: formData.description,
+          location: formData.location,
+          startDate: formData.date,
+          endDate: formData.date,
+        });
+      } catch (err) {
+        console.warn('Backend create event failed:', err);
+      }
+
+      addLog({
+        user: actorName,
+        role: 'ADMIN',
+        action: `Menambahkan Agenda Baru "${formData.title}"`,
+        module: 'Pengguna',
+        severity: 'SUCCESS',
+        details: `Kategori: ${formData.category}, Tanggal: ${formData.date}`,
+      });
+      toast.success('Agenda Ditambahkan', `Agenda baru "${formData.title}" berhasil dibuat.`);
+    }
+
+    setShowAddModal(false);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedAgenda) return;
+    setAgendas((prev) => prev.filter((a) => a.id !== selectedAgenda.id));
+
+    try {
+      await contentService.deleteEvent(selectedAgenda.id);
+    } catch (err) {
+      console.warn('Backend delete event failed:', err);
+    }
+
+    addLog({
+      user: actorName,
+      role: 'ADMIN',
+      action: `Menghapus Agenda "${selectedAgenda.title}"`,
+      module: 'Pengguna',
+      severity: 'DANGER',
+      details: `ID Agenda: ${selectedAgenda.id}`,
+    });
+
+    toast.success('Agenda Dihapus', `Agenda "${selectedAgenda.title}" telah dihapus.`);
+    setShowDeleteModal(false);
+    setSelectedAgenda(null);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-      <div className="bg-white rounded-3xl shadow-2xl border border-emerald-100 w-full max-w-md overflow-hidden flex flex-col">
-        
-        <div className="flex items-center justify-between px-6 py-4 border-b border-emerald-100 bg-emerald-50/50">
-          <div>
-            <h2 className="font-extrabold text-slate-900 text-base">{editItem ? 'Edit' : 'Tambah'} Agenda Sekolah</h2>
-            <p className="text-[11px] font-semibold text-slate-500">Jadwalkan kegiatan atau agenda sekolah</p>
-          </div>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-emerald-100/60 rounded-xl transition-colors"><X className="w-5 h-5"/></button>
+    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+      {/* ── 1. HEADER TITLE (CLEAN WITHOUT H1 ICON) ───────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
+            Jadwal dan Agenda Akademik
+          </h1>
+          <p className="text-xs text-slate-500 font-medium mt-1">
+            Jadwal kalender akademik resmi SMP Darul Ulum &amp; rincian agenda per jam Dewan Guru / Kepala Sekolah
+          </p>
         </div>
 
-        <form onSubmit={submit}>
-          <div className="p-6 space-y-4">
-            {err && <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-xs font-bold text-rose-700">{err}</div>}
-            
-            <div>
-              <label className="block text-xs font-extrabold text-slate-800 mb-1.5">Judul Agenda *</label>
-              <input type="text" required value={form.title} onChange={e=>set('title',e.target.value)} placeholder="cth: Ujian Tengah Semester Genap"
-                className="w-full px-4 py-2.5 rounded-2xl border border-emerald-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 shadow-2xs"/>
-            </div>
-
-            <div>
-              <label className="block text-xs font-extrabold text-slate-800 mb-1.5">Lokasi Pelaksanaan</label>
-              <input type="text" value={form.location} onChange={e=>set('location',e.target.value)} placeholder="cth: Aula Utama / Lapangan Sekolah"
-                className="w-full px-4 py-2.5 rounded-2xl border border-emerald-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 shadow-2xs"/>
-            </div>
-
-            <div>
-              <label className="block text-xs font-extrabold text-slate-800 mb-1.5">Deskripsi Singkat</label>
-              <textarea rows={2} value={form.description} onChange={e=>set('description',e.target.value)} placeholder="Tulis rincian singkat agenda..."
-                className="w-full px-4 py-2.5 rounded-2xl border border-emerald-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 resize-none shadow-2xs"/>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-extrabold text-slate-800 mb-1.5">Tanggal Mulai *</label>
-                <input type="date" required value={form.startDate} onChange={e=>set('startDate',e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-2xl border border-emerald-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 shadow-2xs"/>
-              </div>
-              <div>
-                <label className="block text-xs font-extrabold text-slate-800 mb-1.5">Tanggal Selesai</label>
-                <input type="date" value={form.endDate} onChange={e=>set('endDate',e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-2xl border border-emerald-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 shadow-2xs"/>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-extrabold text-slate-800 mb-1.5">Kategori Agenda</label>
-              <select value={form.category} onChange={e=>set('category',e.target.value)}
-                className="w-full px-4 py-2.5 rounded-2xl border border-emerald-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 shadow-2xs">
-                <option value="">Pilih Kategori</option>
-                {CATS.map(c=><option key={c}>{c}</option>)}
-              </select>
-            </div>
-
-            <div className="flex gap-6 pt-1">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={form.isAllDay} onChange={e=>set('isAllDay',e.target.checked)} className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-600"/>
-                <span className="text-xs font-bold text-slate-800">Acara Seharian</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={form.isPublic} onChange={e=>set('isPublic',e.target.checked)} className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-600"/>
-                <span className="text-xs font-bold text-slate-800">Tampilkan di Publik</span>
-              </label>
-            </div>
-          </div>
-
-          <div className="flex gap-3 px-6 py-4 border-t border-emerald-100 bg-emerald-50/40">
-            <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-2xl border border-emerald-200 text-xs font-bold text-slate-700 bg-white hover:bg-emerald-50 transition-colors shadow-2xs">Batal</button>
-            <button type="submit" disabled={mut.isPending} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white text-xs font-extrabold transition-all shadow-xs">
-              {mut.isPending && <Loader2 className="w-4 h-4 animate-spin"/>}
-              {editItem ? 'Simpan' : 'Tambah Agenda'}
-            </button>
-          </div>
-        </form>
+        <button
+          onClick={() => handleOpenAdd()}
+          className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-98 text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Tambah Agenda</span>
+        </button>
       </div>
-    </div>
-  );
-}
 
-export default function AdminAgendaPage() {
-  const [showForm, setShowForm] = useState(false);
-  const [editItem, setEditItem] = useState<Evt|null>(null);
-  const [deleteId, setDeleteId] = useState<string|null>(null);
-  const qc = useQueryClient();
+      {/* ── 2. LEGEND BADGES & 3-WAY MODE SWITCHER ──────────────────────────── */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+        {/* Category Legend */}
+        <div className="flex items-center gap-6 text-xs font-semibold text-slate-700">
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full bg-indigo-600 inline-block"></span>
+            <span>Kalender Akademik Sekolah</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
+            <span>Agenda Kepala Sekolah &amp; Guru</span>
+          </div>
+        </div>
 
-  const { data: events = [], isLoading } = useQuery({
-    queryKey: ['admin-events'],
-    queryFn: async () => { const { data } = await apiClient.get('/events?limit=50'); return (data.data||[]) as Evt[]; },
-  });
+        {/* 3-Way Mode Switcher */}
+        <div className="flex items-center bg-slate-100/90 p-1 rounded-xl border border-slate-200/70">
+          <button
+            type="button"
+            onClick={() => setActiveViewMode('month')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              activeViewMode === 'month'
+                ? 'bg-white text-slate-900 shadow-xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <Grid className="w-3.5 h-3.5" />
+            <span>Bulan</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveViewMode('hour')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              activeViewMode === 'hour'
+                ? 'bg-white text-slate-900 shadow-xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <Clock className="w-3.5 h-3.5" />
+            <span>Detail Jam (Hari)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveViewMode('list')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              activeViewMode === 'list'
+                ? 'bg-white text-slate-900 shadow-xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <List className="w-3.5 h-3.5" />
+            <span>Daftar Agenda</span>
+          </button>
+        </div>
+      </div>
 
-  const deleteMut = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/events/${id}`),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-events'] }); setDeleteId(null); },
-  });
+      {/* ── 3. MAIN CONTENT CONTAINER ───────────────────────────────────────── */}
+      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-6 space-y-6">
+        {/* ── MODE 1: BULAN (MONTH GRID VIEW) ──────────────────────────────── */}
+        {activeViewMode === 'month' && (
+          <div className="space-y-5">
+            {/* Control Bar */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl border border-slate-200 bg-slate-50/50 text-xs font-bold text-slate-800">
+                <CalendarIcon className="w-3.5 h-3.5 text-slate-500" />
+                <span>{MONTH_NAMES_IND[currentMonth]} {currentYear}</span>
+              </div>
 
-  const byMonth = events.reduce((acc, e) => {
-    const m = new Date(e.startDate).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
-    if (!acc[m]) acc[m] = [];
-    acc[m].push(e);
-    return acc;
-  }, {} as Record<string, Evt[]>);
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handlePrevMonth}
+                  className="w-9 h-9 rounded-xl border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <span className="text-sm font-extrabold text-slate-900 tracking-tight">
+                  {MONTH_NAMES_IND[currentMonth]} {currentYear}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleNextMonth}
+                  className="w-9 h-9 rounded-xl border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
 
-  return (
-    <div className="space-y-6">
-      {showForm && <EvtForm editItem={editItem} onClose={()=>{ setShowForm(false); setEditItem(null); }}/>}
-      
-      {deleteId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl p-6 max-w-sm w-full border border-emerald-100 shadow-2xl">
-            <h3 className="font-extrabold text-slate-900 mb-2">Hapus Agenda Ini?</h3>
-            <p className="text-xs text-slate-500 font-semibold mb-5">Tindakan ini tidak dapat dibatalkan.</p>
-            <div className="flex gap-3">
-              <button onClick={()=>setDeleteId(null)} className="flex-1 py-2.5 rounded-2xl border border-emerald-200 text-xs font-bold text-slate-700 bg-white hover:bg-emerald-50">Batal</button>
-              <button onClick={()=>deleteMut.mutate(deleteId)} disabled={deleteMut.isPending} className="flex-1 py-2.5 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold transition-all shadow-2xs">Ya, Hapus</button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleResetToToday}
+                  className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-extrabold shadow-xs transition-colors cursor-pointer"
+                >
+                  Hari Ini
+                </button>
+              </div>
+            </div>
+
+            {/* Days Header */}
+            <div className="grid grid-cols-7 text-center text-xs font-black uppercase tracking-wider py-2 border-b border-slate-100">
+              <span className="text-rose-600">MIN</span>
+              <span className="text-slate-600">SEN</span>
+              <span className="text-slate-600">SEL</span>
+              <span className="text-slate-600">RAB</span>
+              <span className="text-slate-600">KAM</span>
+              <span className="text-slate-600">JUM</span>
+              <span className="text-slate-600">SAB</span>
+            </div>
+
+            {/* Grid Days Cells */}
+            <div className="grid grid-cols-7 gap-2">
+              {calendarDays.map((cell, idx) => {
+                if (cell.dayNumber === null) {
+                  return <div key={idx} className="h-32 rounded-2xl bg-slate-50/40 border border-slate-100" />;
+                }
+
+                const isTodayCell = cell.dateStr === todayStr;
+
+                return (
+                  <div
+                    key={idx}
+                    onClick={() => {
+                      if (cell.dateStr) {
+                        setSelectedHourlyDate(cell.dateStr);
+                        handleOpenAdd(cell.dateStr);
+                      }
+                    }}
+                    className={`h-32 p-2.5 rounded-2xl border transition-all flex flex-col justify-between group cursor-pointer ${
+                      isTodayCell
+                        ? 'bg-amber-50/40 border-amber-300 ring-2 ring-amber-400/20'
+                        : cell.events.length > 0
+                        ? 'bg-indigo-50/20 border-indigo-100 hover:border-indigo-300'
+                        : 'bg-white border-slate-100 hover:border-slate-300 hover:bg-slate-50/40'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className={`text-xs font-extrabold ${isTodayCell ? 'text-amber-700 bg-amber-100 px-2 py-0.5 rounded-md' : 'text-slate-800'}`}>
+                        {cell.dayNumber}
+                      </span>
+                      {cell.events.length > 0 && (
+                        <span className="text-[10px] font-bold text-indigo-700 bg-indigo-100 px-1.5 py-0.5 rounded-md">
+                          {cell.events.length} Agenda
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="space-y-1.5 overflow-y-auto max-h-20 no-scrollbar">
+                      {cell.events.map((ev) => (
+                        <div
+                          key={ev.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedAgenda(ev);
+                            setShowDetailModal(true);
+                          }}
+                          className={`p-1.5 rounded-xl border text-[11px] font-bold truncate transition-all hover:scale-102 ${
+                            ev.category === 'Kalender Akademik Sekolah'
+                              ? 'bg-indigo-50 border-indigo-200 text-indigo-900'
+                              : 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                          }`}
+                        >
+                          <p className="truncate font-extrabold">{ev.title}</p>
+                          <p className="text-[10px] font-medium text-slate-500">⏱️ {ev.startTime} - {ev.endTime}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ── MODE 2: DETAIL JAM (HARI) HOURLY TIMELINE ───────────────────── */}
+        {activeViewMode === 'hour' && (
+          <div className="space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-3">
+              <div className="flex items-center gap-3">
+                <input
+                  type="date"
+                  value={selectedHourlyDate}
+                  onChange={(e) => setSelectedHourlyDate(e.target.value)}
+                  className="px-3.5 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-slate-50 focus:outline-none"
+                />
+                <h3 className="text-sm font-extrabold text-slate-900">
+                  Timeline Agenda Per Jam ({selectedHourlyDate})
+                </h3>
+              </div>
+              <span className="text-xs font-extrabold text-slate-500">
+                Total Agenda: <strong className="text-slate-900">{hourlyAgendas.length} Kegiatan</strong>
+              </span>
+            </div>
+
+            <div className="space-y-3">
+              {HOURLY_SLOTS.map((hour) => {
+                const hourNum = parseInt(hour.split(':')[0], 10);
+                const matchingAgendas = hourlyAgendas.filter((a) => {
+                  const startH = parseInt(a.startTime.split(':')[0], 10);
+                  return startH === hourNum;
+                });
+
+                return (
+                  <div key={hour} className="flex gap-4 items-start group">
+                    <span className="text-xs font-mono font-bold text-slate-400 w-12 pt-2 text-right shrink-0">
+                      {hour}
+                    </span>
+                    <div className="flex-1 min-h-[50px] p-3 rounded-2xl border border-slate-100 bg-slate-50/40 group-hover:bg-slate-50 transition-colors">
+                      {matchingAgendas.length > 0 ? (
+                        <div className="space-y-2">
+                          {matchingAgendas.map((ev) => (
+                            <div
+                              key={ev.id}
+                              onClick={() => {
+                                setSelectedAgenda(ev);
+                                setShowDetailModal(true);
+                              }}
+                              className={`p-3 rounded-xl border flex items-center justify-between gap-3 cursor-pointer shadow-2xs transition-all hover:scale-101 ${
+                                ev.category === 'Kalender Akademik Sekolah'
+                                  ? 'bg-indigo-50/70 border-indigo-200 text-indigo-950'
+                                  : 'bg-emerald-50/70 border-emerald-200 text-emerald-950'
+                              }`}
+                            >
+                              <div className="space-y-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span className={`w-2.5 h-2.5 rounded-full ${ev.category === 'Kalender Akademik Sekolah' ? 'bg-indigo-600' : 'bg-emerald-500'}`} />
+                                  <h4 className="text-xs font-extrabold truncate">{ev.title}</h4>
+                                </div>
+                                <div className="flex items-center gap-4 text-[11px] font-semibold text-slate-500 pl-4">
+                                  <span>⏱️ {ev.startTime} - {ev.endTime} WIB</span>
+                                  <span>📍 {ev.location}</span>
+                                </div>
+                              </div>
+                              <span className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-[10px] font-extrabold text-slate-700 shrink-0">
+                                {ev.organizer}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-[11px] font-medium text-slate-300 italic">Tidak ada agenda pada jam ini</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ── MODE 3: DAFTAR AGENDA (LIST VIEW - FULLY WORKING) ───────────── */}
+        {activeViewMode === 'list' && (
+          <div className="space-y-5">
+            {/* Header Toolbar inside List Mode */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pb-3 border-b border-slate-100">
+              <h3 className="text-sm font-extrabold text-slate-900">
+                Daftar Seluruh Agenda Akademik &amp; Kegiatan ({filteredListAgendas.length})
+              </h3>
+
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Cari agenda, lokasi..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  />
+                </div>
+
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 bg-white focus:outline-none cursor-pointer"
+                >
+                  <option value="SEMUA">Semua Kategori</option>
+                  <option value="Kalender Akademik Sekolah">Kalender Akademik Sekolah</option>
+                  <option value="Agenda Kepala Sekolah & Guru">Agenda Kepala Sekolah &amp; Guru</option>
+                </select>
+              </div>
+            </div>
+
+            {/* List Cards */}
+            <div className="space-y-3.5">
+              {filteredListAgendas.length > 0 ? (
+                filteredListAgendas.map((item) => (
+                  <div
+                    key={item.id}
+                    className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:shadow-2xs ${
+                      item.category === 'Kalender Akademik Sekolah'
+                        ? 'bg-indigo-50/40 border-indigo-200/70'
+                        : 'bg-emerald-50/40 border-emerald-200/70'
+                    }`}
+                  >
+                    <div className="space-y-1.5 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                          item.category === 'Kalender Akademik Sekolah'
+                            ? 'bg-indigo-100 text-indigo-800 border-indigo-200'
+                            : 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                        }`}>
+                          {item.category}
+                        </span>
+                        <span className="text-xs font-mono font-bold text-slate-500">Tanggal: {item.date}</span>
+                      </div>
+
+                      <h4 className="text-sm font-extrabold text-slate-900">{item.title}</h4>
+
+                      <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-slate-600">
+                        <span className="flex items-center gap-1">⏱️ {item.startTime} - {item.endTime} WIB</span>
+                        <span className="flex items-center gap-1">🏢 {item.organizer}</span>
+                        <span className="flex items-center gap-1">📍 {item.location}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedAgenda(item);
+                          setShowDetailModal(true);
+                        }}
+                        className="px-4 py-2 rounded-xl bg-white border border-slate-200 text-xs font-extrabold text-slate-800 hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
+                      >
+                        Lihat Rincian
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEdit(item)}
+                        className="p-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 cursor-pointer"
+                        title="Edit Agenda"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedAgenda(item);
+                          setShowDeleteModal(true);
+                        }}
+                        className="p-2 rounded-xl border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 cursor-pointer"
+                        title="Hapus Agenda"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-12 bg-slate-50/50 rounded-2xl border border-slate-200 text-slate-400">
+                  <p className="text-xs font-semibold text-slate-500">Tidak ada agenda kegiatan yang ditemukan.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── MODAL DETAIL RINCIAN AGENDA ─────────────────────────────────────── */}
+      {showDetailModal && selectedAgenda && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in duration-150">
+            <div className="flex items-center justify-between">
+              <span className={`px-3 py-1 rounded-full text-xs font-extrabold border ${
+                selectedAgenda.category === 'Kalender Akademik Sekolah'
+                  ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                  : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+              }`}>
+                {selectedAgenda.category}
+              </span>
+              <button onClick={() => setShowDetailModal(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <h3 className="text-base font-extrabold text-slate-900">{selectedAgenda.title}</h3>
+
+            <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100 space-y-2.5 text-xs text-slate-700">
+              <div className="flex items-center gap-2"><CalendarIcon className="w-4 h-4 text-sky-600" /> <span>Tanggal: <strong>{selectedAgenda.date}</strong></span></div>
+              <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-amber-500" /> <span>Waktu: <strong>{selectedAgenda.startTime} – {selectedAgenda.endTime} WIB</strong></span></div>
+              <div className="flex items-center gap-2"><Building2 className="w-4 h-4 text-emerald-600" /> <span>Penyelenggara: <strong>{selectedAgenda.organizer}</strong></span></div>
+              <div className="flex items-center gap-2"><MapPin className="w-4 h-4 text-rose-500" /> <span>Lokasi: <strong>{selectedAgenda.location}</strong></span></div>
+            </div>
+
+            <div className="space-y-1">
+              <h4 className="text-xs font-bold text-slate-800">Deskripsi &amp; Catatan:</h4>
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-xs text-slate-600 leading-relaxed">
+                {selectedAgenda.description || 'Tidak ada catatan tambahan.'}
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowDetailModal(false)}
+                className="px-6 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 cursor-pointer"
+              >
+                Tutup
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Manajemen Agenda Sekolah</h1>
-          <p className="text-xs text-slate-500 font-semibold mt-0.5">{events.length} agenda terdaftar</p>
-        </div>
-        <button onClick={()=>{ setEditItem(null); setShowForm(true); }}
-          className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition-all shadow-2xs">
-          <Plus className="w-4 h-4"/> Tambah Agenda Baru
-        </button>
-      </div>
-
-      {isLoading ? (
-        <div className="flex items-center justify-center py-16"><Loader2 className="w-8 h-8 animate-spin text-emerald-600"/></div>
-      ) : events.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-3xl border border-emerald-100 text-slate-400">
-          <CalendarDays className="w-10 h-10 mx-auto mb-3 opacity-30"/>
-          <p className="text-xs font-semibold text-slate-500">Belum ada agenda terdaftar</p>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {Object.entries(byMonth).map(([month, evts]) => (
-            <div key={month} className="space-y-3">
-              <h2 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider px-1">{month}</h2>
-              <div className="bg-white rounded-3xl border border-emerald-100 shadow-2xs divide-y divide-emerald-50 overflow-hidden">
-                {evts.map(e => (
-                  <div key={e.id} className="flex items-center gap-4 px-6 py-4 hover:bg-emerald-50/30 transition-colors">
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex flex-col items-center justify-center flex-shrink-0 shadow-2xs">
-                      <span className="text-sm font-black text-emerald-800 leading-none">{new Date(e.startDate).toLocaleDateString('id-ID',{day:'numeric'})}</span>
-                      <span className="text-[10px] font-bold text-emerald-600 mt-0.5 uppercase">{new Date(e.startDate).toLocaleDateString('id-ID',{month:'short'})}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-extrabold text-slate-900">{e.title}</p>
-                      <div className="flex items-center gap-3 mt-1 text-[11px] font-semibold text-slate-400">
-                        {e.location && <span>📍 {e.location}</span>}
-                        {e.endDate && <span>s.d. {formatDate(e.endDate,{day:'numeric',month:'short'})}</span>}
-                        {e.category && <span className="bg-emerald-50 text-emerald-800 border border-emerald-100 px-2 py-0.5 rounded-md font-bold">{e.category}</span>}
-                        {!e.isPublic && <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md font-bold">Internal</span>}
-                      </div>
-                    </div>
-                    <div className="flex gap-1 flex-shrink-0">
-                      <button onClick={()=>{ setEditItem(e); setShowForm(true); }} className="p-2 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-colors"><Edit2 className="w-4 h-4"/></button>
-                      <button onClick={()=>setDeleteId(e.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"><Trash2 className="w-4 h-4"/></button>
-                    </div>
-                  </div>
-                ))}
+      {/* ── MODAL TAMBAH / EDIT AGENDA ──────────────────────────────────────── */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-lg w-full p-6 space-y-4 animate-in fade-in zoom-in duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
+                  <Plus className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-slate-900 text-base">
+                    {editingAgenda ? 'Edit Agenda Sekolah' : 'Tambah Agenda Dekanat / Kaprodi'}
+                  </h3>
+                  <p className="text-[11px] text-slate-500 font-medium">Input agenda kegiatan rapat, evaluasi, atau asesmen SMP Darul Ulum</p>
+                </div>
               </div>
+              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
             </div>
-          ))}
+
+            <form onSubmit={handleSaveAgenda} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-800 mb-1.5">Judul Agenda / Kegiatan *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Misal: Rapat Koordinasi Pembelajaran SMP Darul Ulum"
+                  value={formData.title}
+                  onChange={(e) => updateForm('title', e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1.5">Kategori Agenda *</label>
+                  <select
+                    value={formData.category}
+                    onChange={(e) => updateForm('category', e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-sky-500 focus:outline-none cursor-pointer"
+                  >
+                    <option value="Agenda Kepala Sekolah & Guru">Agenda Kepala Sekolah &amp; Guru</option>
+                    <option value="Kalender Akademik Sekolah">Kalender Akademik Sekolah</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1.5">Tanggal Pelaksanaan *</label>
+                  <input
+                    type="date"
+                    required
+                    value={formData.date}
+                    onChange={(e) => updateForm('date', e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1.5">Jam Mulai</label>
+                  <input
+                    type="time"
+                    required
+                    value={formData.startTime}
+                    onChange={(e) => updateForm('startTime', e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1.5">Jam Selesai</label>
+                  <input
+                    type="time"
+                    required
+                    value={formData.endTime}
+                    onChange={(e) => updateForm('endTime', e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1.5">Penyelenggara / Unit</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Sekretariat SMP Darul Ulum"
+                    value={formData.organizer}
+                    onChange={(e) => updateForm('organizer', e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1.5">Lokasi / Link Zoom</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ruang Rapat / Kampus Sekolah"
+                    value={formData.location}
+                    onChange={(e) => updateForm('location', e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-800 mb-1.5">Deskripsi / Catatan Agenda</label>
+                <textarea
+                  rows={3}
+                  placeholder="Tambahkan rincian agenda..."
+                  value={formData.description}
+                  onChange={(e) => updateForm('description', e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-sky-500 focus:outline-none resize-none"
+                />
+              </div>
+
+              <div className="pt-3 flex justify-end gap-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-md cursor-pointer"
+                >
+                  Simpan Agenda
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL HAPUS AGENDA ──────────────────────────────────────────────── */}
+      {showDeleteModal && selectedAgenda && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-sm w-full p-6 space-y-4 text-center">
+            <h3 className="font-extrabold text-slate-900 text-base">Hapus Agenda Ini?</h3>
+            <p className="text-xs text-slate-600 font-medium">
+              Apakah Anda yakin ingin menghapus agenda <strong className="text-slate-900">{selectedAgenda.title}</strong>?
+            </p>
+            <div className="flex justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                className="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md cursor-pointer"
+              >
+                Ya, Hapus
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

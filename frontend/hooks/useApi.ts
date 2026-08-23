@@ -119,13 +119,34 @@ export const useCreateAnnouncement = () => {
 
 // ─── ADMIN: DASHBOARD STATS ──────────────────────────────────────────────────
 
+export interface VisitorStatItem {
+  dayLabel: string;
+  count: number;
+  barPercent: number;
+}
+
+export interface VisitorStatsData {
+  totalViews: number;
+  activeUsersToday: number;
+  growthPercentage: number;
+  dailySeries: VisitorStatItem[];
+}
+
+export interface DashboardStatsResponse {
+  totalStudents: number;
+  totalTeachers: number;
+  totalParents: number;
+  pendingAdmissions: number;
+  publishedNews: number;
+  activeAnnouncements: number;
+  payments?: { collected: number; target: number };
+  visitorStats?: VisitorStatsData;
+}
+
 export const useDashboardStats = () =>
   useQuery({
     queryKey: ['dashboard-stats'],
-    queryFn: () => get<{
-      totalStudents: number; totalTeachers: number; totalParents: number;
-      pendingAdmissions: number; publishedNews: number; activeAnnouncements: number;
-    }>('/dashboard/stats'),
+    queryFn: () => get<DashboardStatsResponse>('/dashboard/stats'),
   });
 
 // ─── ACADEMIC ────────────────────────────────────────────────────────────────

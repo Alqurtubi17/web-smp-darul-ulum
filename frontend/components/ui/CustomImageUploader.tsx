@@ -57,3 +57,5 @@ export function CustomImageUploader({
     </label>
   );
 }
+
+export default CustomImageUploader;

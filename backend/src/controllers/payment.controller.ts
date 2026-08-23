@@ -254,3 +254,27 @@ export const listBorrowings = async (req: Request, res: Response): Promise<void>
     sendSuccess(res, items, 'Data peminjaman berhasil diambil', 200, buildPaginationMeta(total, page, limit));
   } catch { sendError(res, 'Gagal mengambil data peminjaman'); }
 };
+
+export const deletePayment = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    await prisma.payment.delete({ where: { id } });
+    sendSuccess(res, null, 'Tagihan berhasil dihapus');
+  } catch { sendError(res, 'Gagal menghapus tagihan'); }
+};
+
+export const clearAllPayments = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const count = await prisma.payment.deleteMany({});
+    sendSuccess(res, { count: count.count }, `Berhasil menghapus ${count.count} data tagihan`);
+  } catch { sendError(res, 'Gagal menghapus seluruh tagihan'); }
+};
+
+export const deleteBook = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    await prisma.book.delete({ where: { id } });
+    sendSuccess(res, null, 'Buku berhasil dihapus');
+  } catch { sendError(res, 'Gagal menghapus buku'); }
+};
+

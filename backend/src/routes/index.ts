@@ -72,12 +72,15 @@ paymentRouter.get('/student/:studentId', authenticate, paymentCtrl.getStudentPay
 paymentRouter.post('/', authenticate, isAdmin, paymentCtrl.createPaymentBill);
 paymentRouter.post('/bulk-spp', authenticate, isAdmin, paymentCtrl.createBulkSPP);
 paymentRouter.patch('/:id/pay', authenticate, isAdmin, paymentCtrl.recordPayment);
+paymentRouter.delete('/clear-all', authenticate, isAdmin, paymentCtrl.clearAllPayments);
+paymentRouter.delete('/:id', authenticate, isAdmin, paymentCtrl.deletePayment);
 
 // ─── LIBRARY ──────────────────────────────────────────────────────────────────
 export const bookRouter = Router();
 bookRouter.get('/', paymentCtrl.listBooks);
 bookRouter.post('/', authenticate, isAdmin, paymentCtrl.createBook);
 bookRouter.put('/:id', authenticate, isAdmin, paymentCtrl.updateBook);
+bookRouter.delete('/:id', authenticate, isAdmin, paymentCtrl.deleteBook);
 
 export const borrowingRouter = Router();
 borrowingRouter.get('/', authenticate, paymentCtrl.listBorrowings);
@@ -100,3 +103,10 @@ teacherRouter.post('/', authenticate, isAdmin, userCtrl.createTeacher);
 // ─── DASHBOARD ────────────────────────────────────────────────────────────────
 export const dashboardRouter = Router();
 dashboardRouter.get('/stats', authenticate, isAdmin, userCtrl.getDashboardStats);
+
+// ─── AUDIT LOGS ───────────────────────────────────────────────────────────────
+export const auditLogRouter = Router();
+auditLogRouter.get('/', authenticate, isAdmin, userCtrl.listAuditLogs);
+auditLogRouter.post('/', authenticate, userCtrl.createAuditLog);
+auditLogRouter.delete('/clear', authenticate, isAdmin, userCtrl.clearAuditLogs);
+

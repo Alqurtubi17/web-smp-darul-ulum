@@ -4,9 +4,11 @@ import { useEffect, useState, useRef } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Sidebar } from '@/components/dashboard/Sidebar';
-import { Search, Menu, LogOut, X, ArrowRight, PanelLeftClose } from 'lucide-react';
+import { Search, Menu, LogOut, X, ArrowRight, PanelLeftClose, Calendar, ChevronDown } from 'lucide-react';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { ToastContainer } from '@/components/ui/ToastContainer';
 import { useAuth } from '@/hooks/useAuth';
+import { useAcademicYearStore } from '@/store/academic-year.store';
 import { cn } from '@/lib/utils';
 
 interface SearchItem {
@@ -31,6 +33,7 @@ const SEARCHABLE_ITEMS: SearchItem[] = [
   { label: 'Laporan Rekapitulasi', href: '/admin/laporan', category: 'Laporan', keywords: 'statistik rekap grafik' },
   { label: 'Keuangan & SPP', href: '/admin/keuangan', category: 'Keuangan', keywords: 'bayar spp tagihan bayaran' },
   { label: 'Perpustakaan Digital', href: '/admin/perpustakaan', category: 'Perpustakaan', keywords: 'buku pustaka e-book' },
+  { label: 'Log Aktivitas System', href: '/admin/log', category: 'Audit Log', keywords: 'log audit jejak aktivitas history tracker' },
   { label: 'Pengaturan Sistem', href: '/admin/pengaturan', category: 'Pengaturan', keywords: 'setting profil akun' },
 
   // Guru
@@ -69,12 +72,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { status } = useSession();
   const router = useRouter();
   const { user, role } = useAuth();
+  const { activeYear, activeSemester, academicYears, setActiveYear, initAcademicYear } = useAcademicYearStore();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    initAcademicYear();
+  }, [initAcademicYear]);
 
   // Close search dropdown on click outside
   useEffect(() => {
@@ -249,8 +257,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           </div>
 
-          {/* Right: User Profile & Quick Logout */}
+          {/* Right: Active Academic Year, User Profile & Quick Logout */}
           <div className="flex items-center gap-3">
+            {/* Active Academic Year Badge */}
+            <div className="hidden sm:flex items-center gap-2.5 bg-emerald-50/80 border border-emerald-200/90 rounded-2xl px-3 py-1.5 shadow-2xs">
+              <div className="w-7 h-7 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-2xs">
+                <Calendar className="w-3.5 h-3.5" />
+              </div>
+              <div className="text-left leading-none">
+                <span className="text-[9px] font-extrabold uppercase tracking-wider text-emerald-800 block mb-0.5">T.A. AKTIF</span>
+                <span className="text-xs font-bold text-slate-900">{activeYear} — {activeSemester}</span>
+              </div>
+            </div>
+
+            {/* User Profile */}
             <div className="flex items-center gap-3 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl px-3 py-1.5">
               <div className="w-8 h-8 bg-emerald-700 text-white rounded-xl flex items-center justify-center text-xs font-black shadow-2xs flex-shrink-0">
                 {displayName[0]?.toUpperCase() || 'U'}
@@ -277,6 +297,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Content Area */}
         <main className="flex-1 p-4 lg:p-6 overflow-auto">{children}</main>
       </div>
+      <ToastContainer />
     </div>
   );
 }

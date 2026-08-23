@@ -26,5 +26,7 @@ router.get('/', authenticate, isAdmin, admissionController.listAdmissions);
 router.get('/stats', authenticate, isAdmin, admissionController.getAdmissionStats);
 router.get('/:id', authenticate, isAdmin, admissionController.getAdmissionById);
 router.patch('/:id/status', authenticate, isAdmin, admissionController.updateAdmissionStatus);
+router.delete('/clear-all', authenticate, isAdmin, admissionController.clearAllAdmissions);
 
 export default router;
+

@@ -178,3 +178,15 @@ export const getAdmissionStats = async (_req: Request, res: Response) => {
     sendSuccess(res, { total, byStatus, byGender, academicYear });
   } catch { sendError(res, 'Gagal mengambil statistik'); }
 };
+
+// ─── HAPUS SEMUA DATA PPDB (admin) ──────────────────────────────────────────
+export const clearAllAdmissions = async (_req: AuthRequest, res: Response) => {
+  try {
+    await prisma.admission.deleteMany({});
+    sendSuccess(res, null, 'Seluruh data pendaftar PPDB berhasil dihapus.');
+  } catch (err) {
+    console.error('Error clearAllAdmissions:', err);
+    sendError(res, 'Gagal menghapus data PPDB');
+  }
+};
+

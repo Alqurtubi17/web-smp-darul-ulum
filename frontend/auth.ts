@@ -92,5 +92,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     error: '/auth/login',
   },
 
-  session: { strategy: 'jwt', maxAge: 60 * 60 * 24 * 7 }, // 7 hari
+  session: { strategy: 'jwt', maxAge: 60 * 60 * 24 * 30 }, // 30 hari
 });

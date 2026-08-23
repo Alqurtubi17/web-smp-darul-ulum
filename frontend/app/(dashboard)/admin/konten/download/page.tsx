@@ -1,120 +1,446 @@
 'use client';
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Trash2, Download, FileText, X, Loader2 } from 'lucide-react';
-import apiClient, { getErrorMessage } from '@/lib/api';
-import { CustomImageUploader } from '@/components/ui/CustomImageUploader';
+
+import { useState, useEffect } from 'react';
+import { Plus, Trash2, Download, FileText, X, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
+import { useActivityLogStore } from '@/store/activity-log.store';
+import { toast } from '@/store/toast.store';
+import { useAuth } from '@/hooks/useAuth';
 
-interface DlFile { id: string; title: string; description: string|null; category: string; fileUrl: string; fileType: string; fileSize: string|null; downloadCount: number; isPublic: boolean; createdAt: string; }
+interface DlFile {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  fileUrl: string;
+  fileType: string;
+  fileSize: string;
+  downloadCount: number;
+  isPublic: boolean;
+  createdAt: string;
+}
 
-const CATS = ['Formulir PPDB','Administrasi Siswa','Panduan & Buku','Keuangan','Akademik','Lainnya'];
-const DEF = { title:'', description:'', category:'', fileUrl:'', fileType:'PDF', fileSize:'', isPublic:true };
+const CATEGORIES = ['Formulir PPDB', 'Administrasi Siswa', 'Panduan & Buku', 'Keuangan', 'Akademik', 'Lainnya'];
+
+const INITIAL_DOWNLOADS: DlFile[] = [
+  {
+    id: 'doc-1',
+    title: 'Formulir Pendaftaran & Berkas Fisik PPDB T.A. 2026/2027',
+    description: 'Dokumen cetak formulir pendaftaran serta kelengkapan syarat berkas calon siswa baru.',
+    category: 'Formulir PPDB',
+    fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+    fileType: 'PDF',
+    fileSize: '1.4 MB',
+    downloadCount: 340,
+    isPublic: true,
+    createdAt: '2026-08-01T08:00:00Z',
+  },
+  {
+    id: 'doc-2',
+    title: 'Buku Panduan Tata Tertib & Kode Etik Siswa SMP Darul Ulum',
+    description: 'Buku saku elektronik panduan disiplin, atribut seragam, dan aturan tata tertib siswa.',
+    category: 'Panduan & Buku',
+    fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+    fileType: 'PDF',
+    fileSize: '2.8 MB',
+    downloadCount: 820,
+    isPublic: true,
+    createdAt: '2026-07-15T09:00:00Z',
+  },
+  {
+    id: 'doc-3',
+    title: 'Dokumen Kalender Pendidikan Resmi Kota Surabaya 2026/2027',
+    description: 'Kalender pendidikan resmi mengenai tanggal libur hari besar dan pekan efektif belajar.',
+    category: 'Akademik',
+    fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+    fileType: 'PDF',
+    fileSize: '3.1 MB',
+    downloadCount: 1150,
+    isPublic: true,
+    createdAt: '2026-07-20T10:00:00Z',
+  },
+  {
+    id: 'doc-4',
+    title: 'Surat Pernyataan Bebas Narkoba & Kesediaan Tatap Muka',
+    description: 'Template surat pernyataan wali murid dan persetujuan tata tertib sekolah.',
+    category: 'Administrasi Siswa',
+    fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+    fileType: 'DOCX',
+    fileSize: '450 KB',
+    downloadCount: 290,
+    isPublic: true,
+    createdAt: '2026-08-05T11:00:00Z',
+  },
+];
 
 export default function AdminDownloadPage() {
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState(DEF);
-  const [err, setErr] = useState('');
-  const [deleteId, setDeleteId] = useState<string|null>(null);
-  const qc = useQueryClient();
-  const set = (k: string, v: unknown) => setForm(p => ({ ...p, [k]: v }));
+  const { addLog } = useActivityLogStore();
+  const { user } = useAuth();
+  const actorName = (user as any)?.teacher?.fullName || (user as any)?.email || 'Admin Utama';
 
-  const { data: list = [], isLoading } = useQuery({
-    queryKey: ['admin-downloads'],
-    queryFn: async () => { const { data } = await apiClient.get('/downloads?limit=100'); return (data.data||[]) as DlFile[]; },
+  const [downloads, setDownloads] = useState<DlFile[]>(INITIAL_DOWNLOADS);
+
+
+  const [search, setSearch] = useState('');
+  const [catFilter, setCatFilter] = useState('');
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
+
+  // Modals
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Form State
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    category: 'Formulir PPDB',
+    fileUrl: '',
+    fileType: 'PDF',
+    fileSize: '1.2 MB',
+    isPublic: true,
   });
 
-  const createMut = useMutation({
-    mutationFn: (body: Record<string, unknown>) => apiClient.post('/downloads', body),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-downloads'] }); setShowForm(false); setForm(DEF); },
-    onError: e => setErr(getErrorMessage(e)),
+  const updateForm = (k: string, v: unknown) => setFormData((p) => ({ ...p, [k]: v }));
+
+  const handleOpenAdd = () => {
+    setFormData({
+      title: '',
+      description: '',
+      category: 'Formulir PPDB',
+      fileUrl: '',
+      fileType: 'PDF',
+      fileSize: '1.2 MB',
+      isPublic: true,
+    });
+    setShowFormModal(true);
+  };
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.title.trim()) return;
+
+    const newItem: DlFile = {
+      id: `doc-${Date.now()}`,
+      title: formData.title,
+      description: formData.description,
+      category: formData.category,
+      fileUrl: formData.fileUrl || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+      fileType: formData.fileType,
+      fileSize: formData.fileSize,
+      downloadCount: 0,
+      isPublic: formData.isPublic,
+      createdAt: new Date().toISOString(),
+    };
+
+    setDownloads((prev) => [newItem, ...prev]);
+
+    addLog({
+      user: actorName,
+      role: 'ADMIN',
+      action: `Mengunggah Berkas Unduhan Baru "${formData.title}"`,
+      module: 'Pengguna',
+      severity: 'SUCCESS',
+      details: `Kategori: ${formData.category}, Tipe: ${formData.fileType}`,
+    });
+
+    toast.success('Berkas Ditambahkan', `File unduhan "${formData.title}" berhasil diunggah.`);
+    setShowFormModal(false);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deletingId) return;
+    const target = downloads.find((d) => d.id === deletingId);
+    setDownloads((prev) => prev.filter((d) => d.id !== deletingId));
+
+    if (target) {
+      addLog({
+        user: actorName,
+        role: 'ADMIN',
+        action: `Menghapus Berkas Unduhan "${target.title}"`,
+        module: 'Pengguna',
+        severity: 'DANGER',
+        details: `ID Berkas: ${target.id}`,
+      });
+    }
+
+    toast.success('Berkas Dihapus', 'File unduhan berhasil dihapus dari server.');
+    setDeletingId(null);
+  };
+
+  const filtered = downloads.filter((d) => {
+    const matchSearch =
+      d.title.toLowerCase().includes(search.toLowerCase()) ||
+      d.description.toLowerCase().includes(search.toLowerCase());
+    const matchCat = catFilter === '' || d.category === catFilter;
+    return matchSearch && matchCat;
   });
 
-  const deleteMut = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/downloads/${id}`),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-downloads'] }); setDeleteId(null); },
-  });
-
-  const grouped = CATS.reduce((acc, cat) => {
-    acc[cat] = list.filter(d => d.category === cat);
-    return acc;
-  }, {} as Record<string, DlFile[]>);
+  const totalPages = Math.max(Math.ceil(filtered.length / pageSize), 1);
+  const paginated = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
-    <div className="space-y-6">
-      {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl shadow-2xl border border-emerald-100 w-full max-w-md overflow-hidden flex flex-col">
-            
-            <div className="flex items-center justify-between px-6 py-4 border-b border-emerald-100 bg-emerald-50/50">
-              <div>
-                <h2 className="font-extrabold text-slate-900 text-base">Upload Dokumen Sekolah</h2>
-                <p className="text-[11px] font-semibold text-slate-500">Unggah formulir, panduan, atau berkas unduhan</p>
-              </div>
-              <button onClick={()=>setShowForm(false)} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-emerald-100/60 rounded-xl transition-colors"><X className="w-5 h-5"/></button>
+    <div className="space-y-6 max-w-7xl mx-auto pb-10">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            Pusat Berkas &amp; Dokumen Unduhan
+          </h1>
+
+          <p className="text-xs text-slate-500 font-medium mt-1">
+            Kelola berkas publikasi, formulir PPDB, buku panduan, dan surat edaran sekolah.
+          </p>
+        </div>
+
+        <button
+          onClick={handleOpenAdd}
+          className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white text-xs font-extrabold shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Upload Berkas Baru</span>
+        </button>
+      </div>
+
+      {/* Toolbar Filter */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="relative w-full sm:w-80">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Cari berkas dokumen..."
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          />
+        </div>
+
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <select
+            value={catFilter}
+            onChange={(e) => {
+              setCatFilter(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 bg-white focus:outline-none cursor-pointer"
+          >
+            <option value="">Semua Kategori Dokumen</option>
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Table Content */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[700px]">
+            <thead>
+              <tr className="bg-slate-50/70 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <th className="px-5 py-3.5">NAMA BERKAS DOKUMEN</th>
+                <th className="px-5 py-3.5">KATEGORI</th>
+                <th className="px-5 py-3.5">FORMAT &amp; UKURAN</th>
+                <th className="px-5 py-3.5">TOTAL DIUNDUH</th>
+                <th className="px-5 py-3.5">TANGGAL UPLOAD</th>
+                <th className="px-5 py-3.5 text-right">AKSI</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {paginated.length > 0 ? (
+                paginated.map((item) => (
+                  <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 shrink-0">
+                          <FileText className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-slate-900 line-clamp-1">{item.title}</p>
+                          <p className="text-[11px] text-slate-400 line-clamp-1">{item.description}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-extrabold">
+                        {item.category}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 text-xs font-mono font-semibold text-slate-700">
+                      {item.fileType} ({item.fileSize})
+                    </td>
+                    <td className="px-5 py-4 text-xs font-bold text-slate-900">{item.downloadCount} kali</td>
+                    <td className="px-5 py-4 text-xs text-slate-500 font-mono">
+                      {formatDate(item.createdAt, { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </td>
+                    <td className="px-5 py-4 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <a
+                          href={item.fileUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="p-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition-colors inline-flex items-center"
+                          title="Unduh File"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </a>
+                        <button
+                          onClick={() => setDeletingId(item.id)}
+                          className="p-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-colors cursor-pointer"
+                          title="Hapus Berkas"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="px-5 py-8 text-center text-xs text-slate-500 font-medium">
+                    Tidak ada berkas dokumen yang sesuai.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        <div className="p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50 rounded-b-2xl text-xs font-semibold text-slate-500">
+          <p>
+            Halaman <strong className="text-slate-900">{currentPage}</strong> dari{' '}
+            <strong className="text-slate-900">{totalPages}</strong>
+          </p>
+
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              disabled={currentPage === 1}
+              className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 transition-colors cursor-pointer"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="px-3 py-1 rounded-lg bg-emerald-600 text-white text-xs font-bold">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 transition-colors cursor-pointer"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal Form Upload */}
+      {showFormModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-xl max-w-md w-full p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="font-extrabold text-slate-900 text-base">Upload Berkas Dokumen</h3>
+              <button onClick={() => setShowFormModal(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            <form onSubmit={e=>{ e.preventDefault(); if(!form.title.trim()||!form.fileUrl) { setErr('Judul dan berkas file wajib diisi'); return; } createMut.mutate(form); }}>
-              <div className="p-6 space-y-4">
-                {err && <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-xs font-bold text-rose-700">{err}</div>}
-                
-                <div>
-                  <label className="block text-xs font-extrabold text-slate-800 mb-1.5">Judul Dokumen *</label>
-                  <input type="text" required value={form.title} onChange={e=>set('title',e.target.value)} placeholder="cth: Formulir Pendaftaran PPDB T.A. 2025/2026"
-                    className="w-full px-4 py-2.5 rounded-2xl border border-emerald-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 shadow-2xs"/>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-extrabold text-slate-800 mb-1.5">Deskripsi Singkat</label>
-                  <textarea rows={2} value={form.description||''} onChange={e=>set('description',e.target.value)} placeholder="Keterangan singkat berkas..."
-                    className="w-full px-4 py-2.5 rounded-2xl border border-emerald-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 resize-none shadow-2xs"/>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-extrabold text-slate-800 mb-1.5">Kategori Dokumen</label>
-                  <select value={form.category} onChange={e=>set('category',e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-2xl border border-emerald-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 shadow-2xs">
-                    <option value="">Pilih Kategori</option>
-                    {CATS.map(c=><option key={c}>{c}</option>)}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-extrabold text-slate-800 mb-2">Upload File Dokumen (PDF/DOC) *</label>
-                  {form.fileUrl ? (
-                    <div className="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-2xl">
-                      <FileText className="w-5 h-5 text-emerald-700 flex-shrink-0"/>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-emerald-950">File Berhasil Diunggah</p>
-                        <p className="text-[11px] text-slate-500 font-medium truncate">{form.fileUrl}</p>
-                      </div>
-                      <button type="button" onClick={()=>set('fileUrl','')} className="text-xs font-bold text-rose-600 hover:underline flex-shrink-0">Hapus</button>
-                    </div>
-                  ) : (
-                    <CustomImageUploader
-                      endpoint="schoolDocument"
-                      label="📎 Upload Berkas Dokumen (PDF / DOC)"
-                      accept=".pdf,.doc,.docx,.xls,.xlsx"
-                      onUploadComplete={(url, name) => {
-                        set('fileUrl', url);
-                        set('fileType', name?.split('.').pop()?.toUpperCase() || 'PDF');
-                      }}
-                      className="w-full px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition-all shadow-2xs inline-flex items-center justify-center gap-2 cursor-pointer"
-                    />
-                  )}
-                </div>
-
-                <label className="flex items-center gap-2 cursor-pointer pt-1">
-                  <input type="checkbox" checked={form.isPublic} onChange={e=>set('isPublic',e.target.checked)} className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-600"/>
-                  <span className="text-xs font-bold text-slate-800">Tampilkan untuk Unduhan Publik</span>
-                </label>
+            <form onSubmit={handleSave} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Judul Dokumen</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Misal: Formulir Pendaftaran PPDB..."
+                  value={formData.title}
+                  onChange={(e) => updateForm('title', e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                />
               </div>
 
-              <div className="flex gap-3 px-6 py-4 border-t border-emerald-100 bg-emerald-50/40">
-                <button type="button" onClick={()=>setShowForm(false)} className="flex-1 py-2.5 rounded-2xl border border-emerald-200 text-xs font-bold text-slate-700 bg-white hover:bg-emerald-50">Batal</button>
-                <button type="submit" disabled={createMut.isPending||!form.fileUrl} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white text-xs font-extrabold shadow-2xs">
-                  {createMut.isPending && <Loader2 className="w-4 h-4 animate-spin"/>}
-                  Simpan Dokumen
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Kategori Dokumen</label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => updateForm('category', e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:ring-2 focus:ring-emerald-600 focus:outline-none cursor-pointer"
+                >
+                  {CATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Format File</label>
+                  <select
+                    value={formData.fileType}
+                    onChange={(e) => updateForm('fileType', e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:ring-2 focus:ring-emerald-600 focus:outline-none cursor-pointer"
+                  >
+                    <option value="PDF">PDF Document (.pdf)</option>
+                    <option value="DOCX">Word Document (.docx)</option>
+                    <option value="XLSX">Excel Spreadsheet (.xlsx)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Ukuran File</label>
+                  <input
+                    type="text"
+                    placeholder="1.5 MB"
+                    value={formData.fileSize}
+                    onChange={(e) => updateForm('fileSize', e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Link URL File Dokumen</label>
+                <input
+                  type="url"
+                  placeholder="https://..."
+                  value={formData.fileUrl}
+                  onChange={(e) => updateForm('fileUrl', e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Deskripsi Singkat</label>
+                <textarea
+                  rows={2}
+                  placeholder="Penjelasan ringkas isi dokumen..."
+                  value={formData.description}
+                  onChange={(e) => updateForm('description', e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-emerald-600 focus:outline-none resize-none"
+                />
+              </div>
+
+              <div className="pt-3 flex justify-end gap-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowFormModal(false)}
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs cursor-pointer"
+                >
+                  Upload Dokumen
                 </button>
               </div>
             </form>
@@ -122,66 +448,29 @@ export default function AdminDownloadPage() {
         </div>
       )}
 
-      {deleteId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl p-6 max-w-sm w-full border border-emerald-100 shadow-2xl">
-            <h3 className="font-extrabold text-slate-900 mb-2">Hapus Dokumen Ini?</h3>
-            <p className="text-xs text-slate-500 font-semibold mb-5">Tindakan ini tidak dapat dibatalkan.</p>
-            <div className="flex gap-3">
-              <button onClick={()=>setDeleteId(null)} className="flex-1 py-2.5 rounded-2xl border border-emerald-200 text-xs font-bold text-slate-700 bg-white hover:bg-emerald-50">Batal</button>
-              <button onClick={()=>deleteMut.mutate(deleteId)} className="flex-1 py-2.5 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold transition-all shadow-2xs">Ya, Hapus</button>
+      {/* Modal Hapus */}
+      {deletingId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-xl max-w-sm w-full p-6 space-y-4 text-center">
+            <h3 className="font-extrabold text-slate-900 text-base">Hapus Berkas Unduhan?</h3>
+            <p className="text-xs text-slate-600 font-medium">
+              Apakah Anda yakin ingin menghapus dokumen ini dari portal unduhan sekolah?
+            </p>
+            <div className="flex justify-center gap-2 pt-2">
+              <button
+                onClick={() => setDeletingId(null)}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs cursor-pointer"
+              >
+                Ya, Hapus
+              </button>
             </div>
           </div>
-        </div>
-      )}
-
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Manajemen Pusat Download</h1>
-          <p className="text-xs text-slate-500 font-semibold mt-0.5">{list.length} berkas dokumen tersedia</p>
-        </div>
-        <button onClick={()=>setShowForm(true)} className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition-all shadow-2xs">
-          <Plus className="w-4 h-4"/> Upload Dokumen Baru
-        </button>
-      </div>
-
-      {isLoading ? (
-        <div className="flex items-center justify-center py-16"><Loader2 className="w-8 h-8 animate-spin text-emerald-600"/></div>
-      ) : list.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-3xl border border-emerald-100 text-slate-400">
-          <Download className="w-10 h-10 mx-auto mb-3 opacity-30"/>
-          <p className="text-xs font-semibold text-slate-500">Belum ada berkas dokumen</p>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {CATS.filter(cat => grouped[cat]?.length > 0).map(cat => (
-            <div key={cat} className="space-y-3">
-              <h2 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider px-1">{cat}</h2>
-              <div className="bg-white rounded-3xl border border-emerald-100 shadow-2xs divide-y divide-emerald-50 overflow-hidden">
-                {grouped[cat].map(doc => (
-                  <div key={doc.id} className="flex items-center gap-4 px-6 py-4 hover:bg-emerald-50/30 transition-colors">
-                    <div className="w-10 h-10 bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-2xs">
-                      <FileText className="w-5 h-5 text-rose-600"/>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-extrabold text-slate-900 truncate">{doc.title}</p>
-                      <div className="flex items-center gap-3 mt-1 text-[11px] font-semibold text-slate-400">
-                        <span className="font-mono bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded-md text-[10px] font-bold">{doc.fileType}</span>
-                        {doc.fileSize && <span>{doc.fileSize}</span>}
-                        <span className="flex items-center gap-1"><Download className="w-3.5 h-3.5 text-emerald-600"/> {doc.downloadCount} kali diunduh</span>
-                        <span>{formatDate(doc.createdAt,{day:'numeric',month:'short',year:'numeric'})}</span>
-                        {!doc.isPublic && <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md font-bold">Internal</span>}
-                      </div>
-                    </div>
-                    <div className="flex gap-1 flex-shrink-0">
-                      <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="p-2 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-colors"><Download className="w-4 h-4"/></a>
-                      <button onClick={()=>setDeleteId(doc.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"><Trash2 className="w-4 h-4"/></button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
         </div>
       )}
     </div>

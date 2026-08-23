@@ -53,3 +53,18 @@ input:focus, select:focus, textarea:focus {
   border-color: #6ee7b7;
   box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.08);
 }
+
+/* Toast progress bar shrink animation */
+@keyframes toast-shrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+.animate-toast-progress {
+  animation: toast-shrink 3.5s linear forwards;
+}
+

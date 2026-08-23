@@ -19,6 +19,7 @@ const DEMO_ACCOUNTS = [
   { role: 'Admin', email: 'admin@smpdarululum.sch.id', pass: 'Admin@123456!' },
   { role: 'Guru', email: 'siti.rahayu@smpdarululum.sch.id', pass: 'Guru@123456!' },
   { role: 'Siswa', email: 'ahmad.rizki@siswa.smpdarululum.sch.id', pass: 'Siswa@2024001' },
+  { role: 'Orang Tua', email: 'ortu.rizki@ortu.smpdarululum.sch.id', pass: 'Ortu@2024001' },
 ];
 
 export default function LoginPage() {
@@ -62,7 +63,6 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-emerald-50/40 to-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-
         {/* Logo Header */}
         <div className="text-center mb-6">
           <Link href="/" className="inline-flex flex-col items-center gap-2">
@@ -84,8 +84,8 @@ export default function LoginPage() {
           </p>
 
           {error && (
-            <div className="mb-5 flex items-center gap-2.5 p-3 rounded-xl bg-red-50 border border-red-200 text-xs font-bold text-red-600">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            <div className="mb-5 flex items-center gap-2.5 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-bold text-rose-600">
+              <AlertCircle className="w-4 h-4 shrink-0" />
               <p>{error}</p>
             </div>
           )}
@@ -96,8 +96,11 @@ export default function LoginPage() {
               <div className="relative">
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-600" />
                 <input
-                  type="email" required autoComplete="email"
-                  value={email} onChange={e => setEmail(e.target.value)}
+                  type="email"
+                  required
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="email@sekolah.sch.id"
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-emerald-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-600"
                 />
@@ -109,33 +112,47 @@ export default function LoginPage() {
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-600" />
                 <input
-                  type={showPassword ? 'text' : 'password'} required autoComplete="current-password"
-                  value={password} onChange={e => setPassword(e.target.value)}
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   className="w-full pl-10 pr-12 py-2.5 rounded-xl border border-emerald-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-600"
                 />
                 <button
-                  type="button" onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
-            <button type="submit" disabled={loading}
-              className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white font-bold text-sm transition-all shadow-xs flex items-center justify-center gap-2">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white font-bold text-sm transition-all shadow-xs flex items-center justify-center gap-2"
+            >
               {loading ? 'Memproses...' : 'Masuk Portal'}
             </button>
           </form>
 
           {/* Demo Accounts */}
           <div className="mt-6 pt-5 border-t border-emerald-100">
-            <p className="text-xs text-center font-bold text-slate-400 mb-3 uppercase tracking-wider">Akun Uji Coba</p>
-            <div className="grid grid-cols-3 gap-2">
-              {DEMO_ACCOUNTS.map(acc => (
-                <button key={acc.role} type="button"
-                  onClick={() => { setEmail(acc.email); setPassword(acc.pass); }}
-                  className="p-2 rounded-xl bg-emerald-50/60 border border-emerald-100 hover:border-emerald-300 text-center transition-colors">
+            <p className="text-xs text-center font-bold text-slate-400 mb-3 uppercase tracking-wider">Akun Uji Coba Per Role</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {DEMO_ACCOUNTS.map((acc) => (
+                <button
+                  key={acc.role}
+                  type="button"
+                  onClick={() => {
+                    setEmail(acc.email);
+                    setPassword(acc.pass);
+                  }}
+                  className="p-2 rounded-xl bg-emerald-50/60 border border-emerald-100 hover:border-emerald-300 text-center transition-colors"
+                >
                   <p className="text-xs font-bold text-emerald-950">{acc.role}</p>
                 </button>
               ))}
@@ -144,7 +161,9 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-xs text-slate-500 font-semibold mt-6">
-          <Link href="/" className="hover:text-emerald-700 transition-colors">← Kembali ke Halaman Utama</Link>
+          <Link href="/" className="hover:text-emerald-700 transition-colors">
+            ← Kembali ke Halaman Utama
+          </Link>
         </p>
       </div>
     </div>

@@ -16,7 +16,7 @@ import {
   gradeRouter, attendanceRouter,
   assignmentRouter, materialRouter,
   paymentRouter, bookRouter, borrowingRouter,
-  userRouter, studentRouter, teacherRouter, dashboardRouter,
+  userRouter, studentRouter, teacherRouter, dashboardRouter, auditLogRouter,
 } from './routes/index';
 
 const app = express();
@@ -67,6 +67,7 @@ app.use(`${API}/users`, userRouter);
 app.use(`${API}/students`, studentRouter);
 app.use(`${API}/teachers`, teacherRouter);
 app.use(`${API}/dashboard`, dashboardRouter);
+app.use(`${API}/audit-logs`, auditLogRouter);
 
 // ─── ERROR HANDLERS ───────────────────────────────────────────────────────────
 app.use(notFoundHandler);

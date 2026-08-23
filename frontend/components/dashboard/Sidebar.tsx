@@ -7,8 +7,8 @@ import NextImage from 'next/image';
 import {
   LayoutDashboard, Newspaper, Megaphone, CalendarDays,
   Users, BookOpen, GraduationCap, ClipboardList, Settings,
-  ChevronDown, Trophy, UserCheck, BarChart3,
-  Wallet, Library, QrCode, FileText, Gamepad2, BookMarked,
+  ChevronDown, Trophy, UserCheck,
+  Wallet, Library, QrCode, FileText, Gamepad2, BookMarked, History,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
@@ -46,9 +46,9 @@ const menuConfig: Record<string, MenuItem[]> = {
         { label: 'Guru', href: '/admin/pengguna/guru' },
       ],
     },
-    { label: 'Laporan', icon: <BarChart3 className="w-4 h-4" />, href: '/admin/laporan' },
     { label: 'Keuangan', icon: <Wallet className="w-4 h-4" />, href: '/admin/keuangan' },
     { label: 'Perpustakaan', icon: <Library className="w-4 h-4" />, href: '/admin/perpustakaan' },
+    { label: 'Log Aktivitas', icon: <History className="w-4 h-4" />, href: '/admin/log' },
     { label: 'Pengaturan', icon: <Settings className="w-4 h-4" />, href: '/admin/pengaturan' },
   ],
   guru: [
@@ -140,7 +140,6 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
   if (!user) return null;
 
   const toggleSubmenu = (label: string) => {
-    // Single-accordion: if opening an item, set it as the only open item; if clicking already open, close it.
     setOpenSubmenu((prev) => (prev === label ? null : label));
   };
 
