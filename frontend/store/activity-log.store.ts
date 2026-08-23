@@ -125,8 +125,5 @@ export const useActivityLogStore = create<ActivityLogState>((set, get) => ({
       // ignore
     }
   },
-
-      // ignore
-    }
-  },
 }));
+
