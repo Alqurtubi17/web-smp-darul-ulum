@@ -14,7 +14,14 @@ const PROTECTED_ROUTES = ['/admin', '/guru', '/siswa', '/ortu'];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  // 0. Always bypass middleware for API routes to prevent circular auth loops
+  if (pathname.startsWith('/api')) {
+    return NextResponse.next();
+  }
+
   const session = await auth();
+
 
   // 1. Unauthenticated users accessing protected routes -> redirect to login
   const isProtected = PROTECTED_ROUTES.some((r) => pathname.startsWith(r));
