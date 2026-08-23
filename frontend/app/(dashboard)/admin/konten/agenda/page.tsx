@@ -515,7 +515,7 @@ export default function AdminAgendaPage() {
 
     setAgendas((prev) => [...newItems, ...prev]);
 
-    // Async save to Express API
+    // Async save to Express API & Auto-create Announcements for Kaldik Holidays
     for (const item of newItems) {
       try {
         await contentService.createEvent({
@@ -525,10 +525,23 @@ export default function AdminAgendaPage() {
           startDate: item.date,
           endDate: item.date,
         });
+
+        // Auto-generate official announcement if item is a holiday / academic event
+        const titleLower = item.title.toLowerCase();
+        if (titleLower.includes('libur') || titleLower.includes('peringatan') || titleLower.includes('puasa') || item.category === 'Kalender Akademik Sekolah') {
+          await contentService.createAnnouncement({
+            title: `[Pengumuman Resmi] ${item.title}`,
+            content: `Diberitahukan kepada seluruh siswa, guru, dan orang tua/wali murid SMP Darul Ulum Surabaya bahwa dalam rangka ${item.title}, kegiatan sekolah diliburkan/disesuaikan pada tanggal ${item.date}.`,
+            isPinned: titleLower.includes('libur'),
+            targetRole: 'SEMUA',
+            expiresAt: item.date,
+          });
+        }
       } catch (err) {
         console.warn('Backend import extracted event failed:', err);
       }
     }
+
 
     addLog({
       user: actorName,
