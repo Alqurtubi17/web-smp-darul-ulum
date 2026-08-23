@@ -43,18 +43,37 @@ export const useActivityLogStore = create<ActivityLogState>((set, get) => ({
     try {
       const res = await apiClient.get('/audit-logs');
       if (res?.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
-        const mapped: AuditLogItem[] = res.data.data.map((l: any) => ({
-          id: l.id,
-          timestamp: l.createdAt ? new Date(l.createdAt).toLocaleString('id-ID') : new Date().toLocaleString('id-ID'),
-          user: l.user?.email ? l.user.email.split('@')[0] : 'Admin Portal',
-          role: (l.user?.role as any) || 'ADMIN',
-          action: l.action || 'Aktivitas Sistem',
-          module: (l.resource as any) || 'Pengaturan',
-          ipAddress: l.ipAddress || '127.0.0.1',
-          device: l.userAgent ? (l.userAgent.includes('Chrome') ? 'Chrome Browser' : 'Web Browser') : 'Web Client',
-          severity: 'INFO',
-          details: l.newData ? JSON.stringify(l.newData) : (l.oldData ? JSON.stringify(l.oldData) : undefined),
-        }));
+        const mapped: AuditLogItem[] = res.data.data.map((l: any) => {
+          let detailsText = '';
+          let userText = l.user?.email ? l.user.email.split('@')[0] : 'Admin Portal';
+          let roleText = (l.user?.role as any) || 'ADMIN';
+          let severityText = 'INFO';
+
+          if (l.newData) {
+            try {
+              const parsed = typeof l.newData === 'string' ? JSON.parse(l.newData) : l.newData;
+              if (parsed.details) detailsText = parsed.details;
+              if (parsed.user) userText = parsed.user;
+              if (parsed.role) roleText = parsed.role;
+              if (parsed.severity) severityText = parsed.severity;
+            } catch {
+              detailsText = JSON.stringify(l.newData);
+            }
+          }
+
+          return {
+            id: l.id,
+            timestamp: l.createdAt ? new Date(l.createdAt).toLocaleString('id-ID') : new Date().toLocaleString('id-ID'),
+            user: userText,
+            role: roleText as any,
+            action: l.action || 'Aktivitas Sistem',
+            module: (l.resource as any) || 'Pengaturan',
+            ipAddress: l.ipAddress || '127.0.0.1',
+            device: l.userAgent ? (l.userAgent.includes('Chrome') ? 'Chrome Browser' : 'Web Browser') : 'Web Client',
+            severity: severityText as any,
+            details: detailsText || (l.oldData ? JSON.stringify(l.oldData) : undefined),
+          };
+        });
         set({ logs: mapped });
       }
     } catch {
@@ -85,12 +104,12 @@ export const useActivityLogStore = create<ActivityLogState>((set, get) => ({
     const updated = [newLog, ...get().logs];
     set({ logs: updated });
 
-    // Async call to backend audit log
+    // Async call to backend audit log PostgreSQL database
     apiClient.post('/audit-logs', {
       action: entry.action,
       resource: entry.module,
-      newData: { details: entry.details, user: entry.user, severity: entry.severity },
-    }).catch(() => {});
+      newData: { details: entry.details, user: entry.user, role: entry.role, severity: entry.severity },
+    }).catch((err) => console.warn('Backend audit log save warning:', err));
   },
 
   clearLogs: async () => {

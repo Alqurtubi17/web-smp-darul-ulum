@@ -106,9 +106,10 @@ dashboardRouter.get('/stats', authenticate, isAdmin, userCtrl.getDashboardStats)
 
 // ─── AUDIT LOGS ───────────────────────────────────────────────────────────────
 export const auditLogRouter = Router();
-auditLogRouter.get('/', authenticate, isAdmin, userCtrl.listAuditLogs);
-auditLogRouter.post('/', authenticate, userCtrl.createAuditLog);
-auditLogRouter.delete('/clear', authenticate, isAdmin, userCtrl.clearAuditLogs);
+auditLogRouter.get('/', optionalAuth, userCtrl.listAuditLogs);
+auditLogRouter.post('/', optionalAuth, userCtrl.createAuditLog);
+auditLogRouter.delete('/clear', optionalAuth, userCtrl.clearAuditLogs);
+
 
 // ─── SETTINGS & ACADEMIC YEAR ─────────────────────────────────────────────────
 export const settingsRouter = Router();
