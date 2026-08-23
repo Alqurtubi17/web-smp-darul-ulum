@@ -326,14 +326,30 @@ export const getSettings = async (_req: Request, res: Response): Promise<void> =
       result[s.key] = s.value;
     });
 
-    if (!result.active_academic_year) result.active_academic_year = '2024/2025';
-    if (!result.active_academic_semester) result.active_academic_semester = 'Ganjil';
+    if (!result.active_academic_year) {
+      result.active_academic_year = '2024/2025';
+      await prisma.siteSetting.upsert({
+        where: { key: 'active_academic_year' },
+        update: { value: '2024/2025' },
+        create: { key: 'active_academic_year', value: '2024/2025', group: 'general' },
+      });
+    }
+
+    if (!result.active_academic_semester) {
+      result.active_academic_semester = 'Ganjil';
+      await prisma.siteSetting.upsert({
+        where: { key: 'active_academic_semester' },
+        update: { value: 'Ganjil' },
+        create: { key: 'active_academic_semester', value: 'Ganjil', group: 'general' },
+      });
+    }
 
     sendSuccess(res, result, 'Pengaturan berhasil diambil');
   } catch {
     sendError(res, 'Gagal mengambil pengaturan');
   }
 };
+
 
 export const updateSettings = async (req: AuthRequest, res: Response): Promise<void> => {
   try {

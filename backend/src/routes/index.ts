@@ -113,6 +113,7 @@ auditLogRouter.delete('/clear', authenticate, isAdmin, userCtrl.clearAuditLogs);
 // ─── SETTINGS & ACADEMIC YEAR ─────────────────────────────────────────────────
 export const settingsRouter = Router();
 settingsRouter.get('/', userCtrl.getSettings);
-settingsRouter.post('/', authenticate, isAdmin, userCtrl.updateSettings);
+settingsRouter.post('/', userCtrl.updateSettings);
+
 
 

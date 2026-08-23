@@ -41,28 +41,32 @@ export const useAcademicYearStore = create<AcademicYearState>((set, get) => ({
   initAcademicYear: async () => {
     try {
       const res = await contentService.getSettings();
-      if (res?.data) {
-        const backendYear = res.data.active_academic_year;
-        const backendSemester = res.data.active_academic_semester as 'Ganjil' | 'Genap';
+      const settingsData = res?.data || res;
+      if (settingsData && typeof settingsData === 'object') {
+        const backendYear = settingsData.active_academic_year;
+        const backendSemester = settingsData.active_academic_semester as 'Ganjil' | 'Genap';
         let parsedYears = get().academicYears;
 
-        if (res.data.academic_years_json) {
+        if (settingsData.academic_years_json) {
           try {
-            parsedYears = JSON.parse(res.data.academic_years_json);
+            parsedYears = JSON.parse(settingsData.academic_years_json);
           } catch {
             // fallback
           }
         }
 
+        const targetYear = backendYear || get().activeYear;
+        const targetSemester = backendSemester || get().activeSemester;
+
         const updatedYears = parsedYears.map((item) => ({
           ...item,
-          isActive: item.year === backendYear && item.semester === backendSemester,
-          status: item.year === backendYear && item.semester === backendSemester ? ('Aktif' as const) : item.status,
+          isActive: item.year === targetYear && item.semester === targetSemester,
+          status: item.year === targetYear && item.semester === targetSemester ? ('Aktif' as const) : item.status === 'Aktif' ? ('Arsip' as const) : item.status,
         }));
 
         set({
-          activeYear: backendYear || get().activeYear,
-          activeSemester: backendSemester || get().activeSemester,
+          activeYear: targetYear,
+          activeSemester: targetSemester,
           academicYears: updatedYears,
           isLoaded: true,
         });
@@ -71,6 +75,7 @@ export const useAcademicYearStore = create<AcademicYearState>((set, get) => ({
       console.warn('Academic year init backend warning:', err);
     }
   },
+
 
   setActiveYear: (year: string, semester?: 'Ganjil' | 'Genap') => {
     const sem = semester || get().activeSemester;
