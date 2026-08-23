@@ -56,32 +56,9 @@ export const useActivityLogStore = create<ActivityLogState>((set, get) => ({
           details: l.newData ? JSON.stringify(l.newData) : (l.oldData ? JSON.stringify(l.oldData) : undefined),
         }));
         set({ logs: mapped });
-        return;
       }
     } catch {
-      // Fallback
-    }
-
-  initLogs: async () => {
-    try {
-      const res = await apiClient.get('/audit-logs');
-      if (res?.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
-        const mapped: AuditLogItem[] = res.data.data.map((l: any) => ({
-          id: l.id,
-          timestamp: l.createdAt ? String(l.createdAt).split('T')[0] : '2026-08-01',
-          user: (l.user?.fullName || l.user?.email || 'System') as string,
-          role: (l.user?.role as any) || 'ADMIN',
-          action: l.action || 'Aktivitas Sistem',
-          module: (l.resource as any) || 'Pengaturan',
-          ipAddress: l.ipAddress || '127.0.0.1',
-          device: l.userAgent ? (l.userAgent.includes('Chrome') ? 'Chrome Browser' : 'Web Browser') : 'Web Client',
-          severity: 'INFO',
-          details: l.newData ? JSON.stringify(l.newData) : (l.oldData ? JSON.stringify(l.oldData) : undefined),
-        }));
-        set({ logs: mapped });
-      }
-    } catch {
-      // Memory initial logs state
+      // Memory state fallback
     }
   },
 
@@ -126,4 +103,3 @@ export const useActivityLogStore = create<ActivityLogState>((set, get) => ({
     }
   },
 }));
-

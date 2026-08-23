@@ -102,7 +102,7 @@ export default function OrtuDashboard() {
                 Tagihan SPP {pendingPayment.month} Belum Dilunasi
               </p>
               <p className="text-[11px] text-amber-800 font-medium mt-0.5">
-                Nominal: <strong className="text-slate-900">{formatCurrency(pendingPayment.amount)}</strong> · Batas jatuh tempo: {formatDate(pendingPayment.due, { day: 'numeric', month: 'long', year: 'numeric' })}
+                Nominal: <strong className="text-slate-900">{formatCurrency(pendingPayment.amount)}</strong> · Batas jatuh tempo: {formatDate(pendingPayment.due || '2026-08-28', { day: 'numeric', month: 'long', year: 'numeric' })}
               </p>
             </div>
           </div>
@@ -201,10 +201,11 @@ export default function OrtuDashboard() {
                     <p className="text-xs font-bold text-slate-900">{p.month}</p>
                     <p className="text-[11px] text-slate-500 font-medium mt-0.5">
                       {p.status === 'PAID'
-                        ? `Lunas: ${formatDate(p.paid, { day: 'numeric', month: 'short' })}`
-                        : `Jatuh tempo: ${formatDate(p.due, { day: 'numeric', month: 'short' })}`}
+                        ? `Lunas: ${formatDate(p.paid || '2026-08-01', { day: 'numeric', month: 'short' })}`
+                        : `Jatuh tempo: ${formatDate(p.due || '2026-08-28', { day: 'numeric', month: 'short' })}`}
                     </p>
                   </div>
+
                   <div className="text-right">
                     <p className="text-xs font-bold text-slate-900">{formatCurrency(p.amount)}</p>
                     <span className={`text-[10px] font-bold ${p.status === 'PAID' ? 'text-emerald-700' : 'text-amber-700'}`}>
