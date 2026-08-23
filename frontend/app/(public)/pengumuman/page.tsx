@@ -96,7 +96,7 @@ export default function PengumumanPublicPage() {
     const fetchPublicAnnouncements = async () => {
       try {
         const res = await contentService.getAnnouncements();
-        if (res?.data && Array.isArray(res.data)) {
+        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
           const mapped: Ann[] = res.data.map((item: any) => ({
             id: item.id,
             title: item.title,
@@ -106,7 +106,15 @@ export default function PengumumanPublicPage() {
             publishedAt: item.createdAt ? String(item.createdAt).split('T')[0] : '2026-08-01',
             expiresAt: item.expiresAt ? String(item.expiresAt).split('T')[0] : null,
           }));
-          setList(mapped);
+
+          // Merge backend items with default Kaldik items, avoiding duplicates
+          const combined = [...mapped];
+          DEFAULT_ANNOUNCEMENTS.forEach((defItem) => {
+            if (!combined.some((x) => x.title === defItem.title || x.id === defItem.id)) {
+              combined.push(defItem);
+            }
+          });
+          setList(combined);
         }
       } catch (err) {
         console.warn('Backend public announcements load warning:', err);
@@ -115,32 +123,10 @@ export default function PengumumanPublicPage() {
     fetchPublicAnnouncements();
   }, []);
 
-
-
-
-  // Filter & Search & H-3 to H+1 Auto-Expiry Logic
+  // Filter & Search Logic
   const filteredList = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
     return list.filter((item) => {
-      // 1. H-3 Display Start & H+1 Auto-Expiry Removal Check
-      if (item.expiresAt) {
-        const eventDate = new Date(item.expiresAt);
-        eventDate.setHours(0, 0, 0, 0);
-
-        // H+1 Date (Next day after event date -> auto remove on H+1)
-        const hPlus1 = new Date(eventDate);
-        hPlus1.setDate(hPlus1.getDate() + 1);
-        if (today >= hPlus1) return false; // H+1 reached -> auto removed!
-
-        // H-3 Date (3 days before event date -> display starting on H-3)
-        const hMinus3 = new Date(eventDate);
-        hMinus3.setDate(hMinus3.getDate() - 3);
-        if (today < hMinus3) return false; // Before H-3 -> hide for now
-      }
-
-      // 2. Search match
+      // 1. Search match
       const matchSearch =
         item.title.toLowerCase().includes(search.toLowerCase()) ||
         item.content.toLowerCase().includes(search.toLowerCase());
@@ -150,14 +136,14 @@ export default function PengumumanPublicPage() {
       const targetDateStr = item.expiresAt || item.publishedAt;
       const dateObj = new Date(targetDateStr);
 
-      // 3. Month Filter check
+      // 2. Month Filter check
       if (selectedMonth !== 'SEMUA') {
         if (dateObj.getMonth().toString() !== selectedMonth) {
           return false;
         }
       }
 
-      // 4. Year Filter check
+      // 3. Year Filter check
       if (selectedYear !== 'SEMUA') {
         if (dateObj.getFullYear().toString() !== selectedYear) {
           return false;
@@ -167,7 +153,6 @@ export default function PengumumanPublicPage() {
       return true;
     });
   }, [list, search, selectedMonth, selectedYear]);
-
 
   // Extract unique available years dynamically from dataset
   const availableYears = useMemo(() => {
@@ -253,7 +238,7 @@ export default function PengumumanPublicPage() {
 
           {filteredList.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-3xl border border-emerald-100 text-slate-400 font-medium shadow-2xs">
-              <p className="text-xs font-extrabold text-slate-700">Belum ada pengumuman aktif saat ini.</p>
+              <p className="text-xs font-extrabold text-slate-700">Belum ada pengumuman untuk kriteria pencarian ini.</p>
             </div>
           ) : (
             <div className="divide-y divide-emerald-100 bg-white rounded-3xl border border-emerald-100 overflow-hidden shadow-2xs">
