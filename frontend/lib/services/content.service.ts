@@ -83,6 +83,20 @@ export const contentService = {
     return data;
   },
 
+  // ── PRESTASI (ACHIEVEMENTS) ────────────────────────────────────────────────
+  async getAchievements() {
+    const { data } = await apiClient.get('/achievements');
+    return data;
+  },
+  async createAchievement(payload: any) {
+    const { data } = await apiClient.post('/achievements', payload);
+    return data;
+  },
+  async deleteAchievement(id: string, params?: any) {
+    const { data } = await apiClient.delete(`/achievements/${id}`, { params });
+    return data;
+  },
+
   // ── PENGATURAN (SETTINGS) ──────────────────────────────────────────────────
   async getSettings() {
     const { data } = await apiClient.get('/settings');
@@ -93,5 +107,7 @@ export const contentService = {
     return data;
   },
 };
+
+
 
 

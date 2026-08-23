@@ -7,6 +7,8 @@ import { useActivityLogStore } from '@/store/activity-log.store';
 import { toast } from '@/store/toast.store';
 import { useAuth } from '@/hooks/useAuth';
 
+import { contentService } from '@/lib/services/content.service';
+
 interface Achievement {
   id: string;
   title: string;
@@ -18,56 +20,38 @@ interface Achievement {
   imageUrl?: string;
 }
 
-const INITIAL_ACHIEVEMENTS: Achievement[] = [
-  {
-    id: 'ach-1',
-    title: 'Juara 1 OSN Matematika SMP Tingkat Kota Surabaya',
-    description: 'Raihan Medali Emas Olimpiade Sains Nasional bidang Matematika jenjang SMP se-Kota Surabaya.',
-    category: 'siswa',
-    level: 'kota',
-    year: 2026,
-    winner: 'Ahmad Fauzi (Kelas 9A)',
-    imageUrl: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=600&auto=format&fit=crop&q=80',
-  },
-  {
-    id: 'ach-2',
-    title: 'Juara 2 Kompetisi Robotik Nusantara Kategori Line Follower',
-    description: 'Tim Robotik SMP Darul Ulum berhasil meraih runner-up pada kejuaraan robotika nasional.',
-    category: 'siswa',
-    level: 'nasional',
-    year: 2026,
-    winner: 'Tim Robotik SMP Darul Ulum',
-    imageUrl: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=600&auto=format&fit=crop&q=80',
-  },
-  {
-    id: 'ach-3',
-    title: 'Juara 1 Musabaqah Tilawatil Qur’an (MTQ) Pelajar SMP',
-    description: 'Penghargaan Terbaik 1 Cabang Tilawah SMP tingkat Provinsi Jawa Timur.',
-    category: 'siswa',
-    level: 'provinsi',
-    year: 2025,
-    winner: 'Siti Nur Aisyah (Kelas 8B)',
-    imageUrl: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=600&auto=format&fit=crop&q=80',
-  },
-  {
-    id: 'ach-4',
-    title: 'Penghargaan Guru Inovatif & Pembina Olimpiade Terbaik',
-    description: 'Anugerah Guru Inovatif bidang sains dan matematika dari Dinas Pendidikan Provinsi.',
-    category: 'guru',
-    level: 'provinsi',
-    year: 2025,
-    winner: 'Drs. H. M. Ridwan, M.Pd.',
-    imageUrl: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&auto=format&fit=crop&q=80',
-  },
-];
-
 export default function AdminPrestasiPage() {
   const { addLog } = useActivityLogStore();
   const { user } = useAuth();
   const actorName = (user as any)?.teacher?.fullName || (user as any)?.email || 'Admin Utama';
 
-  const [achievements, setAchievements] = useState<Achievement[]>(INITIAL_ACHIEVEMENTS);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
 
+  // Fetch live achievements from Express Backend PostgreSQL API
+  useEffect(() => {
+    const fetchAchievementsBackend = async () => {
+      try {
+        const res = await contentService.getAchievements();
+        if (res?.data && Array.isArray(res.data)) {
+          const mapped: Achievement[] = res.data.map((item: any) => ({
+            id: item.id,
+            title: item.title,
+            description: item.description || '',
+            category: (item.category || 'siswa') as any,
+            level: (item.level || 'kota') as any,
+            year: item.year || 2026,
+            winner: item.winner || item.description || '-',
+            imageUrl: item.photo || '',
+          }));
+
+          setAchievements(mapped);
+        }
+      } catch (err) {
+        console.warn('Backend achievements fetch warning:', err);
+      }
+    };
+    fetchAchievementsBackend();
+  }, []);
 
   const [search, setSearch] = useState('');
   const [levelFilter, setLevelFilter] = useState('semua');
@@ -123,21 +107,28 @@ export default function AdminPrestasiPage() {
     setShowFormModal(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title.trim() || !formData.winner.trim()) return;
 
     if (editingItem) {
       setAchievements((prev) =>
-        prev.map((a) =>
-          a.id === editingItem.id
-            ? {
-                ...a,
-                ...formData,
-              }
-            : a
-        )
+        prev.map((a) => (a.id === editingItem.id ? { ...a, ...formData } : a))
       );
+
+      try {
+        contentService.createAchievement({
+          title: formData.title,
+          description: formData.description,
+          category: formData.category,
+          level: formData.level,
+          year: formData.year,
+          winner: formData.winner,
+          imageUrl: formData.imageUrl,
+        }).catch((err) => console.warn('Update achievement backend warning:', err));
+      } catch {
+        // ignore
+      }
 
       addLog({
         user: actorName,
@@ -157,6 +148,20 @@ export default function AdminPrestasiPage() {
 
       setAchievements((prev) => [newItem, ...prev]);
 
+      try {
+        contentService.createAchievement({
+          title: formData.title,
+          description: formData.description,
+          category: formData.category,
+          level: formData.level,
+          year: formData.year,
+          winner: formData.winner,
+          imageUrl: formData.imageUrl,
+        }).catch((err) => console.warn('Create achievement backend warning:', err));
+      } catch {
+        // ignore
+      }
+
       addLog({
         user: actorName,
         role: 'ADMIN',
@@ -172,10 +177,16 @@ export default function AdminPrestasiPage() {
     setShowFormModal(false);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!deletingId) return;
     const target = achievements.find((a) => a.id === deletingId);
     setAchievements((prev) => prev.filter((a) => a.id !== deletingId));
+
+    try {
+      await contentService.deleteAchievement(deletingId, { title: target?.title });
+    } catch (err) {
+      console.warn('Backend delete achievement warning:', err);
+    }
 
     if (target) {
       addLog({
@@ -188,9 +199,10 @@ export default function AdminPrestasiPage() {
       });
     }
 
-    toast.success('Prestasi Dihapus', 'Data prestasi berhasil dihapus.');
+    toast.success('Prestasi Dihapus', 'Data prestasi berhasil dihapus secara permanen.');
     setDeletingId(null);
   };
+
 
   const filtered = achievements.filter((a) => {
     const matchSearch =

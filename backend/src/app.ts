@@ -62,12 +62,16 @@ app.get('/health', (_req, res) => {
   });
 });
 
+import achievementRoutes from './routes/achievement.route';
+
 // ─── API ROUTES ───────────────────────────────────────────────────────────────
 app.use(`${API}/auth`, authRoutes);
 app.use(`${API}/news`, newsRoutes);
 app.use(`${API}/admissions`, admissionRoutes);
 app.use(`${API}/downloads`, downloadRoutes);
+app.use(`${API}/achievements`, achievementRoutes);
 app.use(`${API}/announcements`, announcementRouter);
+
 
 app.use(`${API}/events`, eventRouter);
 app.use(`${API}/gallery`, galleryRouter);

@@ -541,11 +541,14 @@ model Achievement {
   category      String    // "siswa", "guru", "sekolah"
   level         String?   // "kabupaten", "provinsi", "nasional", "internasional"
   year          Int
+  winner        String?
   photo         String?
   createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
 
   @@map("achievements")
 }
+
 
 model Download {
   id            String    @id @default(uuid())
@@ -723,3 +726,20 @@ model SiteSetting {
 
   @@map("site_settings")
 }
+
+// ─── ACADEMIC YEARS ───────────────────────────────────────────────────────
+
+model AcademicYear {
+  id          String    @id @default(uuid())
+  year        String    // "2024/2025"
+  semester    String    // "Ganjil" or "Genap"
+  isActive    Boolean   @default(false)
+  status      String    @default("Mendatang") // "Aktif", "Arsip", "Mendatang"
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("academic_years")
+}
+
