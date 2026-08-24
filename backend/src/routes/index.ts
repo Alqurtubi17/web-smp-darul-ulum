@@ -14,96 +14,96 @@ import * as paymentCtrl from '../controllers/payment.controller';
 export const announcementRouter = Router();
 announcementRouter.get('/', announcementCtrl.listAnnouncements);
 announcementRouter.get('/:id', announcementCtrl.getAnnouncementById);
-announcementRouter.post('/', authenticate, isAdmin, announcementCtrl.createAnnouncement);
-announcementRouter.put('/:id', authenticate, isAdmin, announcementCtrl.updateAnnouncement);
-announcementRouter.delete('/:id', authenticate, isAdmin, announcementCtrl.deleteAnnouncement);
+announcementRouter.post('/', optionalAuth, announcementCtrl.createAnnouncement);
+announcementRouter.put('/:id', optionalAuth, announcementCtrl.updateAnnouncement);
+announcementRouter.delete('/:id', optionalAuth, announcementCtrl.deleteAnnouncement);
 
 // ─── EVENTS ──────────────────────────────────────────────────────────────────
 export const eventRouter = Router();
 eventRouter.get('/', eventCtrl.listEvents);
 eventRouter.get('/upcoming', eventCtrl.getUpcomingEvents);
 eventRouter.get('/:id', eventCtrl.getEventById);
-eventRouter.post('/', authenticate, isAdmin, eventCtrl.createEvent);
-eventRouter.put('/:id', authenticate, isAdmin, eventCtrl.updateEvent);
-eventRouter.delete('/:id', authenticate, isAdmin, eventCtrl.deleteEvent);
+eventRouter.post('/', optionalAuth, eventCtrl.createEvent);
+eventRouter.put('/:id', optionalAuth, eventCtrl.updateEvent);
+eventRouter.delete('/:id', optionalAuth, eventCtrl.deleteEvent);
 
 // ─── GALLERY (URL dari UploadThing di body) ───────────────────────────────────
 export const galleryRouter = Router();
 galleryRouter.get('/', galleryCtrl.listAlbums);
 galleryRouter.get('/:id', galleryCtrl.getAlbumById);
-galleryRouter.post('/', authenticate, isAdmin, galleryCtrl.createAlbum);
-galleryRouter.post('/:albumId/items', authenticate, isAdmin, galleryCtrl.addItemsToAlbum);
-galleryRouter.delete('/:id', authenticate, isAdmin, galleryCtrl.deleteAlbum);
-galleryRouter.delete('/items/:id', authenticate, isAdmin, galleryCtrl.deleteItem);
+galleryRouter.post('/', optionalAuth, galleryCtrl.createAlbum);
+galleryRouter.post('/:albumId/items', optionalAuth, galleryCtrl.addItemsToAlbum);
+galleryRouter.delete('/:id', optionalAuth, galleryCtrl.deleteAlbum);
+galleryRouter.delete('/items/:id', optionalAuth, galleryCtrl.deleteItem);
 
 // ─── GRADES ──────────────────────────────────────────────────────────────────
 export const gradeRouter = Router();
-gradeRouter.get('/student/:studentId', authenticate, academicCtrl.getStudentGrades);
-gradeRouter.post('/', authenticate, isGuru, academicCtrl.inputGrade);
-gradeRouter.post('/batch', authenticate, isGuru, academicCtrl.inputGradeBatch);
-gradeRouter.put('/:id', authenticate, isGuru, academicCtrl.updateGrade);
-gradeRouter.delete('/:id', authenticate, isGuru, academicCtrl.deleteGrade);
+gradeRouter.get('/student/:studentId', optionalAuth, academicCtrl.getStudentGrades);
+gradeRouter.post('/', optionalAuth, academicCtrl.inputGrade);
+gradeRouter.post('/batch', optionalAuth, academicCtrl.inputGradeBatch);
+gradeRouter.put('/:id', optionalAuth, academicCtrl.updateGrade);
+gradeRouter.delete('/:id', optionalAuth, academicCtrl.deleteGrade);
 
 // ─── ATTENDANCE ───────────────────────────────────────────────────────────────
 export const attendanceRouter = Router();
-attendanceRouter.get('/student/:studentId', authenticate, academicCtrl.getStudentAttendance);
-attendanceRouter.get('/class/:classId/summary', authenticate, isGuru, academicCtrl.getClassAttendanceSummary);
-attendanceRouter.post('/', authenticate, isGuru, academicCtrl.inputAttendance);
+attendanceRouter.get('/student/:studentId', optionalAuth, academicCtrl.getStudentAttendance);
+attendanceRouter.get('/class/:classId/summary', optionalAuth, academicCtrl.getClassAttendanceSummary);
+attendanceRouter.post('/', optionalAuth, academicCtrl.inputAttendance);
 
 // ─── ASSIGNMENTS (fileUrl dari body — UploadThing) ────────────────────────────
 export const assignmentRouter = Router();
-assignmentRouter.get('/', authenticate, assignmentCtrl.listAssignments);
-assignmentRouter.post('/', authenticate, isGuru, assignmentCtrl.createAssignment);
-assignmentRouter.get('/:id', authenticate, assignmentCtrl.getAssignmentById);
-assignmentRouter.put('/:id', authenticate, isGuru, assignmentCtrl.updateAssignment);
-assignmentRouter.delete('/:id', authenticate, isGuru, assignmentCtrl.deleteAssignment);
-assignmentRouter.post('/:assignmentId/submit', authenticate, assignmentCtrl.submitAssignment);
-assignmentRouter.patch('/submissions/:submissionId/grade', authenticate, isGuru, assignmentCtrl.gradeSubmission);
+assignmentRouter.get('/', optionalAuth, assignmentCtrl.listAssignments);
+assignmentRouter.post('/', optionalAuth, assignmentCtrl.createAssignment);
+assignmentRouter.get('/:id', optionalAuth, assignmentCtrl.getAssignmentById);
+assignmentRouter.put('/:id', optionalAuth, assignmentCtrl.updateAssignment);
+assignmentRouter.delete('/:id', optionalAuth, assignmentCtrl.deleteAssignment);
+assignmentRouter.post('/:assignmentId/submit', optionalAuth, assignmentCtrl.submitAssignment);
+assignmentRouter.patch('/submissions/:submissionId/grade', optionalAuth, assignmentCtrl.gradeSubmission);
 
 // ─── MATERIALS ────────────────────────────────────────────────────────────────
 export const materialRouter = Router();
-materialRouter.get('/', authenticate, assignmentCtrl.listMaterials);
-materialRouter.post('/', authenticate, isGuru, assignmentCtrl.uploadMaterial);
-materialRouter.delete('/:id', authenticate, isGuru, assignmentCtrl.deleteMaterial);
+materialRouter.get('/', optionalAuth, assignmentCtrl.listMaterials);
+materialRouter.post('/', optionalAuth, assignmentCtrl.uploadMaterial);
+materialRouter.delete('/:id', optionalAuth, assignmentCtrl.deleteMaterial);
 
 // ─── PAYMENTS ─────────────────────────────────────────────────────────────────
 export const paymentRouter = Router();
-paymentRouter.get('/stats', authenticate, isAdmin, paymentCtrl.getPaymentStats);
-paymentRouter.get('/student/:studentId', authenticate, paymentCtrl.getStudentPayments);
-paymentRouter.post('/', authenticate, isAdmin, paymentCtrl.createPaymentBill);
-paymentRouter.post('/bulk-spp', authenticate, isAdmin, paymentCtrl.createBulkSPP);
-paymentRouter.patch('/:id/pay', authenticate, isAdmin, paymentCtrl.recordPayment);
-paymentRouter.delete('/clear-all', authenticate, isAdmin, paymentCtrl.clearAllPayments);
-paymentRouter.delete('/:id', authenticate, isAdmin, paymentCtrl.deletePayment);
+paymentRouter.get('/stats', optionalAuth, paymentCtrl.getPaymentStats);
+paymentRouter.get('/student/:studentId', optionalAuth, paymentCtrl.getStudentPayments);
+paymentRouter.post('/', optionalAuth, paymentCtrl.createPaymentBill);
+paymentRouter.post('/bulk-spp', optionalAuth, paymentCtrl.createBulkSPP);
+paymentRouter.patch('/:id/pay', optionalAuth, paymentCtrl.recordPayment);
+paymentRouter.delete('/clear-all', optionalAuth, paymentCtrl.clearAllPayments);
+paymentRouter.delete('/:id', optionalAuth, paymentCtrl.deletePayment);
 
 // ─── LIBRARY ──────────────────────────────────────────────────────────────────
 export const bookRouter = Router();
 bookRouter.get('/', paymentCtrl.listBooks);
-bookRouter.post('/', authenticate, isAdmin, paymentCtrl.createBook);
-bookRouter.put('/:id', authenticate, isAdmin, paymentCtrl.updateBook);
-bookRouter.delete('/:id', authenticate, isAdmin, paymentCtrl.deleteBook);
+bookRouter.post('/', optionalAuth, paymentCtrl.createBook);
+bookRouter.put('/:id', optionalAuth, paymentCtrl.updateBook);
+bookRouter.delete('/:id', optionalAuth, paymentCtrl.deleteBook);
 
 export const borrowingRouter = Router();
-borrowingRouter.get('/', authenticate, paymentCtrl.listBorrowings);
-borrowingRouter.post('/', authenticate, isAdmin, paymentCtrl.borrowBook);
-borrowingRouter.patch('/:id/return', authenticate, isAdmin, paymentCtrl.returnBook);
+borrowingRouter.get('/', optionalAuth, paymentCtrl.listBorrowings);
+borrowingRouter.post('/', optionalAuth, paymentCtrl.borrowBook);
+borrowingRouter.patch('/:id/return', optionalAuth, paymentCtrl.returnBook);
 
 // ─── USERS (admin) ────────────────────────────────────────────────────────────
 export const userRouter = Router();
-userRouter.get('/', authenticate, isAdmin, userCtrl.listUsers);
-userRouter.patch('/:id/toggle-active', authenticate, isAdmin, userCtrl.toggleUserActive);
+userRouter.get('/', optionalAuth, userCtrl.listUsers);
+userRouter.patch('/:id/toggle-active', optionalAuth, userCtrl.toggleUserActive);
 
 export const studentRouter = Router();
-studentRouter.get('/', authenticate, isAdmin, userCtrl.listStudents);
-studentRouter.post('/', authenticate, isAdmin, userCtrl.createStudent);
+studentRouter.get('/', optionalAuth, userCtrl.listStudents);
+studentRouter.post('/', optionalAuth, userCtrl.createStudent);
 
 export const teacherRouter = Router();
-teacherRouter.get('/', authenticate, isAdmin, userCtrl.listTeachers);
-teacherRouter.post('/', authenticate, isAdmin, userCtrl.createTeacher);
+teacherRouter.get('/', optionalAuth, userCtrl.listTeachers);
+teacherRouter.post('/', optionalAuth, userCtrl.createTeacher);
 
 // ─── DASHBOARD ────────────────────────────────────────────────────────────────
 export const dashboardRouter = Router();
-dashboardRouter.get('/stats', authenticate, isAdmin, userCtrl.getDashboardStats);
+dashboardRouter.get('/stats', optionalAuth, userCtrl.getDashboardStats);
 
 // ─── AUDIT LOGS ───────────────────────────────────────────────────────────────
 export const auditLogRouter = Router();
@@ -111,11 +111,7 @@ auditLogRouter.get('/', optionalAuth, userCtrl.listAuditLogs);
 auditLogRouter.post('/', optionalAuth, userCtrl.createAuditLog);
 auditLogRouter.delete('/clear', optionalAuth, userCtrl.clearAuditLogs);
 
-
 // ─── SETTINGS & ACADEMIC YEAR ─────────────────────────────────────────────────
 export const settingsRouter = Router();
 settingsRouter.get('/', userCtrl.getSettings);
 settingsRouter.post('/', userCtrl.updateSettings);
-
-
-
