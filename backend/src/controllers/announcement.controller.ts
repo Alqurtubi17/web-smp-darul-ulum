@@ -200,10 +200,14 @@ export const listAnnouncements = async (req: Request, res: Response) => {
             publishedAt: kItem.publishedAt,
           },
         });
-      } else if (kItem.isPinned && !exists.isPinned) {
+      } else {
         await prisma.announcement.update({
           where: { id: exists.id },
-          data: { isPinned: true },
+          data: {
+            expiresAt: kItem.expiresAt,
+            publishedAt: kItem.publishedAt,
+            isPinned: kItem.isPinned,
+          },
         });
       }
     }
@@ -234,14 +238,8 @@ export const listAnnouncements = async (req: Request, res: Response) => {
       // Ignore background event sync errors
     }
 
-    // ─── H+1 CUTOFF: AUTOMATICALLY REMOVE ANNOUNCEMENTS PASSED H+1 ──────────
-    const hPlus1Cutoff = new Date(now);
-    hPlus1Cutoff.setHours(0, 0, 0, 0);
-    hPlus1Cutoff.setDate(hPlus1Cutoff.getDate() - 1); // Any expiresAt < (today - 1 day) has passed H+1!
-
     const whereCondition: any = {
       isActive: true,
-      OR: [{ expiresAt: null }, { expiresAt: { gte: hPlus1Cutoff } }],
     };
 
     const items = await prisma.announcement.findMany({

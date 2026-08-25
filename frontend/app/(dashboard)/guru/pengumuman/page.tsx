@@ -41,6 +41,15 @@ export default function GuruPengumumanPage() {
   // Semester filtering logic
   const filteredList = rawList.filter((item) => {
     if (selectedSemester === 'ALL') return true;
+
+    const titleLower = (item.title || '').toLowerCase();
+    if (titleLower.includes('semester 1') || titleLower.includes('semester ganjil')) {
+      return selectedSemester === 'GANJIL';
+    }
+    if (titleLower.includes('semester 2') || titleLower.includes('semester genap')) {
+      return selectedSemester === 'GENAP';
+    }
+
     const dateStr = item.expiresAt || item.publishedAt || item.createdAt;
     if (!dateStr) return true;
     const d = new Date(dateStr);
