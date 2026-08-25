@@ -217,6 +217,8 @@ export default function GuruElearningPage() {
   const [selectedMod, setSelectedMod] = useState<Module | null>(null);
   const [deleteMod, setDeleteMod] = useState<Module | null>(null);
 
+  const [attachmentMode, setAttachmentMode] = useState<'file' | 'url'>('file');
+
   const [form, setForm] = useState({
     title: '',
     subject: 'Matematika',
@@ -610,18 +612,58 @@ export default function GuruElearningPage() {
                 )}
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-2">Upload Lampiran Berkas Materi</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-2">Lampiran Berkas Modul Pembelajaran</label>
+
+                  {/* Mode Attachment Selector */}
+                  <div className="flex items-center gap-1.5 mb-3 bg-slate-100 p-1 rounded-xl w-fit text-xs font-bold">
+                    <button
+                      type="button"
+                      onClick={() => setAttachmentMode('file')}
+                      className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                        attachmentMode === 'file'
+                          ? 'bg-white text-emerald-800 shadow-2xs font-extrabold'
+                          : 'text-slate-500 hover:text-slate-800'
+                      }`}
+                    >
+                      📁 Upload File (Maks 10MB)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAttachmentMode('url')}
+                      className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                        attachmentMode === 'url'
+                          ? 'bg-white text-emerald-800 shadow-2xs font-extrabold'
+                          : 'text-slate-500 hover:text-slate-800'
+                      }`}
+                    >
+                      🔗 Input Link / URL (&gt; 10MB)
+                    </button>
+                  </div>
+
                   {form.fileUrl ? (
                     <div className="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
                       <BookOpen className="w-5 h-5 text-emerald-700 flex-shrink-0"/>
                       <span className="text-xs font-semibold text-emerald-950 truncate flex-1">{form.fileUrl}</span>
                       <button type="button" onClick={()=>set('fileUrl','')} className="text-xs font-bold text-rose-600 hover:underline cursor-pointer">Hapus</button>
                     </div>
+                  ) : attachmentMode === 'url' ? (
+                    <div className="space-y-2">
+                      <input
+                        type="url"
+                        value={form.fileUrl}
+                        onChange={e => set('fileUrl', e.target.value)}
+                        placeholder="https://drive.google.com/... atau https://youtube.com/..."
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                      <p className="text-[11px] text-amber-800 font-medium bg-amber-50 border border-amber-200 p-2.5 rounded-xl leading-relaxed">
+                        💡 <strong>Saran Berkas &gt; 10MB</strong>: Silakan upload video/PDF/PPT ke Google Drive, YouTube, atau Cloud Storage Anda, lalu tempelkan link tautannya di atas.
+                      </p>
+                    </div>
                   ) : (
                     <FileUpload
                       endpoint="materialFile"
-                      label="Unggah Berkas Modul Pembelajaran"
-                      hint="PDF, DOCX, PPTX, MP4 Video (Maksimal 32MB - 512MB)"
+                      label=""
+                      hint="PDF, DOCX, PPTX, MP4 Video (Maksimal 10MB). Jika file > 10MB silakan gunakan opsi Link / URL di atas."
                       value={form.fileUrl}
                       onUploadComplete={(url) => set('fileUrl', url)}
                       onClear={() => set('fileUrl', '')}
