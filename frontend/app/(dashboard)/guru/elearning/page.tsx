@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, BookOpen, Play, Edit2, Trash2, Eye, Users, BarChart3, X, RefreshCw, AlertCircle, Gamepad2 } from 'lucide-react';
+import { Plus, BookOpen, Play, Edit2, Trash2, Eye, Users, BarChart3, X, RefreshCw, AlertCircle, Gamepad2, Settings, PlusCircle, Sparkles, CheckCircle2 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { FileUpload } from '@/components/ui/FileUpload';
 import apiClient from '@/lib/api';
@@ -37,8 +37,145 @@ const TYPE_COLOR: Record<string, string> = {
   DOCUMENT: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
 };
 
+interface CustomGameQuestion {
+  id: number;
+  question: string;
+  options: [string, string, string, string];
+  correct: number;
+  explanation: string;
+  xpReward: number;
+}
+
+const INITIAL_7_GAMES = [
+  {
+    id: 'tajwid',
+    name: 'Tajwid & PAI Quest',
+    icon: '☪️',
+    subject: 'PAI',
+    color: 'from-emerald-600 to-teal-700',
+    bgColor: 'bg-emerald-50 border-emerald-200 text-emerald-900',
+    desc: 'Kuis Tajwid & hukum bacaan Al-Qur’an interaktif',
+    played: 18,
+    bestScore: 980,
+    difficulty: 'Sedang',
+    mode: 'adventure',
+    questions: [
+      { id: 1, question: 'Hukum bacaan Nun Sukun (نْ) bertemu dengan huruf Kho (خ) adalah...', options: ['Izhar Halqi', 'Idgham Bighunnah', 'Ikhfa Hakiki', 'Iqlab'], correct: 0, explanation: 'Izhar Halqi terjadi jika Nun Sukun / Tanwin bertemu 6 huruf halq: ء, هـ, ع, ح, غ, خ.', xpReward: 100 },
+      { id: 2, question: 'Hukum bacaan Nun Sukun (نْ) bertemu Ya (ي) adalah...', options: ['Idgham Bighunnah', 'Idgham Bilaghunnah', 'Izhar Syafawi', 'Ikhfa Hakiki'], correct: 0, explanation: 'Idgham Bighunnah dibaca melebur disertai dengung.', xpReward: 100 },
+      { id: 3, question: 'Hukum bacaan Nun Sukun (نْ) bertemu Ra (ر) adalah...', options: ['Idgham Bilaghunnah', 'Idgham Bighunnah', 'Iqlab', 'Izhar Halqi'], correct: 0, explanation: 'Idgham Bilaghunnah dibaca melebur tanpa dengung.', xpReward: 100 },
+    ]
+  },
+  {
+    id: 'vocab',
+    name: 'Word & Concept Match',
+    icon: '🧩',
+    subject: 'IPA / Bahasa',
+    color: 'from-indigo-500 to-purple-600',
+    bgColor: 'bg-indigo-50 border-indigo-200 text-indigo-900',
+    desc: 'Cocokkan istilah dan definisi pelajaran!',
+    played: 14,
+    bestScore: 1050,
+    difficulty: 'Mudah',
+    mode: 'match',
+    questions: [
+      { id: 1, question: 'Photosynthesis', options: ['Proses pembuat makanan pada tumbuhan hijau', '', '', ''], correct: 0, explanation: 'Istilah Biologi Tumbuhan', xpReward: 150 },
+      { id: 2, question: 'Respiration', options: ['Proses pelepasan energi dari glukosa', '', '', ''], correct: 0, explanation: 'Istilah Biologi Respirasi', xpReward: 150 },
+      { id: 3, question: 'Linear Equation', options: ['Persamaan dengan variabel pangkat 1', '', '', ''], correct: 0, explanation: 'Istilah Aljabar', xpReward: 150 },
+    ]
+  },
+  {
+    id: 'matematika',
+    name: 'Math Blitz',
+    icon: '⚡',
+    subject: 'Matematika',
+    color: 'from-blue-500 to-indigo-600',
+    bgColor: 'bg-blue-50 border-blue-200 text-blue-900',
+    desc: 'Jawab soal matematika sebelum waktu habis!',
+    played: 12,
+    bestScore: 850,
+    difficulty: 'Sedang',
+    mode: 'speed',
+    questions: [
+      { id: 1, question: 'Berapakah nilai x dari persamaan aljabar: 2x + 6 = 16 ?', options: ['x = 3', 'x = 5', 'x = 7', 'x = 9'], correct: 1, explanation: '2x = 16 - 6 => 2x = 10 => x = 5', xpReward: 50 },
+      { id: 2, question: 'Persamaan linear satu variabel dengan x = 4 adalah...', options: ['3x - 2 = 10', '2x + 4 = 10', '5x - 5 = 15', 'x + 8 = 10'], correct: 0, explanation: '3(4) - 2 = 12 - 2 = 10', xpReward: 50 },
+    ]
+  },
+  {
+    id: 'scramble',
+    name: 'Word Scramble',
+    icon: '🔤',
+    subject: 'B. Inggris',
+    color: 'from-purple-500 to-violet-600',
+    bgColor: 'bg-purple-50 border-purple-200 text-purple-900',
+    desc: 'Susun huruf jadi kata bahasa Inggris!',
+    played: 8,
+    bestScore: 1200,
+    difficulty: 'Mudah',
+    mode: 'speed',
+    questions: [
+      { id: 1, question: 'Susun kata: E - D - U - C - A - T - I - O - N', options: ['EDUCATION', 'DEDICATION', 'EVALUATION', 'ELEVATION'], correct: 0, explanation: 'Artinya: Pendidikan', xpReward: 100 },
+      { id: 2, question: 'Susun kata: L - E - A - R - N - I - N - G', options: ['LEARNING', 'READING', 'WRITING', 'LISTENING'], correct: 0, explanation: 'Artinya: Pembelajaran', xpReward: 100 },
+    ]
+  },
+  {
+    id: 'memory',
+    name: 'IPA Memory',
+    icon: '🧬',
+    subject: 'IPA',
+    color: 'from-green-500 to-emerald-600',
+    bgColor: 'bg-green-50 border-green-200 text-green-900',
+    desc: 'Pasangkan istilah IPA dengan definisi!',
+    played: 5,
+    bestScore: 640,
+    difficulty: 'Sedang',
+    mode: 'match',
+    questions: [
+      { id: 1, question: 'Klorofil', options: ['Zat hijau daun pengikat cahaya matahari', '', '', ''], correct: 0, explanation: 'Biologi Tumbuhan', xpReward: 100 },
+      { id: 2, question: 'Mitokondria', options: ['Organel sel penghasil energi selular', '', '', ''], correct: 0, explanation: 'Biologi Sel', xpReward: 100 },
+    ]
+  },
+  {
+    id: 'quiz-ipa',
+    name: 'Science Quiz',
+    icon: '🔭',
+    subject: 'IPA',
+    color: 'from-teal-500 to-cyan-600',
+    bgColor: 'bg-teal-50 border-teal-200 text-teal-900',
+    desc: 'Kuis sains interaktif dengan penjelasan!',
+    played: 15,
+    bestScore: 920,
+    difficulty: 'Mudah',
+    mode: 'speed',
+    questions: [
+      { id: 1, question: 'Organel sel yang berfungsi sebagai pusat energi sel adalah...', options: ['Mitokondria', 'Ribosom', 'Lisosom', 'Nukleus'], correct: 0, explanation: 'Mitokondria menghasilkan ATP energi sel.', xpReward: 100 },
+      { id: 2, question: 'Gas yang diserap tumbuhan saat fotosintesis adalah...', options: ['Karbondioksida (CO2)', 'Oksigen (O2)', 'Nitrogen (N2)', 'Hidrogen (H2)'], correct: 0, explanation: 'Tumbuhan menyerap CO2 dan merilis Oksigen.', xpReward: 100 },
+    ]
+  },
+  {
+    id: 'timeline',
+    name: 'Sejarah Timeline',
+    icon: '📅',
+    subject: 'IPS',
+    color: 'from-orange-500 to-amber-600',
+    bgColor: 'bg-orange-50 border-orange-200 text-orange-900',
+    desc: 'Urutkan peristiwa sejarah Indonesia!',
+    played: 6,
+    bestScore: 780,
+    difficulty: 'Sulit',
+    mode: 'speed',
+    questions: [
+      { id: 1, question: 'Tahun Proklamasi Kemerdekaan Republik Indonesia adalah...', options: ['1945', '1928', '1908', '1950'], correct: 0, explanation: 'Proklamasi dibacakan Ir. Soekarno pada 17 Agustus 1945.', xpReward: 100 },
+      { id: 2, question: 'Peristiwa Sumpah Pemuda dicetuskan pada tahun...', options: ['1928', '1908', '1945', '1912'], correct: 0, explanation: 'Kongres Pemuda II pada 28 Oktober 1928.', xpReward: 100 },
+    ]
+  }
+];
+
 export default function GuruElearningPage() {
+  const [activeTab, setActiveTab] = useState<'modul' | 'games'>('modul');
   const [modules, setModules] = useState<Module[]>([]);
+  const [gamesList, setGamesList] = useState(INITIAL_7_GAMES);
+  const [editingGame, setEditingGame] = useState<typeof INITIAL_7_GAMES[0] | null>(null);
+
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [selectedMod, setSelectedMod] = useState<Module | null>(null);
@@ -185,74 +322,154 @@ export default function GuruElearningPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-3 gap-5">
-        {[
-          { label: 'Total Modul Ajar', val: modules.length, icon: <BookOpen className="w-5 h-5 text-blue-700"/>, color: 'bg-blue-50 border-blue-200' },
-          { label: 'Total Penonton', val: totalViews, icon: <Eye className="w-5 h-5 text-emerald-700"/>, color: 'bg-emerald-50 border-emerald-200' },
-          { label: 'Aktif Dipublikasikan', val: published, icon: <BarChart3 className="w-5 h-5 text-purple-700"/>, color: 'bg-purple-50 border-purple-200' },
-        ].map(s => (
-          <div key={s.label} className={`${s.color} rounded-2xl border p-5 flex items-center gap-4 shadow-2xs`}>
-            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-2xs flex-shrink-0">
-              {s.icon}
-            </div>
-            <div>
-              <p className="text-2xl font-extrabold text-slate-900">{isLoading ? '—' : s.val.toLocaleString('id-ID')}</p>
-              <p className="text-xs font-semibold text-slate-700">{s.label}</p>
-            </div>
-          </div>
-        ))}
+      {/* Navigation Tabs */}
+      <div className="flex border-b border-slate-200">
+        <button
+          onClick={() => setActiveTab('modul')}
+          className={`pb-3 px-4 font-bold text-xs flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
+            activeTab === 'modul'
+              ? 'border-emerald-600 text-emerald-800'
+              : 'border-transparent text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          <BookOpen className="w-4 h-4" /> Modul &amp; Bahan Ajar ({modules.length})
+        </button>
+
+        <button
+          onClick={() => setActiveTab('games')}
+          className={`pb-3 px-4 font-bold text-xs flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
+            activeTab === 'games'
+              ? 'border-emerald-600 text-emerald-800'
+              : 'border-transparent text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          <Gamepad2 className="w-4 h-4 text-amber-500" /> Kustomisasi 7 Game Interaktif Siswa ({gamesList.length})
+        </button>
       </div>
 
-      {/* Modules List */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs divide-y divide-slate-100 overflow-hidden">
-        {modules.length === 0 ? (
-          <div className="text-center py-16 text-slate-400">
-            <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-30"/>
-            <p className="text-xs font-semibold text-slate-500">Belum ada modul e-learning yang diunggah.</p>
+      {activeTab === 'modul' && (
+        <>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-3 gap-5">
+            {[
+              { label: 'Total Modul Ajar', val: modules.length, icon: <BookOpen className="w-5 h-5 text-blue-700"/>, color: 'bg-blue-50 border-blue-200' },
+              { label: 'Total Penonton', val: totalViews, icon: <Eye className="w-5 h-5 text-emerald-700"/>, color: 'bg-emerald-50 border-emerald-200' },
+              { label: 'Aktif Dipublikasikan', val: published, icon: <BarChart3 className="w-5 h-5 text-purple-700"/>, color: 'bg-purple-50 border-purple-200' },
+            ].map(s => (
+              <div key={s.label} className={`${s.color} rounded-2xl border p-5 flex items-center gap-4 shadow-2xs`}>
+                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-2xs flex-shrink-0">
+                  {s.icon}
+                </div>
+                <div>
+                  <p className="text-2xl font-extrabold text-slate-900">{isLoading ? '—' : s.val.toLocaleString('id-ID')}</p>
+                  <p className="text-xs font-semibold text-slate-700">{s.label}</p>
+                </div>
+              </div>
+            ))}
           </div>
-        ) : (
-          modules.map(mod => {
-            const icon = TYPE_ICON[mod.type] || TYPE_ICON.READING;
-            const badgeColor = TYPE_COLOR[mod.type] || TYPE_COLOR.READING;
-            return (
-              <div key={mod.id} className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50/80 transition-colors">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-2xs ${badgeColor}`}>
-                  {icon}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-xs font-bold text-slate-900">{mod.title}</p>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${badgeColor}`}>{mod.type}</span>
+
+          {/* Modules List */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs divide-y divide-slate-100 overflow-hidden">
+            {modules.length === 0 ? (
+              <div className="text-center py-16 text-slate-400">
+                <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-30"/>
+                <p className="text-xs font-semibold text-slate-500">Belum ada modul e-learning yang diunggah.</p>
+              </div>
+            ) : (
+              modules.map(mod => {
+                const icon = TYPE_ICON[mod.type] || TYPE_ICON.READING;
+                const badgeColor = TYPE_COLOR[mod.type] || TYPE_COLOR.READING;
+                return (
+                  <div key={mod.id} className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50/80 transition-colors">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-2xs ${badgeColor}`}>
+                      {icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-xs font-bold text-slate-900">{mod.title}</p>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${badgeColor}`}>{mod.type}</span>
+                      </div>
+                      <div className="flex items-center gap-3 mt-1.5 text-[11px] font-semibold text-slate-500">
+                        <span className="font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">{mod.subject}</span>
+                        <span>Kelas {mod.class}</span>
+                        <span>· {mod.createdAt}</span>
+                        <span>· {mod.views}x Dilihat</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleOpenForm(mod)}
+                        className="p-2 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                        title="Edit Modul"
+                      >
+                        <Edit2 className="w-4 h-4"/>
+                      </button>
+                      <button
+                        onClick={() => setDeleteMod(mod)}
+                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                        title="Hapus Modul"
+                      >
+                        <Trash2 className="w-4 h-4"/>
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3 mt-1.5 text-[11px] font-semibold text-slate-500">
-                    <span className="font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">{mod.subject}</span>
-                    <span>Kelas {mod.class}</span>
-                    <span className="flex items-center gap-1"><Eye className="w-3.5 h-3.5 text-emerald-600"/> {mod.views}</span>
-                    <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5 text-emerald-600"/> {mod.students} siswa</span>
+                );
+              })
+            )}
+          </div>
+        </>
+      )}
+
+      {/* Tab 2: 7 Games Management Grid */}
+      {activeTab === 'games' && (
+        <div className="space-y-4">
+          <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2 text-amber-900 font-bold">
+              <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>Kelola &amp; Kustomisasi Soal/Kartu untuk ke-7 Game Interaktif Siswa di bawah ini:</span>
+            </div>
+            <span className="text-[11px] font-extrabold bg-amber-200 text-amber-950 px-2.5 py-0.5 rounded-full shrink-0">
+              7 Game Siap Edit
+            </span>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-4">
+            {gamesList.map(game => (
+              <div key={game.id} className="bg-white rounded-3xl border border-slate-200 p-5 hover:border-emerald-300 hover:shadow-md transition-all space-y-4 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="text-3xl p-2.5 bg-slate-50 rounded-2xl border border-slate-100 shadow-2xs">
+                        {game.icon}
+                      </div>
+                      <div>
+                        <h3 className="font-extrabold text-slate-900 text-sm">{game.name}</h3>
+                        <p className="text-xs font-bold text-emerald-700">{game.subject} · {game.questions.length} Soal/Kartu Aktif</p>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                      {game.difficulty}
+                    </span>
                   </div>
+
+                  <p className="text-xs text-slate-500 font-medium leading-relaxed">{game.desc}</p>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
+
+                <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+                  <span className="text-[11px] font-semibold text-slate-400">Dimainkan {game.played}×</span>
                   <button
-                    onClick={() => handleOpenForm(mod)}
-                    className="p-2 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
-                    title="Edit Modul"
+                    type="button"
+                    onClick={() => setEditingGame(game)}
+                    className="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-amber-950 text-xs font-extrabold transition-all shadow-2xs cursor-pointer flex items-center gap-1.5"
                   >
-                    <Edit2 className="w-4 h-4"/>
-                  </button>
-                  <button
-                    onClick={() => setDeleteMod(mod)}
-                    className="p-2 text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
-                    title="Hapus Modul"
-                  >
-                    <Trash2 className="w-4 h-4"/>
+                    <Settings className="w-3.5 h-3.5" /> Edit Soal Game
                   </button>
                 </div>
               </div>
-            );
-          })
-        )}
-      </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Modal Form Tambah / Edit */}
       {showForm && (
@@ -378,6 +595,246 @@ export default function GuruElearningPage() {
                 className="flex-1 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs cursor-pointer"
               >
                 Ya, Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Kustomisasi Soal Game */}
+      {editingGame && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl shadow-xl border border-slate-200 w-full max-w-2xl overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-amber-50/50">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">{editingGame.icon}</span>
+                <div>
+                  <h2 className="font-extrabold text-slate-900 text-base">Setting &amp; Custom Soal: {editingGame.name}</h2>
+                  <p className="text-xs text-slate-500 font-medium">Kustomisasi pertanyaan, opsi jawaban, dan tingkat kesulitan game</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setEditingGame(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Mata Pelajaran</label>
+                  <input
+                    type="text"
+                    value={editingGame.subject}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setEditingGame(prev => prev ? { ...prev, subject: val } : null);
+                    }}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Tingkat Kesulitan</label>
+                  <select
+                    value={editingGame.difficulty}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setEditingGame(prev => prev ? { ...prev, difficulty: val } : null);
+                    }}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                  >
+                    <option value="Mudah">Mudah</option>
+                    <option value="Sedang">Sedang</option>
+                    <option value="Sulit">Sulit</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* List Soal / Pasangan */}
+              <div className="pt-3 border-t border-slate-100 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    Daftar {editingGame.mode === 'match' ? 'Pasangan Kartu' : 'Soal Game'} ({editingGame.questions.length} Item)
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingGame(prev => {
+                        if (!prev) return null;
+                        const newQ = {
+                          id: Date.now(),
+                          question: prev.mode === 'match' ? 'Kata / Istilah Baru' : `Pertanyaan Soal Baru #${prev.questions.length + 1}`,
+                          options: [prev.mode === 'match' ? 'Definisi / Pasangan Kartu Baru' : 'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D'] as [string, string, string, string],
+                          correct: 0,
+                          explanation: 'Penjelasan pembahasan...',
+                          xpReward: 100,
+                        };
+                        return { ...prev, questions: [...prev.questions, newQ] };
+                      });
+                    }}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-amber-950 text-xs font-bold shadow-2xs cursor-pointer"
+                  >
+                    <PlusCircle className="w-3.5 h-3.5" />
+                    {editingGame.mode === 'match' ? 'Tambah Pasangan Kartu' : 'Tambah Soal Baru'}
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {editingGame.questions.map((q, idx) => (
+                    <div key={q.id || idx} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-extrabold bg-emerald-600 text-white px-2.5 py-0.5 rounded-md">
+                          {editingGame.mode === 'match' ? `Pasangan #${idx + 1}` : `Soal #${idx + 1}`}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingGame(prev => {
+                              if (!prev) return null;
+                              return { ...prev, questions: prev.questions.filter((_, i) => i !== idx) };
+                            });
+                          }}
+                          className="text-xs font-bold text-rose-600 hover:underline cursor-pointer"
+                        >
+                          Hapus
+                        </button>
+                      </div>
+
+                      {editingGame.mode === 'match' ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[11px] font-semibold text-slate-700 mb-1">Kartu A (Istilah)</label>
+                            <input
+                              type="text"
+                              value={q.question}
+                              onChange={e => {
+                                const val = e.target.value;
+                                setEditingGame(prev => {
+                                  if (!prev) return null;
+                                  const updated = prev.questions.map((item, i) => i === idx ? { ...item, question: val } : item);
+                                  return { ...prev, questions: updated };
+                                });
+                              }}
+                              className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-semibold text-slate-700 mb-1">Kartu B (Definisi Pasangan)</label>
+                            <input
+                              type="text"
+                              value={q.options[0]}
+                              onChange={e => {
+                                const val = e.target.value;
+                                setEditingGame(prev => {
+                                  if (!prev) return null;
+                                  const updated = prev.questions.map((item, i) => {
+                                    if (i === idx) {
+                                      const newOpts = [...item.options] as [string, string, string, string];
+                                      newOpts[0] = val;
+                                      return { ...item, options: newOpts };
+                                    }
+                                    return item;
+                                  });
+                                  return { ...prev, questions: updated };
+                                });
+                              }}
+                              className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-[11px] font-semibold text-slate-700 mb-1">Pertanyaan Soal</label>
+                            <input
+                              type="text"
+                              value={q.question}
+                              onChange={e => {
+                                const val = e.target.value;
+                                setEditingGame(prev => {
+                                  if (!prev) return null;
+                                  const updated = prev.questions.map((item, i) => i === idx ? { ...item, question: val } : item);
+                                  return { ...prev, questions: updated };
+                                });
+                              }}
+                              className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[11px] font-semibold text-slate-700 mb-1.5">Opsi Pilihan Ganda (Pilih Kunci Jawaban Benar)</label>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              {q.options.map((optVal, optIdx) => (
+                                <div key={optIdx} className="flex items-center gap-2 bg-white p-2 rounded-xl border border-slate-200">
+                                  <input
+                                    type="radio"
+                                    name={`game-correct-${idx}`}
+                                    checked={q.correct === optIdx}
+                                    onChange={() => {
+                                      setEditingGame(prev => {
+                                        if (!prev) return null;
+                                        const updated = prev.questions.map((item, i) => i === idx ? { ...item, correct: optIdx } : item);
+                                        return { ...prev, questions: updated };
+                                      });
+                                    }}
+                                    className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                                  />
+                                  <span className="text-xs font-bold text-slate-500 w-4">{String.fromCharCode(65 + optIdx)}.</span>
+                                  <input
+                                    type="text"
+                                    value={optVal}
+                                    onChange={e => {
+                                      const val = e.target.value;
+                                      setEditingGame(prev => {
+                                        if (!prev) return null;
+                                        const updated = prev.questions.map((item, i) => {
+                                          if (i === idx) {
+                                            const newOpts = [...item.options] as [string, string, string, string];
+                                            newOpts[optIdx] = val;
+                                            return { ...item, options: newOpts };
+                                          }
+                                          return item;
+                                        });
+                                        return { ...prev, questions: updated };
+                                      });
+                                    }}
+                                    className="flex-1 text-xs font-semibold text-slate-900 bg-transparent focus:outline-none"
+                                    placeholder={`Opsi ${String.fromCharCode(65 + optIdx)}`}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50 justify-end">
+              <button
+                type="button"
+                onClick={() => setEditingGame(null)}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!editingGame) return;
+                  setGamesList(prev => prev.map(g => g.id === editingGame.id ? editingGame : g));
+                  toast.success('Soal Game Diperbarui', `Kustomisasi soal game "${editingGame.name}" berhasil disimpan.`);
+                  setEditingGame(null);
+                }}
+                className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs cursor-pointer"
+              >
+                Simpan Kustomisasi Game
               </button>
             </div>
           </div>
