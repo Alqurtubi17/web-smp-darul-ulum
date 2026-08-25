@@ -35,24 +35,27 @@ export default function WordMatchGame({ gameData }: { gameData?: any } = {}) {
   const [isWon, setIsWon] = useState(false);
 
   useEffect(() => {
-    let activeData = gameData;
-    if (!activeData && typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('smp_interactive_games');
-        if (saved) {
-          const list = JSON.parse(saved);
-          activeData = list.find((g: any) => g.id === 'vocab' || g.id === 'memory' || g.mode === 'match');
-        }
-      } catch (e) {}
-    }
-
-    if (activeData && activeData.questions && activeData.questions.length > 0) {
-      const customPairs = activeData.questions.map((q: any, idx: number) => ({
+    if (gameData && gameData.questions && gameData.questions.length > 0) {
+      const customPairs = gameData.questions.map((q: any, idx: number) => ({
         pairId: idx + 1,
         text: q.question,
         subtext: q.options?.[0] || q.explanation || 'Definisi',
       }));
       setActivePairs(customPairs);
+    } else {
+      apiClient.get('/elearning-games/vocab')
+        .then(res => {
+          const fetched = res.data?.data;
+          if (fetched && fetched.questions?.length > 0) {
+            const customPairs = fetched.questions.map((q: any, idx: number) => ({
+              pairId: idx + 1,
+              text: q.question,
+              subtext: q.options?.[0] || q.explanation || 'Definisi',
+            }));
+            setActivePairs(customPairs);
+          }
+        })
+        .catch(() => {});
     }
   }, [gameData]);
 

@@ -254,17 +254,6 @@ export default function GuruElearningPage() {
   };
 
   const fetchGamesFromDb = async () => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('smp_interactive_games');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setGamesList(parsed);
-          }
-        } catch (e) {}
-      }
-    }
     try {
       const res = await apiClient.get('/elearning-games');
       if (res.data?.data && Array.isArray(res.data.data)) {
@@ -291,9 +280,6 @@ export default function GuruElearningPage() {
           })) || [],
         }));
         setGamesList(mapped);
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('smp_interactive_games', JSON.stringify(mapped));
-        }
       }
     } catch (e) {
       console.warn('Fetch elearning games error:', e);
@@ -916,18 +902,16 @@ export default function GuruElearningPage() {
                   const slug = (editingGame as any).slug || editingGame.id;
                   const updatedList = gamesList.map(g => g.id === editingGame.id ? editingGame : g);
                   setGamesList(updatedList);
-                  if (typeof window !== 'undefined') {
-                    localStorage.setItem('smp_interactive_games', JSON.stringify(updatedList));
-                  }
                   try {
                     await apiClient.put(`/elearning-games/${slug}`, {
                       subject: editingGame.subject,
                       difficulty: editingGame.difficulty,
                       questions: editingGame.questions,
                     });
-                    toast.success('Soal Game Diperbarui', `Pengaturan soal game "${editingGame.name}" berhasil disimpan.`);
+                    toast.success('Soal Game Diperbarui', `Pengaturan soal game "${editingGame.name}" berhasil disimpan di Database.`);
+                    fetchGamesFromDb();
                   } catch (e) {
-                    toast.success('Soal Game Diperbarui', `Tersimpan secara lokal untuk game "${editingGame.name}".`);
+                    toast.error('Gagal Menyimpan', 'Terjadi kesalahan saat menyimpan ke database.');
                   }
                   setEditingGame(null);
                 }}
