@@ -355,10 +355,7 @@ export default function GuruElearningPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">E-Learning &amp; Modul Ajar Guru</h1>
-          <p className="text-xs text-slate-500 font-medium mt-1">
-            {published} modul aktif tersambung · {modules.length} total modul ajar
-          </p>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Modul &amp; Bahan Ajar E-Learning</h1>
         </div>
 
         <div className="flex items-center gap-2">
@@ -373,7 +370,7 @@ export default function GuruElearningPage() {
             href="/guru/akademik/materi"
             className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-amber-950 text-xs font-bold transition-all shadow-xs cursor-pointer"
           >
-            <Gamepad2 className="w-4 h-4" /> Builder Game Kuis
+            <Gamepad2 className="w-4 h-4" /> Game Interaktif
           </Link>
           <button
             onClick={() => handleOpenForm()}
@@ -405,7 +402,7 @@ export default function GuruElearningPage() {
               : 'border-transparent text-slate-500 hover:text-slate-700'
           }`}
         >
-          <Gamepad2 className="w-4 h-4 text-amber-500" /> Kustomisasi 7 Game Interaktif Siswa ({gamesList.length})
+          <Gamepad2 className="w-4 h-4 text-amber-500" /> Game Pembelajaran Siswa ({gamesList.length})
         </button>
       </div>
 
@@ -485,16 +482,6 @@ export default function GuruElearningPage() {
       {/* Tab 2: 7 Games Management Grid */}
       {activeTab === 'games' && (
         <div className="space-y-4">
-          <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2 text-amber-900 font-bold">
-              <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
-              <span>Kelola &amp; Kustomisasi Soal/Kartu untuk ke-7 Game Interaktif Siswa di bawah ini:</span>
-            </div>
-            <span className="text-[11px] font-extrabold bg-amber-200 text-amber-950 px-2.5 py-0.5 rounded-full shrink-0">
-              7 Game Siap Edit
-            </span>
-          </div>
-
           <div className="grid sm:grid-cols-2 gap-4">
             {gamesList.map(game => (
               <div key={game.id} className="bg-white rounded-3xl border border-slate-200 p-5 hover:border-emerald-300 hover:shadow-md transition-all space-y-4 flex flex-col justify-between">
@@ -671,8 +658,8 @@ export default function GuruElearningPage() {
               <div className="flex items-center gap-3">
                 <span className="text-3xl">{editingGame.icon}</span>
                 <div>
-                  <h2 className="font-extrabold text-slate-900 text-base">Setting &amp; Custom Soal: {editingGame.name}</h2>
-                  <p className="text-xs text-slate-500 font-medium">Kustomisasi pertanyaan, opsi jawaban, dan tingkat kesulitan game</p>
+                  <h2 className="font-extrabold text-slate-900 text-base">Pengaturan Soal Game: {editingGame.name}</h2>
+                  <p className="text-xs text-slate-500 font-medium">Kelola pertanyaan, pilihan jawaban, dan tingkat kesulitan game</p>
                 </div>
               </div>
               <button
@@ -897,7 +884,7 @@ export default function GuruElearningPage() {
                       difficulty: editingGame.difficulty,
                       questions: editingGame.questions,
                     });
-                    toast.success('Soal Game Diperbarui di DB', `Kustomisasi soal game "${editingGame.name}" berhasil disimpan di database.`);
+                    toast.success('Soal Game Diperbarui', `Pengaturan soal game "${editingGame.name}" berhasil disimpan.`);
                     fetchGamesFromDb();
                   } catch (e) {
                     toast.error('Gagal Menyimpan', 'Terjadi kesalahan saat menyimpan ke database.');
@@ -906,7 +893,7 @@ export default function GuruElearningPage() {
                 }}
                 className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs cursor-pointer"
               >
-                Simpan Kustomisasi Game
+                Simpan Perubahan Soal
               </button>
             </div>
           </div>
