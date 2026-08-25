@@ -16,13 +16,13 @@ const SUBJECTS = [
 ];
 
 const GAMES = [
-  { id:'tajwid',     name:'Tajwid & PAI Quest', icon:'☪️', color:'bg-gradient-to-br from-emerald-600 to-teal-700', desc:'Kuis Tajwid & hukum bacaan Al-Qur’an interaktif!', bestScore:980, played:18, difficulty:'Sedang' },
-  { id:'vocab',      name:'Word & Concept Match', icon:'🧩', color:'bg-gradient-to-br from-indigo-500 to-purple-600', desc:'Cocokkan istilah dan definisi pelajaran!', bestScore:1050, played:14, difficulty:'Mudah' },
-  { id:'matematika', name:'Math Blitz', icon:'⚡', color:'bg-gradient-to-br from-blue-500 to-indigo-600', desc:'Jawab soal matematika sebelum waktu habis!', bestScore:850, played:12, difficulty:'Sedang' },
-  { id:'scramble',   name:'Word Scramble', icon:'🔤', color:'bg-gradient-to-br from-purple-500 to-violet-600', desc:'Susun huruf jadi kata bahasa Inggris!', bestScore:1200, played:8, difficulty:'Mudah' },
-  { id:'memory',     name:'IPA Memory', icon:'🧬', color:'bg-gradient-to-br from-green-500 to-emerald-600', desc:'Pasangkan istilah IPA dengan definisi!', bestScore:640, played:5, difficulty:'Sedang' },
-  { id:'quiz-ipa',   name:'Science Quiz', icon:'🔭', color:'bg-gradient-to-br from-teal-500 to-cyan-600', desc:'Kuis sains interaktif dengan penjelasan!', bestScore:920, played:15, difficulty:'Mudah' },
-  { id:'timeline',   name:'Sejarah Timeline', icon:'📅', color:'bg-gradient-to-br from-orange-500 to-amber-600', desc:'Urutkan peristiwa sejarah Indonesia!', bestScore:780, played:6, difficulty:'Sulit' },
+  { id:'tajwid',     name:'Tajwid & PAI Quest', icon:'☪️', color:'bg-gradient-to-br from-emerald-600 to-teal-700', desc:'Kuis Tajwid & hukum bacaan Al-Qur’an interaktif!', bestScore:980, played:18, difficulty:'Sedang', questionsCount: 12 },
+  { id:'vocab',      name:'Word & Concept Match', icon:'🧩', color:'bg-gradient-to-br from-indigo-500 to-purple-600', desc:'Cocokkan istilah dan definisi pelajaran!', bestScore:1050, played:14, difficulty:'Mudah', questionsCount: 6 },
+  { id:'matematika', name:'Math Blitz', icon:'⚡', color:'bg-gradient-to-br from-blue-500 to-indigo-600', desc:'Jawab soal matematika sebelum waktu habis!', bestScore:850, played:12, difficulty:'Sedang', questionsCount: 6 },
+  { id:'scramble',   name:'Word Scramble', icon:'🔤', color:'bg-gradient-to-br from-purple-500 to-violet-600', desc:'Susun huruf jadi kata bahasa Inggris!', bestScore:1200, played:8, difficulty:'Mudah', questionsCount: 5 },
+  { id:'memory',     name:'IPA Memory', icon:'🧬', color:'bg-gradient-to-br from-green-500 to-emerald-600', desc:'Pasangkan istilah IPA dengan definisi!', bestScore:640, played:5, difficulty:'Sedang', questionsCount: 5 },
+  { id:'quiz-ipa',   name:'Science Quiz', icon:'🔭', color:'bg-gradient-to-br from-teal-500 to-cyan-600', desc:'Kuis sains interaktif dengan penjelasan!', bestScore:920, played:15, difficulty:'Mudah', questionsCount: 5 },
+  { id:'timeline',   name:'Sejarah Timeline', icon:'📅', color:'bg-gradient-to-br from-orange-500 to-amber-600', desc:'Urutkan peristiwa sejarah Indonesia!', bestScore:780, played:6, difficulty:'Sulit', questionsCount: 5 },
 ];
 
 const RECENT_ACTIVITY = [
@@ -59,6 +59,7 @@ export default function SiswaElearningPage() {
       bestScore: 950,
       played: 24,
       difficulty: 'Sedang',
+      questionsCount: m.quizData?.questions?.length || 5,
       isCustom: true,
     }));
 
@@ -165,7 +166,12 @@ export default function SiswaElearningPage() {
                 </div>
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${DIFFICULTY_COLOR[game.difficulty as keyof typeof DIFFICULTY_COLOR]}`}>{game.difficulty}</span>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${DIFFICULTY_COLOR[game.difficulty as keyof typeof DIFFICULTY_COLOR]}`}>{game.difficulty}</span>
+                      <span className="text-[11px] font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                        {game.questionsCount || 5} Soal/Kartu
+                      </span>
+                    </div>
                     <span className="text-xs text-gray-400">Dimainkan {game.played}×</span>
                   </div>
                   <div className="flex items-center justify-between">

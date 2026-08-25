@@ -250,9 +250,22 @@ export default function GuruElearningPage() {
     try {
       const saved = localStorage.getItem('smp_elearning_custom_games');
       if (saved) {
-        setGamesList(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        const tajwid = parsed.find((g: any) => g.id === 'tajwid');
+        if (!tajwid || tajwid.questions?.length < 12) {
+          // Stale cache detected! Update cache to complete full question dataset
+          localStorage.setItem('smp_elearning_custom_games', JSON.stringify(INITIAL_7_GAMES));
+          setGamesList(INITIAL_7_GAMES);
+        } else {
+          setGamesList(parsed);
+        }
+      } else {
+        localStorage.setItem('smp_elearning_custom_games', JSON.stringify(INITIAL_7_GAMES));
+        setGamesList(INITIAL_7_GAMES);
       }
-    } catch (e) {}
+    } catch (e) {
+      setGamesList(INITIAL_7_GAMES);
+    }
   }, []);
 
   const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));
