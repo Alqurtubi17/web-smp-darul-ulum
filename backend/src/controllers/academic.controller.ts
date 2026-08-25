@@ -202,3 +202,284 @@ export const inputAttendance = async (req: AuthRequest, res: Response) => {
     sendError(res, 'Gagal menyimpan absensi');
   }
 };
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CLASSES & HOMEROOM TEACHERS (WALI KELAS)
+// ══════════════════════════════════════════════════════════════════════════════
+
+export const listClasses = async (_req: Request, res: Response) => {
+  try {
+    const [classes, teachers] = await Promise.all([
+      prisma.class.findMany({
+        orderBy: [{ grade: 'asc' }, { name: 'asc' }],
+        include: {
+          _count: { select: { students: true } },
+        },
+      }),
+      prisma.teacher.findMany({
+        where: { isActive: true },
+        select: { id: true, fullName: true, nip: true, subject: true },
+      }),
+    ]);
+
+    const teacherMap = new Map(teachers.map(t => [t.id, t]));
+
+    const result = classes.map(c => ({
+      ...c,
+      studentCount: c._count.students,
+      homeroomTeacher: c.homeroomTeacherId ? teacherMap.get(c.homeroomTeacherId) || null : null,
+    }));
+
+    sendSuccess(res, { classes: result, teachers }, 'Daftar kelas berhasil diambil');
+  } catch {
+    sendError(res, 'Gagal mengambil data kelas');
+  }
+};
+
+export const createClass = async (req: AuthRequest, res: Response) => {
+  try {
+    const { name, grade, capacity, homeroomTeacherId, academicYear } = req.body;
+    if (!name || !grade) {
+      sendError(res, 'Nama kelas dan tingkat wajib diisi', 400);
+      return;
+    }
+
+    const newClass = await prisma.class.create({
+      data: {
+        name: name.trim(),
+        grade: parseInt(String(grade)),
+        capacity: capacity ? parseInt(String(capacity)) : 32,
+        homeroomTeacherId: homeroomTeacherId || null,
+        academicYear: academicYear || '2024/2025',
+      },
+    });
+
+    sendCreated(res, newClass, 'Kelas berhasil dibuat');
+  } catch {
+    sendError(res, 'Gagal membuat kelas');
+  }
+};
+
+export const updateClass = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { name, grade, capacity, homeroomTeacherId, isActive, academicYear } = req.body;
+
+    const existing = await prisma.class.findUnique({ where: { id } });
+    if (!existing) { sendNotFound(res, 'Kelas tidak ditemukan'); return; }
+
+    const updated = await prisma.class.update({
+      where: { id },
+      data: {
+        ...(name && { name: name.trim() }),
+        ...(grade && { grade: parseInt(String(grade)) }),
+        ...(capacity !== undefined && { capacity: parseInt(String(capacity)) }),
+        ...(homeroomTeacherId !== undefined && { homeroomTeacherId: homeroomTeacherId || null }),
+        ...(isActive !== undefined && { isActive: Boolean(isActive) }),
+        ...(academicYear && { academicYear }),
+      },
+    });
+
+    sendSuccess(res, updated, 'Data kelas / Wali Kelas berhasil diperbarui');
+  } catch {
+    sendError(res, 'Gagal memperbarui kelas');
+  }
+};
+
+export const deleteClass = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    await prisma.class.delete({ where: { id } });
+    sendSuccess(res, null, 'Kelas berhasil dihapus');
+  } catch {
+    sendError(res, 'Gagal menghapus kelas');
+  }
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SUBJECTS (MATA PELAJARAN)
+// ══════════════════════════════════════════════════════════════════════════════
+
+export const listSubjects = async (_req: Request, res: Response) => {
+  try {
+    const subjects = await prisma.subject.findMany({
+      orderBy: { code: 'asc' },
+    });
+    sendSuccess(res, subjects, 'Daftar mata pelajaran berhasil diambil');
+  } catch {
+    sendError(res, 'Gagal mengambil data mata pelajaran');
+  }
+};
+
+export const createSubject = async (req: AuthRequest, res: Response) => {
+  try {
+    const { code, name, grade, creditHours, description } = req.body;
+    if (!code || !name) {
+      sendError(res, 'Kode dan nama mata pelajaran wajib diisi', 400);
+      return;
+    }
+
+    const existing = await prisma.subject.findUnique({ where: { code: code.trim().toUpperCase() } });
+    if (existing) {
+      sendError(res, `Kode mata pelajaran ${code} sudah terdaftar`, 409);
+      return;
+    }
+
+    const newSubject = await prisma.subject.create({
+      data: {
+        code: code.trim().toUpperCase(),
+        name: name.trim(),
+        grade: grade ? parseInt(String(grade)) : null,
+        creditHours: creditHours ? parseInt(String(creditHours)) : 2,
+        description: description || null,
+      },
+    });
+
+    sendCreated(res, newSubject, 'Mata pelajaran berhasil ditambahkan');
+  } catch {
+    sendError(res, 'Gagal menambahkan mata pelajaran');
+  }
+};
+
+export const updateSubject = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { code, name, grade, creditHours, description, isActive } = req.body;
+
+    const existing = await prisma.subject.findUnique({ where: { id } });
+    if (!existing) { sendNotFound(res, 'Mata pelajaran tidak ditemukan'); return; }
+
+    const updated = await prisma.subject.update({
+      where: { id },
+      data: {
+        ...(code && { code: code.trim().toUpperCase() }),
+        ...(name && { name: name.trim() }),
+        ...(grade !== undefined && { grade: grade ? parseInt(String(grade)) : null }),
+        ...(creditHours !== undefined && { creditHours: parseInt(String(creditHours)) }),
+        ...(description !== undefined && { description }),
+        ...(isActive !== undefined && { isActive: Boolean(isActive) }),
+      },
+    });
+
+    sendSuccess(res, updated, 'Mata pelajaran berhasil diperbarui');
+  } catch {
+    sendError(res, 'Gagal memperbarui mata pelajaran');
+  }
+};
+
+export const deleteSubject = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    await prisma.subject.delete({ where: { id } });
+    sendSuccess(res, null, 'Mata pelajaran berhasil dihapus');
+  } catch {
+    sendError(res, 'Gagal menghapus mata pelajaran');
+  }
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SCHEDULES (JADWAL MENGAJAR PER GURU)
+// ══════════════════════════════════════════════════════════════════════════════
+
+export const listSchedules = async (req: Request, res: Response) => {
+  try {
+    const { teacherId, classId, dayOfWeek } = req.query;
+    const where: any = { isActive: true };
+    if (teacherId) where.teacherId = String(teacherId);
+    if (classId) where.classId = String(classId);
+    if (dayOfWeek) where.dayOfWeek = parseInt(String(dayOfWeek));
+
+    const schedules = await prisma.schedule.findMany({
+      where,
+      orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }],
+      include: {
+        class: { select: { id: true, name: true, grade: true } },
+        subject: { select: { id: true, code: true, name: true } },
+        teacher: { select: { id: true, fullName: true, nip: true, subject: true } },
+      },
+    });
+
+    sendSuccess(res, schedules, 'Daftar jadwal mengajar berhasil diambil');
+  } catch {
+    sendError(res, 'Gagal mengambil data jadwal mengajar');
+  }
+};
+
+export const createSchedule = async (req: AuthRequest, res: Response) => {
+  try {
+    const { classId, subjectId, teacherId, dayOfWeek, startTime, endTime, room, academicYear, semester } = req.body;
+    if (!classId || !subjectId || !teacherId || !dayOfWeek || !startTime || !endTime) {
+      sendError(res, 'Data kelas, mapel, guru, hari, dan jam mengajar wajib diisi', 400);
+      return;
+    }
+
+    const newSchedule = await prisma.schedule.create({
+      data: {
+        classId,
+        subjectId,
+        teacherId,
+        dayOfWeek: parseInt(String(dayOfWeek)),
+        startTime: startTime.trim(),
+        endTime: endTime.trim(),
+        room: room ? room.trim() : null,
+        academicYear: academicYear || '2026/2027',
+        semester: semester ? parseInt(String(semester)) : 1,
+      },
+      include: {
+        class: { select: { id: true, name: true, grade: true } },
+        subject: { select: { id: true, code: true, name: true } },
+        teacher: { select: { id: true, fullName: true, nip: true } },
+      },
+    });
+
+    sendCreated(res, newSchedule, 'Jadwal mengajar berhasil ditambahkan');
+  } catch {
+    sendError(res, 'Gagal menambahkan jadwal mengajar');
+  }
+};
+
+export const updateSchedule = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { classId, subjectId, teacherId, dayOfWeek, startTime, endTime, room, academicYear, semester, isActive } = req.body;
+
+    const existing = await prisma.schedule.findUnique({ where: { id } });
+    if (!existing) { sendNotFound(res, 'Jadwal tidak ditemukan'); return; }
+
+    const updated = await prisma.schedule.update({
+      where: { id },
+      data: {
+        ...(classId && { classId }),
+        ...(subjectId && { subjectId }),
+        ...(teacherId && { teacherId }),
+        ...(dayOfWeek !== undefined && { dayOfWeek: parseInt(String(dayOfWeek)) }),
+        ...(startTime && { startTime: startTime.trim() }),
+        ...(endTime && { endTime: endTime.trim() }),
+        ...(room !== undefined && { room: room ? room.trim() : null }),
+        ...(academicYear && { academicYear }),
+        ...(semester !== undefined && { semester: parseInt(String(semester)) }),
+        ...(isActive !== undefined && { isActive: Boolean(isActive) }),
+      },
+      include: {
+        class: { select: { id: true, name: true, grade: true } },
+        subject: { select: { id: true, code: true, name: true } },
+        teacher: { select: { id: true, fullName: true, nip: true } },
+      },
+    });
+
+    sendSuccess(res, updated, 'Jadwal mengajar berhasil diperbarui');
+  } catch {
+    sendError(res, 'Gagal memperbarui jadwal mengajar');
+  }
+};
+
+export const deleteSchedule = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    await prisma.schedule.delete({ where: { id } });
+    sendSuccess(res, null, 'Jadwal mengajar berhasil dihapus');
+  } catch {
+    sendError(res, 'Gagal menghapus jadwal mengajar');
+  }
+};
+

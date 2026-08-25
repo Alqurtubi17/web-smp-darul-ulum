@@ -11,6 +11,8 @@ export interface StudentExcelRow {
   birthDate?: string;
   religion?: string;
   phone?: string;
+  parentPhone?: string;
+  photoUrl?: string;
   address?: string;
   status?: boolean;
   enrolled?: string;

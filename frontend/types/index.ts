@@ -45,9 +45,23 @@ export interface StudentProfile {
   nis: string;
   nisn?: string;
   photo?: string;
+  photoUrl?: string;
+  parentPhone?: string;
+  address?: string;
+  classId?: string;
+  className?: string;
+  religion?: string;
+  status?: string;
+  parentName?: string;
+  birthDate?: string;
+  birthPlace?: string;
+  phone?: string;
+  email?: string;
   gender: 'LAKI_LAKI' | 'PEREMPUAN';
   class?: { id: string; name: string; grade: number };
 }
+
+export type Student = StudentProfile;
 
 export interface TeacherProfile {
   id: string;

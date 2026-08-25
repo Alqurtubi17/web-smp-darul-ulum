@@ -112,6 +112,42 @@ auditLogRouter.post('/', optionalAuth, userCtrl.createAuditLog);
 auditLogRouter.delete('/clear', optionalAuth, userCtrl.clearAuditLogs);
 
 // ─── SETTINGS & ACADEMIC YEAR ─────────────────────────────────────────────────
+export const academicYearRouter = Router();
+academicYearRouter.get('/', userCtrl.listAcademicYears);
+academicYearRouter.get('/active', userCtrl.getActiveAcademicYear);
+academicYearRouter.post('/', userCtrl.addAcademicYear);
+academicYearRouter.put('/:id', userCtrl.updateAcademicYear);
+academicYearRouter.patch('/:id/active', userCtrl.setActiveAcademicYear);
+academicYearRouter.delete('/:id', userCtrl.deleteAcademicYear);
+
 export const settingsRouter = Router();
 settingsRouter.get('/', userCtrl.getSettings);
 settingsRouter.post('/', userCtrl.updateSettings);
+settingsRouter.get('/academic-years', userCtrl.listAcademicYears);
+settingsRouter.post('/academic-years', userCtrl.addAcademicYear);
+settingsRouter.patch('/academic-years/:id/active', userCtrl.setActiveAcademicYear);
+settingsRouter.delete('/academic-years/:id', userCtrl.deleteAcademicYear);
+
+// ─── CLASSES & WALI KELAS ─────────────────────────────────────────────────────
+export const classRouter = Router();
+classRouter.get('/', academicCtrl.listClasses);
+classRouter.post('/', optionalAuth, academicCtrl.createClass);
+classRouter.put('/:id', optionalAuth, academicCtrl.updateClass);
+classRouter.delete('/:id', optionalAuth, academicCtrl.deleteClass);
+
+// ─── SUBJECTS (MAPEL) ─────────────────────────────────────────────────────────
+export const subjectRouter = Router();
+subjectRouter.get('/', academicCtrl.listSubjects);
+subjectRouter.post('/', optionalAuth, academicCtrl.createSubject);
+subjectRouter.put('/:id', academicCtrl.updateSubject);
+subjectRouter.delete('/:id', academicCtrl.deleteSubject);
+
+// ─── SCHEDULES (JADWAL MENGAJAR PER GURU) ────────────────────────────────────
+export const scheduleRouter = Router();
+scheduleRouter.get('/', academicCtrl.listSchedules);
+scheduleRouter.post('/', optionalAuth, academicCtrl.createSchedule);
+scheduleRouter.put('/:id', optionalAuth, academicCtrl.updateSchedule);
+scheduleRouter.delete('/:id', optionalAuth, academicCtrl.deleteSchedule);
+
+
+

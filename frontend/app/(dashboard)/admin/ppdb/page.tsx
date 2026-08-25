@@ -560,7 +560,7 @@ export default function AdminPPDBPage() {
                     onClick={() => setClearStep(2)}
                     className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs cursor-pointer"
                   >
-                    Lanjutkan ke Langkah 2 &rarr;
+                    Lanjutkan ke Langkah 2
                   </button>
                 </div>
               </div>

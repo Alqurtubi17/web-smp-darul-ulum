@@ -97,13 +97,61 @@ export const contentService = {
     return data;
   },
 
-  // ── PENGATURAN (SETTINGS) ──────────────────────────────────────────────────
+  // ── PENGATURAN (SETTINGS) & TAHUN AJARAN ───────────────────────────────────
   async getSettings() {
     const { data } = await apiClient.get('/settings');
     return data;
   },
   async updateSettings(payload: any) {
     const { data } = await apiClient.post('/settings', payload);
+    return data;
+  },
+  async addAcademicYear(payload: { year: string; semester: 'Ganjil' | 'Genap' }) {
+    const { data } = await apiClient.post('/settings/academic-years', payload);
+    return data;
+  },
+  async setActiveAcademicYear(id: string) {
+    const { data } = await apiClient.patch(`/settings/academic-years/${id}/active`);
+    return data;
+  },
+  async deleteAcademicYear(id: string) {
+    const { data } = await apiClient.delete(`/settings/academic-years/${id}`);
+    return data;
+  },
+
+  // ── KELAS & WALI KELAS ──────────────────────────────────────────────────────
+  async getClasses() {
+    const { data } = await apiClient.get('/classes');
+    return data;
+  },
+  async createClass(payload: any) {
+    const { data } = await apiClient.post('/classes', payload);
+    return data;
+  },
+  async updateClass(id: string, payload: any) {
+    const { data } = await apiClient.put(`/classes/${id}`, payload);
+    return data;
+  },
+  async deleteClass(id: string) {
+    const { data } = await apiClient.delete(`/classes/${id}`);
+    return data;
+  },
+
+  // ── MATA PELAJARAN (SUBJECTS) ───────────────────────────────────────────────
+  async getSubjects() {
+    const { data } = await apiClient.get('/subjects');
+    return data;
+  },
+  async createSubject(payload: any) {
+    const { data } = await apiClient.post('/subjects', payload);
+    return data;
+  },
+  async updateSubject(id: string, payload: any) {
+    const { data } = await apiClient.put(`/subjects/${id}`, payload);
+    return data;
+  },
+  async deleteSubject(id: string) {
+    const { data } = await apiClient.delete(`/subjects/${id}`);
     return data;
   },
 };

@@ -17,7 +17,8 @@ import {
   gradeRouter, attendanceRouter,
   assignmentRouter, materialRouter,
   paymentRouter, bookRouter, borrowingRouter,
-  userRouter, studentRouter, teacherRouter, dashboardRouter, auditLogRouter, settingsRouter,
+  userRouter, studentRouter, teacherRouter, dashboardRouter, auditLogRouter, settingsRouter, academicYearRouter,
+  classRouter, subjectRouter, scheduleRouter,
 } from './routes/index';
 
 
@@ -27,15 +28,12 @@ const API = process.env.API_PREFIX || '/api/v1';
 
 
 // ─── MIDDLEWARE ───────────────────────────────────────────────────────────────
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors({
-  origin: [
-    process.env.CLIENT_URL || 'http://localhost:3000',
-    'http://localhost:3000',
-  ],
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'Pragma', 'Expires', 'X-Requested-With'],
 }));
 // Disable HTTP 304 caching for real-time live API responses
 app.use((_req, res, next) => {
@@ -88,6 +86,10 @@ app.use(`${API}/teachers`, teacherRouter);
 app.use(`${API}/dashboard`, dashboardRouter);
 app.use(`${API}/audit-logs`, auditLogRouter);
 app.use(`${API}/settings`, settingsRouter);
+app.use(`${API}/academic-years`, academicYearRouter);
+app.use(`${API}/classes`, classRouter);
+app.use(`${API}/subjects`, subjectRouter);
+app.use(`${API}/schedules`, scheduleRouter);
 
 
 // ─── ERROR HANDLERS ───────────────────────────────────────────────────────────

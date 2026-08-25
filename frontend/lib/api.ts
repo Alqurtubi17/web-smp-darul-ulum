@@ -15,10 +15,41 @@ const apiClient = axios.create({
 });
 
 
+let sessionPromise: Promise<any> | null = null;
+let cachedSession: any = null;
+let lastSessionFetch = 0;
+
+export const clearSessionCache = () => {
+  cachedSession = null;
+  lastSessionFetch = 0;
+  sessionPromise = null;
+};
+
+async function getOrFetchSession() {
+  const now = Date.now();
+  if (cachedSession && now - lastSessionFetch < 60000) {
+    return cachedSession;
+  }
+  if (!sessionPromise) {
+    sessionPromise = getSession()
+      .then((session) => {
+        cachedSession = session;
+        lastSessionFetch = Date.now();
+        sessionPromise = null;
+        return session;
+      })
+      .catch((err) => {
+        sessionPromise = null;
+        return null;
+      });
+  }
+  return sessionPromise;
+}
+
 // Inject token NextAuth ke setiap request
 apiClient.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
   if (typeof window !== 'undefined') {
-    const session = await getSession();
+    const session = await getOrFetchSession();
     const token = (session?.user as any)?.accessToken;
     if (token) config.headers.Authorization = `Bearer ${token}`;
   }

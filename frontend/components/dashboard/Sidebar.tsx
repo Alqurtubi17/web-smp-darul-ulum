@@ -38,6 +38,16 @@ const menuConfig: Record<string, MenuItem[]> = {
     },
     { label: 'PPDB', icon: <UserCheck className="w-4 h-4" />, href: '/admin/ppdb' },
     {
+      label: 'Akademik',
+      icon: <GraduationCap className="w-4 h-4" />,
+      href: '/admin/akademik',
+      children: [
+        { label: 'Kelas & Wali Kelas', href: '/admin/akademik/kelas' },
+        { label: 'Mata Pelajaran', href: '/admin/akademik/mapel' },
+        { label: 'Jadwal Mengajar', href: '/admin/akademik/jadwal' },
+      ],
+    },
+    {
       label: 'Pengguna',
       icon: <Users className="w-4 h-4" />,
       href: '/admin/pengguna',

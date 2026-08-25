@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Search, Clock, CheckCircle2, AlertCircle, FileText, X, Zap, Award, ChevronDown } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
-import { CustomImageUploader } from '@/components/ui/CustomImageUploader';
+import { FileUpload } from '@/components/ui/FileUpload';
 import { Pagination } from '@/components/ui/Pagination';
 
 type FilterTab = 'semua' | 'belum' | 'dikumpulkan' | 'dinilai' | 'terlambat';
@@ -277,11 +277,14 @@ export default function SiswaTugasPage() {
 
               <div>
                 <label className="block text-xs font-extrabold text-slate-800 mb-1.5">Unggah Berkas Tugas (PDF/DOC/PNG)</label>
-                <CustomImageUploader
+                <FileUpload
                   endpoint="assignmentFile"
-                  label="Upload Berkas Pengerjaan Siswa"
+                  label="Unggah Berkas Lampiran Tugas"
+                  hint="Support format PDF, Word, Excel, Gambar, ZIP (Maksimal 16MB)"
+                  value={uploadedUrl}
                   onUploadComplete={(url) => setUploadedUrl(url)}
-                  className="w-full px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition-all shadow-2xs inline-flex items-center justify-center gap-2 cursor-pointer"
+                  onClear={() => setUploadedUrl('')}
+                  mode="dropzone"
                 />
                 {uploadedUrl && <p className="text-xs font-extrabold text-emerald-700 mt-2">✓ Berkas berhasil diunggah</p>}
               </div>

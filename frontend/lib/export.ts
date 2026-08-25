@@ -270,7 +270,7 @@ const grayHeaderFill = {
   fgColor: { argb: 'FFF1F5F9' }, // Light gray header
 };
 
-export async function exportAbsensiExcel(data?: { className?: string; month?: string }) {
+export async function exportAbsensiExcel(data?: { className?: string; month?: string; rows?: any[] }) {
   const ExcelJS = await import('exceljs');
   const wb = new ExcelJS.Workbook();
 

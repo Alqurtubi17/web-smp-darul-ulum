@@ -9,6 +9,7 @@ import { toast } from '@/store/toast.store';
 import { useAuth } from '@/hooks/useAuth';
 
 import { contentService } from '@/lib/services/content.service';
+import { FileUpload } from '@/components/ui/FileUpload';
 
 interface DlFile {
   id: string;
@@ -501,13 +502,17 @@ export default function AdminDownloadPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Link URL File Dokumen</label>
-                <input
-                  type="url"
-                  placeholder="https://..."
+                <FileUpload
+                  endpoint="generalDocument"
+                  label="Unggah File Dokumen"
+                  hint="Support format PDF, Word, Excel, PowerPoint (Maksimal 32MB)"
                   value={formData.fileUrl}
-                  onChange={(e) => updateForm('fileUrl', e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                  onUploadComplete={(url, name) => {
+                    updateForm('fileUrl', url);
+                    if (name && !formData.title) updateForm('title', name);
+                  }}
+                  onClear={() => updateForm('fileUrl', '')}
+                  mode="dropzone"
                 />
               </div>
 

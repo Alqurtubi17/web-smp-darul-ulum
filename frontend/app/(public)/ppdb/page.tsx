@@ -23,6 +23,7 @@ const REQUIREMENTS = [
 ];
 
 import { PageHero } from '@/components/public/PageHero';
+import { FileUpload } from '@/components/ui/FileUpload';
 import { GraduationCap } from 'lucide-react';
 
 export default function PPDBPage() {
@@ -297,21 +298,30 @@ export default function PPDBPage() {
 
                   {step === 3 && (
                     <>
-                      <h3 className="font-bold text-slate-900 text-sm">Upload Berkas Persyaratan</h3>
-                      {[
-                        { label: 'Foto 3×4 *', key: 'photoUrl' },
-                        { label: 'Ijazah / Surat Keterangan Lulus SD/MI *', key: 'ijazahUrl' },
-                        { label: 'Akta Kelahiran *', key: 'aktaUrl' },
-                        { label: 'Kartu Keluarga *', key: 'kkUrl' },
-                      ].map((field) => (
-                        <div key={field.key}>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">{field.label}</label>
-                          <div className="border border-dashed border-emerald-300 rounded-xl p-4 text-center hover:bg-emerald-50/50 transition-colors cursor-pointer bg-slate-50">
-                            <Upload className="w-5 h-5 text-emerald-600 mx-auto mb-1" />
-                            <p className="text-xs text-slate-500 font-medium">Pilih file berkas (JPG/PDF max 5MB)</p>
+                      <h3 className="font-bold text-slate-900 text-sm mb-1">Unggah Berkas Persyaratan</h3>
+                      <p className="text-xs text-slate-500 mb-4 font-medium">
+                        Silakan unggah dokumen kelengkapan pendaftaran calon peserta didik dalam format gambar (JPG/PNG) atau PDF.
+                      </p>
+                      <div className="space-y-4">
+                        {[
+                          { label: 'Pas Foto 3×4 (JPG/PNG) *', key: 'photoUrl', hint: 'Format JPG/PNG maksimal 8MB' },
+                          { label: 'Ijazah / Surat Keterangan Lulus (SKL) SD/MI *', key: 'ijazahUrl', hint: 'Format PDF/Gambar maksimal 16MB' },
+                          { label: 'Akta Kelahiran *', key: 'aktaUrl', hint: 'Format PDF/Gambar maksimal 16MB' },
+                          { label: 'Kartu Keluarga (KK) *', key: 'kkUrl', hint: 'Format PDF/Gambar maksimal 16MB' },
+                        ].map((field) => (
+                          <div key={field.key} className="bg-slate-50 p-4 rounded-2xl border border-emerald-100">
+                            <FileUpload
+                              endpoint="ppdbDocuments"
+                              label={field.label}
+                              hint={field.hint}
+                              value={formData[field.key]}
+                              onUploadComplete={(url) => update(field.key, url)}
+                              onClear={() => update(field.key, '')}
+                              mode="dropzone"
+                            />
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </>
                   )}
 

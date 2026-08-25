@@ -225,43 +225,105 @@ export const getDashboardStats = async (_req: Request, res: Response): Promise<v
       (downloadCount._sum.downloadCount || 0) +
       totalAuditLogs;
 
-    // Strict 30-day database daily count query
+    // Real-Time 90-Day Database Visitor & Activity Analytics Query
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 89);
+    startDate.setHours(0, 0, 0, 0);
+
+    const [auditLogs, users, admissions, newsItems, announcements] = await Promise.all([
+      prisma.auditLog.findMany({ where: { createdAt: { gte: startDate } }, select: { createdAt: true } }),
+      prisma.user.findMany({ where: { createdAt: { gte: startDate } }, select: { createdAt: true } }),
+      prisma.admission.findMany({ where: { createdAt: { gte: startDate } }, select: { createdAt: true } }),
+      prisma.news.findMany({ where: { createdAt: { gte: startDate } }, select: { createdAt: true } }),
+      prisma.announcement.findMany({ where: { createdAt: { gte: startDate } }, select: { createdAt: true } }),
+    ]);
+
+    const countMap = new Map<string, number>();
+    const addRecord = (date: Date) => {
+      if (!date) return;
+      const key = date.toISOString().split('T')[0];
+      countMap.set(key, (countMap.get(key) || 0) + 1);
+    };
+
+    auditLogs.forEach((r) => addRecord(r.createdAt));
+    users.forEach((r) => addRecord(r.createdAt));
+    admissions.forEach((r) => addRecord(r.createdAt));
+    newsItems.forEach((r) => addRecord(r.createdAt));
+    announcements.forEach((r) => addRecord(r.createdAt));
+
     const now = new Date();
-    const last30Days = Array.from({ length: 30 }).map((_, i) => {
+    const dailySeries = Array.from({ length: 90 }).map((_, i) => {
       const d = new Date(now);
-      d.setDate(d.getDate() - (29 - i));
-      return d;
+      d.setDate(d.getDate() - (89 - i));
+      const key = d.toISOString().split('T')[0];
+      const count = countMap.get(key) || 0;
+      return {
+        dateKey: key,
+        dayLabel: `${d.getDate()} ${d.toLocaleDateString('id-ID', { month: 'short' })}`,
+        count,
+        barPercent: 0,
+      };
     });
 
-    // Query exact daily database entries (no artificial baselines!)
-    const dailyCounts = await Promise.all(
-      last30Days.map(async (dateObj) => {
-        const start = new Date(dateObj);
-        start.setHours(0, 0, 0, 0);
-        const end = new Date(dateObj);
-        end.setHours(23, 59, 59, 999);
+    const recent30Count = dailySeries.slice(-30).reduce((acc, curr) => acc + curr.count, 0);
+    const prev30Count = dailySeries.slice(-60, -30).reduce((acc, curr) => acc + curr.count, 0);
+    const growthPercentage = prev30Count > 0
+      ? Math.round(((recent30Count - prev30Count) / prev30Count) * 1000) / 10
+      : (recent30Count > 0 ? 100 : 0);
 
-        const [auditCount, userCreatedCount] = await Promise.all([
-          prisma.auditLog.count({ where: { createdAt: { gte: start, lte: end } } }),
-          prisma.user.count({ where: { createdAt: { gte: start, lte: end } } }),
-        ]);
+    // Real-Time Class Attendance & SPP Summary from Database
+    const [allClasses, sppPayments] = await Promise.all([
+      prisma.class.findMany({
+        select: {
+          id: true,
+          name: true,
+          students: {
+            select: {
+              id: true,
+              attendances: {
+                select: { status: true },
+              },
+            },
+          },
+        },
+      }),
+      prisma.payment.findMany({
+        select: { amount: true, status: true },
+      }),
+    ]);
 
-        const count = auditCount + userCreatedCount;
-        return {
-          dateObj,
-          dayLabel: `${dateObj.getDate()} ${dateObj.toLocaleDateString('id-ID', { month: 'short' })}`,
-          count,
-        };
-      })
-    );
+    const classAttendance = allClasses.map((cls) => {
+      let hadir = 0, izin = 0, sakit = 0, alpha = 0, total = 0;
+      cls.students.forEach((s) => {
+        s.attendances.forEach((att) => {
+          total++;
+          if (att.status === 'HADIR') hadir++;
+          else if (att.status === 'IZIN') izin++;
+          else if (att.status === 'SAKIT') sakit++;
+          else if (att.status === 'ALPHA') alpha++;
+        });
+      });
 
-    const maxCount = Math.max(...dailyCounts.map((d) => d.count), 1);
+      const hadirPct = total > 0 ? Math.round((hadir / total) * 100) : 0;
+      const izinPct = total > 0 ? Math.round((izin / total) * 100) : 0;
+      const sakitPct = total > 0 ? Math.round((sakit / total) * 100) : 0;
+      const alphaPct = total > 0 ? Math.round((alpha / total) * 100) : 0;
 
-    const dailySeries = dailyCounts.map((item) => ({
-      dayLabel: item.dayLabel,
-      count: item.count,
-      barPercent: item.count > 0 ? Math.min(Math.round((item.count / maxCount) * 100), 100) : 0,
-    }));
+      return {
+        class: cls.name,
+        hadir: hadirPct,
+        izin: izinPct,
+        sakit: sakitPct,
+        alpha: alphaPct,
+        totalRecords: total,
+      };
+    });
+
+    const totalSPPCollected = sppPayments
+      .filter((p) => p.status === 'PAID')
+      .reduce((acc, p) => acc + p.amount, 0);
+
+    const totalSPPTarget = sppPayments.reduce((acc, p) => acc + p.amount, 0);
 
     sendSuccess(res, {
       totalStudents,
@@ -270,10 +332,16 @@ export const getDashboardStats = async (_req: Request, res: Response): Promise<v
       pendingAdmissions,
       publishedNews,
       activeAnnouncements,
+      classAttendance,
+      payments: {
+        collected: totalSPPCollected,
+        target: totalSPPTarget,
+        totalCount: sppPayments.length,
+      },
       visitorStats: {
         totalViews,
         activeUsersToday,
-        growthPercentage: totalViews > 0 ? 12.5 : 0,
+        growthPercentage,
         dailySeries,
       },
     }, 'Statistik dashboard berhasil diambil');
@@ -321,7 +389,7 @@ export const clearAuditLogs = async (req: AuthRequest, res: Response): Promise<v
 export const getSettings = async (_req: Request, res: Response): Promise<void> => {
   try {
     const settings = await prisma.siteSetting.findMany();
-    const result: Record<string, string> = {};
+    const result: Record<string, any> = {};
     settings.forEach((s) => {
       result[s.key] = s.value;
     });
@@ -344,12 +412,31 @@ export const getSettings = async (_req: Request, res: Response): Promise<void> =
       });
     }
 
+    // Seed default AcademicYears in database if table is empty
+    let academicYears = await prisma.academicYear.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (academicYears.length === 0) {
+      const defaultYears = [
+        { year: '2024/2025', semester: 'Ganjil', isActive: true, status: 'Aktif', startDate: new Date('2024-07-15'), endDate: new Date('2024-12-20') },
+        { year: '2023/2024', semester: 'Genap', isActive: false, status: 'Arsip', startDate: new Date('2024-01-08'), endDate: new Date('2024-06-25') },
+        { year: '2023/2024', semester: 'Ganjil', isActive: false, status: 'Arsip', startDate: new Date('2023-07-17'), endDate: new Date('2023-12-22') },
+        { year: '2025/2026', semester: 'Ganjil', isActive: false, status: 'Mendatang', startDate: new Date('2025-07-14'), endDate: new Date('2025-12-19') },
+      ];
+      for (const y of defaultYears) {
+        await prisma.academicYear.create({ data: y });
+      }
+      academicYears = await prisma.academicYear.findMany({ orderBy: { createdAt: 'desc' } });
+    }
+
+    result.academicYears = academicYears;
+
     sendSuccess(res, result, 'Pengaturan berhasil diambil');
   } catch {
     sendError(res, 'Gagal mengambil pengaturan');
   }
 };
-
 
 export const updateSettings = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -357,6 +444,7 @@ export const updateSettings = async (req: AuthRequest, res: Response): Promise<v
     if (dataObj && typeof dataObj === 'object') {
       const keys = Object.keys(dataObj);
       for (const k of keys) {
+        if (k === 'academicYears') continue;
         await prisma.siteSetting.upsert({
           where: { key: k },
           update: { value: String(dataObj[k]) },
@@ -369,5 +457,142 @@ export const updateSettings = async (req: AuthRequest, res: Response): Promise<v
     sendError(res, 'Gagal menyimpan pengaturan');
   }
 };
+
+export const listAcademicYears = async (_req: Request, res: Response): Promise<void> => {
+  try {
+    let academicYears = await prisma.academicYear.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+    if (academicYears.length === 0) {
+      const defaultYears = [
+        { year: '2024/2025', semester: 'Ganjil', isActive: true, status: 'Aktif', startDate: new Date('2024-07-15'), endDate: new Date('2024-12-20') },
+        { year: '2023/2024', semester: 'Genap', isActive: false, status: 'Arsip', startDate: new Date('2024-01-08'), endDate: new Date('2024-06-25') },
+        { year: '2023/2024', semester: 'Ganjil', isActive: false, status: 'Arsip', startDate: new Date('2023-07-17'), endDate: new Date('2023-12-22') },
+        { year: '2025/2026', semester: 'Ganjil', isActive: false, status: 'Mendatang', startDate: new Date('2025-07-14'), endDate: new Date('2025-12-19') },
+      ];
+      for (const y of defaultYears) {
+        await prisma.academicYear.create({ data: y });
+      }
+      academicYears = await prisma.academicYear.findMany({ orderBy: { createdAt: 'desc' } });
+    }
+    sendSuccess(res, academicYears, 'Daftar tahun ajaran berhasil diambil');
+  } catch {
+    sendError(res, 'Gagal mengambil daftar tahun ajaran');
+  }
+};
+
+export const getActiveAcademicYear = async (_req: Request, res: Response): Promise<void> => {
+  try {
+    let active = await prisma.academicYear.findFirst({ where: { isActive: true } });
+    if (!active) {
+      active = await prisma.academicYear.findFirst({ orderBy: { createdAt: 'desc' } });
+    }
+    sendSuccess(res, active, 'Tahun ajaran aktif berhasil diambil');
+  } catch {
+    sendError(res, 'Gagal mengambil tahun ajaran aktif');
+  }
+};
+
+export const updateAcademicYear = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { year, semester, status, startDate, endDate } = req.body;
+    const target = await prisma.academicYear.findUnique({ where: { id } });
+    if (!target) {
+      sendNotFound(res, 'Tahun ajaran tidak ditemukan');
+      return;
+    }
+    const updated = await prisma.academicYear.update({
+      where: { id },
+      data: {
+        ...(year && { year: year.trim() }),
+        ...(semester && { semester }),
+        ...(status && { status }),
+        ...(startDate && { startDate: new Date(startDate) }),
+        ...(endDate && { endDate: new Date(endDate) }),
+      },
+    });
+    sendSuccess(res, updated, 'Tahun ajaran berhasil diperbarui');
+  } catch {
+    sendError(res, 'Gagal memperbarui tahun ajaran');
+  }
+};
+
+export const addAcademicYear = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { year, semester } = req.body;
+    if (!year || !semester) {
+      sendError(res, 'Tahun ajaran dan semester wajib diisi', 400);
+      return;
+    }
+
+    const newItem = await prisma.academicYear.create({
+      data: {
+        year: year.trim(),
+        semester,
+        isActive: false,
+        status: 'Mendatang',
+      },
+    });
+
+    sendCreated(res, newItem, 'Tahun ajaran baru berhasil ditambahkan');
+  } catch {
+    sendError(res, 'Gagal menambahkan tahun ajaran');
+  }
+};
+
+export const setActiveAcademicYear = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const target = await prisma.academicYear.findUnique({ where: { id } });
+    if (!target) {
+      sendNotFound(res, 'Tahun ajaran tidak ditemukan');
+      return;
+    }
+
+    await prisma.academicYear.updateMany({
+      data: { isActive: false, status: 'Arsip' },
+    });
+
+    const updated = await prisma.academicYear.update({
+      where: { id },
+      data: { isActive: true, status: 'Aktif' },
+    });
+
+    await prisma.siteSetting.upsert({
+      where: { key: 'active_academic_year' },
+      update: { value: target.year },
+      create: { key: 'active_academic_year', value: target.year, group: 'general' },
+    });
+    await prisma.siteSetting.upsert({
+      where: { key: 'active_academic_semester' },
+      update: { value: target.semester },
+      create: { key: 'active_academic_semester', value: target.semester, group: 'general' },
+    });
+
+    sendSuccess(res, updated, 'Tahun ajaran aktif berhasil diperbarui');
+  } catch {
+    sendError(res, 'Gagal memperbarui tahun ajaran aktif');
+  }
+};
+
+export const deleteAcademicYear = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const target = await prisma.academicYear.findUnique({ where: { id } });
+    if (!target) {
+      sendNotFound(res, 'Tahun ajaran tidak ditemukan');
+      return;
+    }
+
+    await prisma.academicYear.delete({ where: { id } });
+
+    sendSuccess(res, null, 'Tahun ajaran berhasil dihapus');
+  } catch {
+    sendError(res, 'Gagal menghapus tahun ajaran');
+  }
+};
+
+
 
 

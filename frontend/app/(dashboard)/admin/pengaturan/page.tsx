@@ -6,6 +6,7 @@ import { useAcademicYearStore, AcademicYearItem } from '@/store/academic-year.st
 import { useActivityLogStore } from '@/store/activity-log.store';
 import { useToastStore, toast } from '@/store/toast.store';
 import { useAuth } from '@/hooks/useAuth';
+import { contentService } from '@/lib/services/content.service';
 
 const TABS = [
   { id: 'sekolah', label: 'Profil Sekolah', icon: <School className="w-4 h-4" /> },
@@ -35,15 +36,11 @@ export default function AdminPengaturanPage() {
   const [yearToDelete, setYearToDelete] = useState<AcademicYearItem | null>(null);
   const [showDeleteYearModal, setShowDeleteYearModal] = useState(false);
 
-  useEffect(() => {
-    initAcademicYear();
-  }, [initAcademicYear]);
-
   const [settings, setSettings] = useState({
     school_name: 'SMP Darul Ulum Surabaya',
-    school_npsn: '20000001',
-    school_address: 'Jl. Raya Darul Ulum No. 1, Surabaya',
-    school_phone: '031-XXXXXXX',
+    school_npsn: '20532649',
+    school_address: 'Jl. Raya Manukan Kulon No. 98-100, Tandes, Surabaya 60185',
+    school_phone: '(031) 7417749',
     school_email: 'info@smpdarululum.sch.id',
     school_wa: '6281234567890',
     school_instagram: 'smpdarululum_sby',
@@ -58,15 +55,31 @@ export default function AdminPengaturanPage() {
     push_notif: 'false',
   });
 
+  useEffect(() => {
+    initAcademicYear();
+    contentService.getSettings().then((res) => {
+      const data = res?.data || res;
+      if (data && typeof data === 'object') {
+        setSettings((prev) => ({
+          ...prev,
+          ...data,
+        }));
+      }
+    }).catch((err) => console.warn('Fetch settings warning:', err));
+  }, [initAcademicYear]);
+
   const update = (k: string, v: string) => setSettings((p) => ({ ...p, [k]: v }));
 
   const handleSave = async () => {
     try {
       await contentService.updateSettings(settings);
+      setSaved(true);
+      toast.success('Pengaturan Disimpan', 'Konfigurasi sistem berhasil diperbarui.');
+      setTimeout(() => setSaved(false), 3000);
     } catch (err) {
       console.warn('Backend update settings warning:', err);
+      toast.error('Gagal Menyimpan', 'Terjadi kesalahan saat menyimpan pengaturan.');
     }
-    setSaved(true);
     addLog({
       user: actorName,
       role: 'ADMIN',
@@ -75,8 +88,6 @@ export default function AdminPengaturanPage() {
       severity: 'SUCCESS',
       details: `Pembaruan pengaturan profil sekolah dan integrasi.`,
     });
-    toast.success('Pengaturan Disimpan!', `Konfigurasi ${tab.replace('_', ' ').toUpperCase()} berhasil diperbarui secara permanen.`);
-    setTimeout(() => setSaved(false), 3000);
   };
 
 
@@ -259,7 +270,7 @@ export default function AdminPengaturanPage() {
                               <div className="flex items-center justify-end gap-1.5">
                                 <button
                                   onClick={() => {
-                                    setActiveYear(ay.year, ay.semester);
+                                    setActiveYear(ay.id, ay.semester);
                                     addLog({
                                       user: actorName,
                                       role: 'ADMIN',
@@ -344,22 +355,55 @@ export default function AdminPengaturanPage() {
                 </div>
               </label>
 
-              {[
-                { label: 'Tahun Ajaran PPDB Target', key: 'ppdb_year' },
-                { label: 'Kuota Maksimal Siswa Baru', key: 'ppdb_quota' },
-                { label: 'Tanggal Pembukaan', key: 'ppdb_start', type: 'date' },
-                { label: 'Tanggal Penutupan', key: 'ppdb_end', type: 'date' },
-              ].map((f) => (
-                <div key={f.key}>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">{f.label}</label>
-                  <input
-                    type={(f as { type?: string }).type || 'text'}
-                    value={(settings as Record<string, string>)[f.key]}
-                    onChange={(e) => update(f.key, e.target.value)}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  { label: 'Tahun Ajaran PPDB Target', key: 'ppdb_year' },
+                  { label: 'Kuota Maksimal Siswa Baru', key: 'ppdb_quota' },
+                  { label: 'Tanggal Pembukaan', key: 'ppdb_start', type: 'date' },
+                  { label: 'Tanggal Penutupan', key: 'ppdb_end', type: 'date' },
+                ].map((f) => (
+                  <div key={f.key}>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">{f.label}</label>
+                    <input
+                      type={(f as { type?: string }).type || 'text'}
+                      value={(settings as Record<string, string>)[f.key] || ''}
+                      onChange={(e) => update(f.key, e.target.value)}
+                      className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Kustomisasi Berkas Persyaratan Upload PPDB */}
+              <div className="pt-4 border-t border-slate-100 space-y-3">
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider text-slate-800">
+                  Persyaratan Dokumen Pendaftaran
+                </h3>
+                <p className="text-[11px] text-slate-500 font-normal">
+                  Tentukan jenis dokumen yang wajib diunggah oleh calon peserta didik saat melakukan pendaftaran online.
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {[
+                    { label: 'Pas Foto Resmi 3x4 (JPG/PNG)', key: 'req_photo' },
+                    { label: 'Fotokopi Ijazah / SKL SD/MI', key: 'req_ijazah' },
+                    { label: 'Fotokopi Akta Kelahiran', key: 'req_akta' },
+                    { label: 'Fotokopi Kartu Keluarga (KK)', key: 'req_kk' },
+                    { label: 'Kartu KIP / PKH / KPS (Bantuan Sosial)', key: 'req_kip' },
+                    { label: 'Sertifikat Prestasi (Opsional)', key: 'req_prestasi' },
+                  ].map((item) => (
+                    <label key={item.key} className="flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer text-xs font-semibold text-slate-800">
+                      <input
+                        type="checkbox"
+                        checked={(settings as Record<string, string>)[item.key] !== 'false'}
+                        onChange={(e) => update(item.key, e.target.checked ? 'true' : 'false')}
+                        className="w-4 h-4 text-emerald-600 rounded"
+                      />
+                      <span>{item.label}</span>
+                    </label>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
           )}
 

@@ -81,12 +81,26 @@ export function FileUpload({
           onClientUploadComplete={handleComplete}
           onUploadError={handleError}
           onUploadBegin={() => { setUploading(true); setError(null); }}
+          content={{
+            label({ isUploading }) {
+              if (isUploading) return 'Sedang mengunggah berkas...';
+              return 'Pilih berkas dari perangkat atau tarik berkas ke sini';
+            },
+            allowedContent({ isUploading }) {
+              if (isUploading) return 'Mohon tunggu proses selesai';
+              return hint || 'Format PDF, DOCX, PPTX, MP4, atau Gambar (Maksimal 32MB)';
+            },
+            button({ isUploading }) {
+              if (isUploading) return 'Mengunggah...';
+              return 'Pilih Berkas';
+            },
+          }}
           appearance={{
-            container: 'border-2 border-dashed border-gray-300 rounded-xl p-6 bg-gray-50 hover:border-green-400 transition-colors cursor-pointer',
-            uploadIcon: 'text-gray-400',
-            label: 'text-sm text-gray-500',
-            allowedContent: 'text-xs text-gray-400',
-            button: 'bg-green-600 hover:bg-green-700 text-white rounded-xl px-5 py-2 text-sm font-semibold mt-3',
+            container: 'border-2 border-dashed border-emerald-200 rounded-2xl p-6 bg-slate-50/60 hover:border-emerald-400 hover:bg-emerald-50/40 transition-colors cursor-pointer',
+            uploadIcon: 'text-emerald-500 w-10 h-10',
+            label: 'text-xs font-bold text-slate-700 mt-2',
+            allowedContent: 'text-[11px] font-semibold text-slate-400 mt-1 max-w-sm text-center leading-normal',
+            button: 'bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-5 py-2 text-xs font-bold mt-3 shadow-xs transition-colors cursor-pointer',
           }}
         />
       ) : (

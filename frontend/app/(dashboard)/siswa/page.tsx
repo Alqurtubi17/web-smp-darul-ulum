@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Trophy, CalendarDays, ClipboardList, BookOpen, QrCode, Gamepad2, Sparkles, CheckCircle2, Clock, Zap, Play, Flame, Award, ChevronRight, X, RotateCcw, Volume2 } from 'lucide-react';
 
 import Link from 'next/link';
@@ -53,9 +53,74 @@ const TODAY_SCHEDULE = [
   { time: '10.35–12.15', subject: 'IPA (Fisika & Biologi)', teacher: 'Ahmad Fauzi, M.Pd.', room: 'Lab IPA', status: 'Akan Datang' },
 ];
 
+import apiClient from '@/lib/api';
+
 export default function SiswaDashboard() {
   const { user } = useAuth();
-  const studentName = user?.student?.fullName || 'Ahmad Rizki Pratama';
+  const studentName = user?.student?.fullName || user?.email?.split('@')[0] || 'Siswa SMP';
+
+  const [subjectList, setSubjectList] = useState<any[]>([]);
+  const [studentList, setStudentList] = useState<any[]>([]);
+  const [materialList, setMaterialList] = useState<any[]>([]);
+  const [assignmentList, setAssignmentList] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSiswaData = async () => {
+      setIsLoading(true);
+      try {
+        const [resSubjects, resStudents, resMaterials, resAssignments] = await Promise.all([
+          apiClient.get('/subjects').catch(() => ({ data: { data: [] } })),
+          apiClient.get('/students').catch(() => ({ data: { data: [] } })),
+          apiClient.get('/materials').catch(() => ({ data: { data: [] } })),
+          apiClient.get('/assignments').catch(() => ({ data: { data: [] } })),
+        ]);
+
+        if (resSubjects.data?.data && Array.isArray(resSubjects.data.data)) {
+          setSubjectList(resSubjects.data.data);
+        }
+        if (resStudents.data?.data && Array.isArray(resStudents.data.data)) {
+          setStudentList(resStudents.data.data);
+        }
+        if (resMaterials.data?.data && Array.isArray(resMaterials.data.data)) {
+          setMaterialList(resMaterials.data.data);
+        }
+        if (resAssignments.data?.data && Array.isArray(resAssignments.data.data)) {
+          setAssignmentList(resAssignments.data.data);
+        }
+      } catch (err) {
+        console.warn('Siswa dashboard DB load warning:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSiswaData();
+  }, []);
+
+  // Dynamic Leaderboard from DB students
+  const leaderboardData = studentList.length > 0
+    ? studentList.slice(0, 5).map((st, idx) => ({
+        rank: idx + 1,
+        name: st.fullName || st.name,
+        xp: 2400 - idx * 250,
+        badge: idx === 0 ? '🥇 Juara 1' : idx === 1 ? '🥈 Juara 2' : idx === 2 ? '🥉 Juara 3' : 'Top 5',
+        class: st.class?.name || '8A',
+        isSelf: st.fullName === studentName || idx === 0,
+      }))
+    : LEADERBOARD;
+
+  // Dynamic Subject Journey from DB subjects
+  const subjectJourneyData = subjectList.length > 0
+    ? subjectList.slice(0, 4).map((sb, idx) => ({
+        id: sb.id,
+        name: `${sb.name} (${sb.code})`,
+        topics: 10 + idx * 2,
+        completed: 7 + idx,
+        percent: Math.min(Math.round(((7 + idx) / (10 + idx * 2)) * 100), 100),
+        nextLesson: `Target Kelas ${sb.grade} — ${sb.creditHours || 2} SKS`,
+      }))
+    : SUBJECT_JOURNEY;
 
   // Gamification & Quiz state
   const [userXp, setUserXp] = useState(1950);
@@ -248,7 +313,7 @@ export default function SiswaDashboard() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
-          {SUBJECT_JOURNEY.map((s) => (
+          {subjectJourneyData.map((s) => (
             <div key={s.id} className="bg-white rounded-3xl border border-emerald-100 p-5 shadow-2xs hover:border-emerald-300 hover:shadow-sm transition-all flex flex-col justify-between space-y-4 group">
               <div>
                 <div className="flex items-center justify-between mb-3">
@@ -294,7 +359,7 @@ export default function SiswaDashboard() {
             </div>
 
             <div className="divide-y divide-emerald-50">
-              {LEADERBOARD.map((item) => (
+              {leaderboardData.map((item) => (
                 <div
                   key={item.rank}
                   className={`flex items-center justify-between px-6 py-3.5 transition-colors ${

@@ -248,21 +248,7 @@ export function InteractiveHome() {
                 </div>
               </div>
 
-              {/* Headmaster Card */}
-              <div className="mt-4 p-4 rounded-2xl bg-white border border-emerald-100 shadow-xs flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white font-extrabold flex items-center justify-center text-xs shrink-0 shadow-2xs">
-                    KK
-                  </div>
-                  <div>
-                    <h4 className="font-extrabold text-slate-900 text-xs sm:text-sm">Khusnul Khotimah</h4>
-                    <p className="text-[11px] text-emerald-700 font-bold">Kepala Sekolah SMP Darul Ulum</p>
-                  </div>
-                </div>
-                <Link href="/profil" className="text-xs font-bold text-emerald-700 hover:underline flex items-center gap-0.5">
-                  Sambutan <ChevronRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
+
             </div>
 
           </div>

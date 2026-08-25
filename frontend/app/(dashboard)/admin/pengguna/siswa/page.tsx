@@ -140,8 +140,8 @@ export default function AdminSiswaPage() {
         nisn: student.nisn,
         class: student.class,
         gender: student.gender,
-        parentPhone: student.parentPhone,
-        address: student.address,
+        parentPhone: student.parentPhone || '',
+        address: student.address || '',
         photoUrl: student.photoUrl || '',
       });
     } else {

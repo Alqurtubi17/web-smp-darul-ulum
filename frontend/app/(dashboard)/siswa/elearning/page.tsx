@@ -1,8 +1,10 @@
 'use client';
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { BookOpen, Gamepad2, Trophy, Clock, Play, ChevronRight, Star, Flame, Lock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import apiClient from '@/lib/api';
 
 const SUBJECTS = [
   { id:'matematika', name:'Matematika', icon:'🔢', color:'from-blue-500 to-indigo-600', bg:'bg-blue-50', topics:24, done:8, games:3 },
@@ -32,6 +34,33 @@ const DIFFICULTY_COLOR = { Mudah:'text-green-600 bg-green-100', Sedang:'text-yel
 export default function SiswaElearningPage() {
   const { user } = useAuth();
   const [tab, setTab] = useState<'modul'|'games'|'progress'>('modul');
+  const [dbMaterials, setDbMaterials] = useState<any[]>([]);
+
+  useEffect(() => {
+    apiClient.get('/materials')
+      .then(res => {
+        if (res.data?.data && Array.isArray(res.data.data)) {
+          setDbMaterials(res.data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const customDbGames = dbMaterials
+    .filter(m => m.type === 'quiz_game')
+    .map((m) => ({
+      id: m.id,
+      name: m.title,
+      icon: '🎮',
+      color: 'bg-gradient-to-br from-emerald-600 to-teal-800',
+      desc: m.description || 'Kuis game interaktif buatan Guru',
+      bestScore: 950,
+      played: 24,
+      difficulty: 'Sedang',
+      isCustom: true,
+    }));
+
+  const allGames = [...customDbGames, ...GAMES];
 
   const totalDone = SUBJECTS.reduce((a,b) => a+b.done, 0);
   const totalTopics = SUBJECTS.reduce((a,b) => a+b.topics, 0);
@@ -121,7 +150,7 @@ export default function SiswaElearningPage() {
             <p className="text-sm text-yellow-800">Main games untuk kumpulkan poin! Skor tertinggi kamu akan masuk leaderboard kelas. 🏆</p>
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
-            {GAMES.map(game => (
+            {allGames.map(game => (
               <Link key={game.id} href={`/siswa/elearning/game/${game.id}`}
                 className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all">
                 <div className={`${game.color} p-5 relative overflow-hidden`}>
