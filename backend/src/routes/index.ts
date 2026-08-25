@@ -9,6 +9,13 @@ import * as academicCtrl from '../controllers/academic.controller';
 import * as userCtrl from '../controllers/user.controller';
 import * as assignmentCtrl from '../controllers/assignment.controller';
 import * as paymentCtrl from '../controllers/payment.controller';
+import * as elearningGameCtrl from '../controllers/elearningGame.controller';
+
+// ─── E-LEARNING GAMES (PERSISTENCE & SOAL DB) ──────────────────────────────────
+export const elearningGameRouter = Router();
+elearningGameRouter.get('/', elearningGameCtrl.listGames);
+elearningGameRouter.get('/:slug', elearningGameCtrl.getGameBySlug);
+elearningGameRouter.put('/:slug', elearningGameCtrl.updateGame);
 
 // ─── ANNOUNCEMENTS ────────────────────────────────────────────────────────────
 export const announcementRouter = Router();

@@ -743,3 +743,40 @@ model AcademicYear {
   @@map("academic_years")
 }
 
+// ─── E-LEARNING GAMES & QUESTIONS PERSISTENCE ────────────────────────────
+
+model ElearningGame {
+  id           String              @id @default(uuid())
+  slug         String              @unique // "tajwid", "vocab", "matematika", "scramble", "memory", "quiz-ipa", "timeline"
+  name         String
+  icon         String
+  subject      String
+  desc         String
+  color        String              @default("from-emerald-600 to-teal-700")
+  difficulty   String              @default("Sedang")
+  mode         String              @default("speed") // "speed" | "adventure" | "match"
+  played       Int                 @default(0)
+  bestScore    Int                 @default(1000)
+  questions    ElearningQuestion[]
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  @@map("elearning_games")
+}
+
+model ElearningQuestion {
+  id           String        @id @default(uuid())
+  gameId       String
+  game         ElearningGame @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  question     String
+  options      Json          // ["A", "B", "C", "D"] or ["Definisi"]
+  correct      Int           @default(0)
+  explanation  String?
+  xpReward     Int           @default(100)
+  order        Int           @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("elearning_questions")
+}
+

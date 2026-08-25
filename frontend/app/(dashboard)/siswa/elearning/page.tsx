@@ -36,34 +36,30 @@ const DIFFICULTY_COLOR = { Mudah:'text-green-600 bg-green-100', Sedang:'text-yel
 export default function SiswaElearningPage() {
   const { user } = useAuth();
   const [tab, setTab] = useState<'modul'|'games'|'progress'>('modul');
-  const [dbMaterials, setDbMaterials] = useState<any[]>([]);
+  const [dbGames, setDbGames] = useState<any[]>([]);
 
   useEffect(() => {
-    apiClient.get('/materials')
+    apiClient.get('/elearning-games')
       .then(res => {
         if (res.data?.data && Array.isArray(res.data.data)) {
-          setDbMaterials(res.data.data);
+          const mapped = res.data.data.map((g: any) => ({
+            id: g.slug || g.id,
+            name: g.name,
+            icon: g.icon,
+            color: `bg-gradient-to-br ${g.color || 'from-emerald-600 to-teal-700'}`,
+            desc: g.desc,
+            bestScore: g.bestScore || 1000,
+            played: g.played || 10,
+            difficulty: g.difficulty || 'Sedang',
+            questionsCount: g.questions?.length || 5,
+          }));
+          setDbGames(mapped);
         }
       })
       .catch(() => {});
   }, []);
 
-  const customDbGames = dbMaterials
-    .filter(m => m.type === 'quiz_game')
-    .map((m) => ({
-      id: m.id,
-      name: m.title,
-      icon: '🎮',
-      color: 'bg-gradient-to-br from-emerald-600 to-teal-800',
-      desc: m.description || 'Kuis game interaktif buatan Guru',
-      bestScore: 950,
-      played: 24,
-      difficulty: 'Sedang',
-      questionsCount: m.quizData?.questions?.length || 5,
-      isCustom: true,
-    }));
-
-  const allGames = [...customDbGames, ...GAMES];
+  const allGames = dbGames.length > 0 ? dbGames : GAMES;
 
   const totalDone = SUBJECTS.reduce((a,b) => a+b.done, 0);
   const totalTopics = SUBJECTS.reduce((a,b) => a+b.topics, 0);

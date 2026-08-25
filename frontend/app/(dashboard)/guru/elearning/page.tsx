@@ -245,27 +245,43 @@ export default function GuruElearningPage() {
     }
   };
 
-  useEffect(() => {
-    fetchModules();
+  const fetchGamesFromDb = async () => {
     try {
-      const saved = localStorage.getItem('smp_elearning_custom_games');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        const tajwid = parsed.find((g: any) => g.id === 'tajwid');
-        if (!tajwid || tajwid.questions?.length < 12) {
-          // Stale cache detected! Update cache to complete full question dataset
-          localStorage.setItem('smp_elearning_custom_games', JSON.stringify(INITIAL_7_GAMES));
-          setGamesList(INITIAL_7_GAMES);
-        } else {
-          setGamesList(parsed);
-        }
-      } else {
-        localStorage.setItem('smp_elearning_custom_games', JSON.stringify(INITIAL_7_GAMES));
-        setGamesList(INITIAL_7_GAMES);
+      const res = await apiClient.get('/elearning-games');
+      if (res.data?.data && Array.isArray(res.data.data)) {
+        const mapped = res.data.data.map((g: any) => ({
+          id: g.slug || g.id,
+          slug: g.slug || g.id,
+          name: g.name,
+          icon: g.icon,
+          subject: g.subject,
+          color: g.color || 'from-emerald-600 to-teal-700',
+          bgColor: 'bg-emerald-50 border-emerald-200 text-emerald-900',
+          desc: g.desc,
+          played: g.played || 10,
+          bestScore: g.bestScore || 1000,
+          difficulty: g.difficulty || 'Sedang',
+          mode: g.mode || 'speed',
+          questions: g.questions?.map((q: any) => ({
+            id: q.id,
+            question: q.question,
+            options: q.options || ['Opsi A', 'Opsi B', 'Opsi C', 'Opsi D'],
+            correct: q.correct || 0,
+            explanation: q.explanation || '',
+            xpReward: q.xpReward || 100,
+          })) || [],
+        }));
+        setGamesList(mapped);
+        localStorage.setItem('smp_elearning_custom_games', JSON.stringify(mapped));
       }
     } catch (e) {
-      setGamesList(INITIAL_7_GAMES);
+      console.warn('Fetch elearning games error:', e);
     }
+  };
+
+  useEffect(() => {
+    fetchModules();
+    fetchGamesFromDb();
   }, []);
 
   const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));
@@ -875,30 +891,18 @@ export default function GuruElearningPage() {
                 type="button"
                 onClick={async () => {
                   if (!editingGame) return;
-                  const updatedList = gamesList.map(g => g.id === editingGame.id ? editingGame : g);
-                  setGamesList(updatedList);
-                  
-                  // 1. Simpan ke localStorage untuk akses instan di Siswa & Guru
+                  const slug = (editingGame as any).slug || editingGame.id;
                   try {
-                    localStorage.setItem('smp_elearning_custom_games', JSON.stringify(updatedList));
-                  } catch (e) {}
-
-                  // 2. Simpan & Sinkronkan ke Database backend
-                  try {
-                    await apiClient.post('/materials', {
-                      title: editingGame.name,
-                      description: editingGame.desc,
-                      type: 'quiz_game',
-                      fileUrl: '#',
-                      externalUrl: `/siswa/elearning/game/${editingGame.id}`,
-                      quizData: {
-                        mode: editingGame.mode,
-                        questions: editingGame.questions,
-                      },
-                    }).catch(() => {});
-                  } catch (e) {}
-
-                  toast.success('Soal Game Diperbarui & Disimpan di DB', `Kustomisasi soal game "${editingGame.name}" berhasil disimpan ke database dan disinkronkan untuk siswa.`);
+                    await apiClient.put(`/elearning-games/${slug}`, {
+                      subject: editingGame.subject,
+                      difficulty: editingGame.difficulty,
+                      questions: editingGame.questions,
+                    });
+                    toast.success('Soal Game Diperbarui di DB', `Kustomisasi soal game "${editingGame.name}" berhasil disimpan di database.`);
+                    fetchGamesFromDb();
+                  } catch (e) {
+                    toast.error('Gagal Menyimpan', 'Terjadi kesalahan saat menyimpan ke database.');
+                  }
                   setEditingGame(null);
                 }}
                 className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs cursor-pointer"

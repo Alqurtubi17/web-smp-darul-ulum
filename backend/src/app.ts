@@ -18,7 +18,7 @@ import {
   assignmentRouter, materialRouter,
   paymentRouter, bookRouter, borrowingRouter,
   userRouter, studentRouter, teacherRouter, dashboardRouter, auditLogRouter, settingsRouter, academicYearRouter,
-  classRouter, subjectRouter, scheduleRouter,
+  classRouter, subjectRouter, scheduleRouter, elearningGameRouter,
 } from './routes/index';
 
 
@@ -90,6 +90,7 @@ app.use(`${API}/academic-years`, academicYearRouter);
 app.use(`${API}/classes`, classRouter);
 app.use(`${API}/subjects`, subjectRouter);
 app.use(`${API}/schedules`, scheduleRouter);
+app.use(`${API}/elearning-games`, elearningGameRouter);
 
 
 // ─── ERROR HANDLERS ───────────────────────────────────────────────────────────
