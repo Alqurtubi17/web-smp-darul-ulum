@@ -244,17 +244,19 @@ export const listAnnouncements = async (req: Request, res: Response) => {
       OR: [{ expiresAt: null }, { expiresAt: { gte: hPlus1Cutoff } }],
     };
 
+    const items = await prisma.announcement.findMany({
+      where: whereCondition,
+      orderBy: [{ isPinned: 'desc' }, { publishedAt: 'desc' }, { createdAt: 'desc' }],
+    });
 
-    const [total, items] = await Promise.all([
-      prisma.announcement.count({ where: whereCondition }),
-      prisma.announcement.findMany({
-        where: whereCondition,
-        orderBy: [{ isPinned: 'desc' }, { publishedAt: 'desc' }, { createdAt: 'desc' }],
-        skip, take: limit,
-      }),
-    ]);
+    // Strictly deduplicate by title
+    const uniqueItems = items.filter((item, idx, self) =>
+      idx === self.findIndex((t) => t.title.trim().toLowerCase() === item.title.trim().toLowerCase())
+    );
 
-    sendSuccess(res, items, 'Pengumuman berhasil diambil', 200, buildPaginationMeta(total, page, limit));
+    const paginated = uniqueItems.slice(skip, skip + limit);
+
+    sendSuccess(res, paginated, 'Pengumuman berhasil diambil', 200, buildPaginationMeta(uniqueItems.length, page, limit));
   } catch (err) {
     console.error('[Announcement list error]:', err);
     sendError(res, 'Gagal mengambil pengumuman');
