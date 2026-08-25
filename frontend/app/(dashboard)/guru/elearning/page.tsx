@@ -60,9 +60,18 @@ const INITIAL_7_GAMES = [
     difficulty: 'Sedang',
     mode: 'adventure',
     questions: [
-      { id: 1, question: 'Hukum bacaan Nun Sukun (نْ) bertemu dengan huruf Kho (خ) adalah...', options: ['Izhar Halqi', 'Idgham Bighunnah', 'Ikhfa Hakiki', 'Iqlab'], correct: 0, explanation: 'Izhar Halqi terjadi jika Nun Sukun / Tanwin bertemu 6 huruf halq: ء, هـ, ع, ح, غ, خ.', xpReward: 100 },
-      { id: 2, question: 'Hukum bacaan Nun Sukun (نْ) bertemu Ya (ي) adalah...', options: ['Idgham Bighunnah', 'Idgham Bilaghunnah', 'Izhar Syafawi', 'Ikhfa Hakiki'], correct: 0, explanation: 'Idgham Bighunnah dibaca melebur disertai dengung.', xpReward: 100 },
-      { id: 3, question: 'Hukum bacaan Nun Sukun (نْ) bertemu Ra (ر) adalah...', options: ['Idgham Bilaghunnah', 'Idgham Bighunnah', 'Iqlab', 'Izhar Halqi'], correct: 0, explanation: 'Idgham Bilaghunnah dibaca melebur tanpa dengung.', xpReward: 100 },
+      { id: 1, question: 'Hukum bacaan Nun Sukun (نْ) bertemu dengan huruf Kho (خ) adalah...', options: ['Izhar Halqi', 'Idgham Bighunnah', 'Ikhfa Hakiki', 'Iqlab'], correct: 0, explanation: 'مِنْ خَوْفٍ — Izhar Halqi terjadi jika Nun Sukun / Tanwin bertemu 6 huruf halq: ء, هـ, ع, ح, غ, خ.', xpReward: 100 },
+      { id: 2, question: 'Hukum bacaan Nun Sukun (نْ) bertemu Ya (ي) adalah...', options: ['Idgham Bighunnah', 'Idgham Bilaghunnah', 'Izhar Syafawi', 'Ikhfa Hakiki'], correct: 0, explanation: 'مَنْ يَّعْمَلْ — Idgham Bighunnah dibaca melebur disertai dengung.', xpReward: 100 },
+      { id: 3, question: 'Hukum bacaan Nun Sukun (نْ) bertemu Ra (ر) adalah...', options: ['Idgham Bilaghunnah', 'Idgham Bighunnah', 'Iqlab', 'Izhar Halqi'], correct: 0, explanation: 'مِنْ رَّبِّهِمْ — Idgham Bilaghunnah dibaca melebur tanpa dengung.', xpReward: 100 },
+      { id: 4, question: 'Hukum bacaan Nun Sukun (نْ) bertemu Ba (ب) adalah...', options: ['Iqlab', 'Ikhfa Hakiki', 'Izhar Halqi', 'Idgham Bighunnah'], correct: 0, explanation: 'مِنْ بَعْدِ — Iqlab terjadi jika Nun Sukun bertemu Ba, suara nun diganti menjadi Mim (م).', xpReward: 100 },
+      { id: 5, question: 'Hukum bacaan Nun Sukun (نْ) bertemu Qaf (ق) adalah...', options: ['Ikhfa Hakiki', 'Izhar Halqi', 'Idgham Bilaghunnah', 'Iqlab'], correct: 0, explanation: 'مِنْ قَبْلِ — Ikhfa Hakiki dibaca samar-samar dengan dengung.', xpReward: 100 },
+      { id: 6, question: 'Hukum Mim Sukun (مْ) bertemu dengan Mim (م) adalah...', options: ['Idgham Mimi (Mitsli)', 'Ikhfa Syafawi', 'Izhar Syafawi', 'Izhar Halqi'], correct: 0, explanation: 'لَهُمْ مَّا يَشَاءُونَ — Idgham Mimi terjadi apabila Mim Sukun bertemu huruf Mim.', xpReward: 150 },
+      { id: 7, question: 'Hukum Mim Sukun (مْ) bertemu dengan Ba (ب) adalah...', options: ['Ikhfa Syafawi', 'Izhar Syafawi', 'Idgham Mimi', 'Iqlab'], correct: 0, explanation: 'تَرْمِيهِمْ بِحِجَارَةٍ — Ikhfa Syafawi terjadi apabila Mim Sukun bertemu huruf Ba.', xpReward: 150 },
+      { id: 8, question: 'Hukum Mim Sukun (مْ) bertemu Ta (ت) adalah...', options: ['Izhar Syafawi', 'Ikhfa Syafawi', 'Idgham Bighunnah', 'Iqlab'], correct: 0, explanation: 'أَلَمْ تَرَ كَيْفَ — Izhar Syafawi dibaca jelas tanpa dengung.', xpReward: 150 },
+      { id: 9, question: 'Berapakah jumlah rukun Islam dan rukun Iman secara berturut-turut?', options: ['5 dan 6', '6 dan 5', '5 dan 5', '6 dan 6'], correct: 0, explanation: 'Rukun Islam ada 5 perkara dan Rukun Iman ada 6 perkara.', xpReward: 150 },
+      { id: 10, question: 'Hukum Mad pada kata وَالسَّمَاءِ (Hamzah dalam satu kata) adalah...', options: ['Mad Wajib Muttashil', 'Mad Jaiz Munfashil', 'Mad Arid Lissukun', 'Mad Badal'], correct: 0, explanation: 'Mad Wajib Muttashil terjadi jika Mad Thabi’i bertemu Hamzah dalam satu kata (4-5 harakat).', xpReward: 200 },
+      { id: 11, question: 'Hukum Mad pada بِمَا أُنْزِلَ (Mad Thabi’i bertemu Hamzah di lain kata) adalah...', options: ['Mad Jaiz Munfashil', 'Mad Wajib Muttashil', 'Mad Iwadh', 'Mad Shilah'], correct: 0, explanation: 'Mad Jaiz Munfashil terjadi jika Mad Thabi’i bertemu Hamzah di kata terpisah.', xpReward: 200 },
+      { id: 12, question: 'Panjang hukum bacaan Mad Arid Lissukun di akhir ayat adalah...', options: ['2, 4, atau 6 Harakat', '1 Harakat saja', '8 Harakat', '3 Harakat saja'], correct: 0, explanation: 'الْعَالَمِينَ — Boleh dibaca 2, 4, atau 6 harakat.', xpReward: 200 }
     ]
   },
   {
@@ -80,7 +89,10 @@ const INITIAL_7_GAMES = [
     questions: [
       { id: 1, question: 'Photosynthesis', options: ['Proses pembuat makanan pada tumbuhan hijau', '', '', ''], correct: 0, explanation: 'Istilah Biologi Tumbuhan', xpReward: 150 },
       { id: 2, question: 'Respiration', options: ['Proses pelepasan energi dari glukosa', '', '', ''], correct: 0, explanation: 'Istilah Biologi Respirasi', xpReward: 150 },
-      { id: 3, question: 'Linear Equation', options: ['Persamaan dengan variabel pangkat 1', '', '', ''], correct: 0, explanation: 'Istilah Aljabar', xpReward: 150 },
+      { id: 3, question: 'Linear Equation', options: ['Persamaan dengan variabel pangkat 1', '', '', ''], correct: 0, explanation: 'Istilah Aljabar Matematika', xpReward: 150 },
+      { id: 4, question: 'Majas Personifikasi', options: ['Gaya bahasa yang menganggap benda mati bernyawa', '', '', ''], correct: 0, explanation: 'Istilah Bahasa Indonesia', xpReward: 150 },
+      { id: 5, question: 'Narrative Text', options: ['Teks cerita rekaan untuk menghibur pembaca', '', '', ''], correct: 0, explanation: 'Istilah Bahasa Inggris', xpReward: 150 },
+      { id: 6, question: 'Proklamasi 1945', options: ['Peristiwa sejarah kemerdekaan Indonesia', '', '', ''], correct: 0, explanation: 'Istilah Sejarah IPS', xpReward: 150 }
     ]
   },
   {
@@ -98,6 +110,10 @@ const INITIAL_7_GAMES = [
     questions: [
       { id: 1, question: 'Berapakah nilai x dari persamaan aljabar: 2x + 6 = 16 ?', options: ['x = 3', 'x = 5', 'x = 7', 'x = 9'], correct: 1, explanation: '2x = 16 - 6 => 2x = 10 => x = 5', xpReward: 50 },
       { id: 2, question: 'Persamaan linear satu variabel dengan x = 4 adalah...', options: ['3x - 2 = 10', '2x + 4 = 10', '5x - 5 = 15', 'x + 8 = 10'], correct: 0, explanation: '3(4) - 2 = 12 - 2 = 10', xpReward: 50 },
+      { id: 3, question: 'Hasil dari 15 + (4 × 5) adalah...', options: ['35', '95', '40', '50'], correct: 0, explanation: 'Perkalian dikerjakan lebih dahulu: 4 × 5 = 20, 15 + 20 = 35', xpReward: 50 },
+      { id: 4, question: 'Berapakah 25% dari 200 ?', options: ['50', '25', '75', '100'], correct: 0, explanation: '25/100 × 200 = 50', xpReward: 50 },
+      { id: 5, question: 'Akar kuadrat dari 144 adalah...', options: ['12', '14', '16', '10'], correct: 0, explanation: '12 × 12 = 144', xpReward: 50 },
+      { id: 6, question: 'Hasil dari 3³ + 2² adalah...', options: ['31', '25', '35', '29'], correct: 0, explanation: '27 + 4 = 31', xpReward: 50 }
     ]
   },
   {
@@ -115,6 +131,9 @@ const INITIAL_7_GAMES = [
     questions: [
       { id: 1, question: 'Susun kata: E - D - U - C - A - T - I - O - N', options: ['EDUCATION', 'DEDICATION', 'EVALUATION', 'ELEVATION'], correct: 0, explanation: 'Artinya: Pendidikan', xpReward: 100 },
       { id: 2, question: 'Susun kata: L - E - A - R - N - I - N - G', options: ['LEARNING', 'READING', 'WRITING', 'LISTENING'], correct: 0, explanation: 'Artinya: Pembelajaran', xpReward: 100 },
+      { id: 3, question: 'Susun kata: K - N - O - W - L - E - D - G - E', options: ['KNOWLEDGE', 'ACKNOWLEDGMENT', 'CHALLENGE', 'ADVANTAGE'], correct: 0, explanation: 'Artinya: Pengetahuan', xpReward: 100 },
+      { id: 4, question: 'Susun kata: S - C - H - O - O - L', options: ['SCHOOL', 'SCHOLAR', 'SCHEDULE', 'SCHEME'], correct: 0, explanation: 'Artinya: Sekolah', xpReward: 100 },
+      { id: 5, question: 'Susun kata: T - E - A - C - H - E - R', options: ['TEACHER', 'TRAINER', 'THEATER', 'TUTORIAL'], correct: 0, explanation: 'Artinya: Guru', xpReward: 100 }
     ]
   },
   {
@@ -132,6 +151,9 @@ const INITIAL_7_GAMES = [
     questions: [
       { id: 1, question: 'Klorofil', options: ['Zat hijau daun pengikat cahaya matahari', '', '', ''], correct: 0, explanation: 'Biologi Tumbuhan', xpReward: 100 },
       { id: 2, question: 'Mitokondria', options: ['Organel sel penghasil energi selular', '', '', ''], correct: 0, explanation: 'Biologi Sel', xpReward: 100 },
+      { id: 3, question: 'Stomata', options: ['Celah mulut daun tempat pertukaran gas', '', '', ''], correct: 0, explanation: 'Anatomi Tumbuhan', xpReward: 100 },
+      { id: 4, question: 'Osmosis', options: ['Perpindahan molekul air melalui membran', '', '', ''], correct: 0, explanation: 'Fisika Biologi', xpReward: 100 },
+      { id: 5, question: 'Kapiler', options: ['Pembuluh darah terkecil penyuplai sel', '', '', ''], correct: 0, explanation: 'Sistem Peredaran Darah', xpReward: 100 }
     ]
   },
   {
@@ -149,6 +171,9 @@ const INITIAL_7_GAMES = [
     questions: [
       { id: 1, question: 'Organel sel yang berfungsi sebagai pusat energi sel adalah...', options: ['Mitokondria', 'Ribosom', 'Lisosom', 'Nukleus'], correct: 0, explanation: 'Mitokondria menghasilkan ATP energi sel.', xpReward: 100 },
       { id: 2, question: 'Gas yang diserap tumbuhan saat fotosintesis adalah...', options: ['Karbondioksida (CO2)', 'Oksigen (O2)', 'Nitrogen (N2)', 'Hidrogen (H2)'], correct: 0, explanation: 'Tumbuhan menyerap CO2 dan merilis Oksigen.', xpReward: 100 },
+      { id: 3, question: 'Satuan internasional untuk mengukur arus listrik adalah...', options: ['Ampere', 'Volt', 'Ohm', 'Watt'], correct: 0, explanation: 'Arus listrik diukur dalam Ampere (A).', xpReward: 100 },
+      { id: 4, question: 'Planet terbesar dalam tata surya kita adalah...', options: ['Jupiter', 'Saturnus', 'Neptunus', 'Bumi'], correct: 0, explanation: 'Jupiter adalah planet terbesar di Tata Surya.', xpReward: 100 },
+      { id: 5, question: 'Urutan lapisan atmosfer terendah adalah...', options: ['Troposfer', 'Stratosfer', 'Mesosfer', 'Termosfer'], correct: 0, explanation: 'Troposfer tempat terjadinya fenomena cuaca.', xpReward: 100 }
     ]
   },
   {
@@ -166,6 +191,9 @@ const INITIAL_7_GAMES = [
     questions: [
       { id: 1, question: 'Tahun Proklamasi Kemerdekaan Republik Indonesia adalah...', options: ['1945', '1928', '1908', '1950'], correct: 0, explanation: 'Proklamasi dibacakan Ir. Soekarno pada 17 Agustus 1945.', xpReward: 100 },
       { id: 2, question: 'Peristiwa Sumpah Pemuda dicetuskan pada tahun...', options: ['1928', '1908', '1945', '1912'], correct: 0, explanation: 'Kongres Pemuda II pada 28 Oktober 1928.', xpReward: 100 },
+      { id: 3, question: 'Peristiwa Rengasdengklok terjadi pada tanggal...', options: ['16 Agustus 1945', '17 Agustus 1945', '18 Agustus 1945', '15 Agustus 1945'], correct: 0, explanation: 'Penjelapan Soekarno-Hatta ke Rengasdengklok.', xpReward: 100 },
+      { id: 4, question: 'Kongres Pemuda Pertama dilaksanakan pada tahun...', options: ['1926', '1928', '1945', '1930'], correct: 0, explanation: 'Kongres Pemuda I di Batavia tahun 1926.', xpReward: 100 },
+      { id: 5, question: 'Berdirinya organisasi Budi Utomo pada tahun...', options: ['1908', '1912', '1928', '1945'], correct: 0, explanation: '20 Mei 1908 sebagai Hari Kebangkitan Nasional.', xpReward: 100 }
     ]
   }
 ];
