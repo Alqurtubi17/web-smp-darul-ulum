@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Plus, FileText, Clock, Users, X, Eye, Trash2, RefreshCw, Loader2, AlertCircle, Edit3, Link as LinkIcon, ExternalLink, Search } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { CustomImageUploader } from '@/components/ui/CustomImageUploader';
+import { Pagination } from '@/components/ui/Pagination';
 import apiClient from '@/lib/api';
 import { toast } from '@/store/toast.store';
 
@@ -81,9 +82,11 @@ export default function GuruTugasPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [fileUrl, setFileUrl] = useState('');
 
-  // Search & Filter state
+  // Search, Filter & Pagination state
   const [searchQuery, setSearchQuery] = useState('');
   const [filterClass, setFilterClass] = useState('ALL');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 4;
 
   // Interactive Submissions Modal state
   const [viewingAssignment, setViewingAssignment] = useState<any | null>(null);
@@ -274,6 +277,12 @@ export default function GuruTugasPage() {
     });
   }, [displayList, searchQuery, filterClass]);
 
+  const totalPages = Math.ceil(filteredAssignments.length / ITEMS_PER_PAGE) || 1;
+
+  const paginatedAssignments = useMemo(() => {
+    return filteredAssignments.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  }, [filteredAssignments, currentPage]);
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-10">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
@@ -304,7 +313,7 @@ export default function GuruTugasPage() {
             type="search"
             placeholder="Cari judul tugas, deskripsi, atau mata pelajaran..."
             value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
+            onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
             className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-emerald-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 shadow-2xs"
           />
         </div>
@@ -313,7 +322,7 @@ export default function GuruTugasPage() {
           <span className="text-xs font-extrabold text-slate-700 whitespace-nowrap">Filter Kelas:</span>
           <select
             value={filterClass}
-            onChange={e => setFilterClass(e.target.value)}
+            onChange={e => { setFilterClass(e.target.value); setCurrentPage(1); }}
             className="px-4 py-2.5 rounded-2xl border border-emerald-200 bg-white text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 shadow-2xs cursor-pointer min-w-[130px]"
           >
             <option value="ALL">Semua Kelas</option>
@@ -425,7 +434,7 @@ export default function GuruTugasPage() {
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 gap-5">
-          {filteredAssignments.map(a => {
+          {paginatedAssignments.map(a => {
             const totalCount = a.total || 32;
             const subCount = a.submissions?.length !== undefined ? a.submissions.length : (a.submissions || 0);
             const pct = Math.round((subCount / totalCount) * 100);
@@ -539,6 +548,17 @@ export default function GuruTugasPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Pagination Component */}
+      {totalPages > 1 && (
+        <div className="pt-2 flex justify-center">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={page => setCurrentPage(page)}
+          />
         </div>
       )}
 
