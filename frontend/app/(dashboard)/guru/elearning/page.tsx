@@ -272,7 +272,6 @@ export default function GuruElearningPage() {
           })) || [],
         }));
         setGamesList(mapped);
-        localStorage.setItem('smp_elearning_custom_games', JSON.stringify(mapped));
       }
     } catch (e) {
       console.warn('Fetch elearning games error:', e);

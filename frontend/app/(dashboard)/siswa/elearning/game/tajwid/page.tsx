@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Star, Timer, Zap, Heart, Trophy, RotateCcw, CheckCircle2, Sparkles, BookOpen } from 'lucide-react';
 
+import apiClient from '@/lib/api';
+
 type Difficulty = 'mudah' | 'sedang' | 'sulit';
 type GamePhase = 'menu' | 'playing' | 'result';
 
@@ -152,27 +154,25 @@ export default function TajwidQuestGame() {
   const TOTAL_ROUNDS = questionList.length || 5;
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('smp_elearning_custom_games');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        const tajwidGame = parsed.find((g: any) => g.id === 'tajwid');
-        if (tajwidGame && tajwidGame.questions?.length > 0) {
-          const customMapped: Question[] = tajwidGame.questions.map((q: any) => ({
+    apiClient.get('/elearning-games/tajwid')
+      .then(res => {
+        const gameData = res.data?.data;
+        if (gameData && gameData.questions?.length > 0) {
+          const customMapped: Question[] = gameData.questions.map((q: any) => ({
             verse: q.explanation || 'القرآن الكريم',
             highlight: 'Tajwid',
             question: q.question,
             options: q.options || ['Izhar Halqi', 'Idgham Bighunnah', 'Ikhfa Hakiki', 'Iqlab'],
             answer: q.options?.[q.correct] || q.options?.[0] || 'Izhar Halqi',
-            explanation: q.explanation || 'Pembahasan Tajwid dari Guru',
+            explanation: q.explanation || 'Pembahasan Tajwid dari Database Guru',
             points: q.xpReward || 100,
           }));
           TAJWID_QUESTIONS.mudah = customMapped;
           TAJWID_QUESTIONS.sedang = customMapped;
           TAJWID_QUESTIONS.sulit = customMapped;
         }
-      }
-    } catch (e) {}
+      })
+      .catch(() => {});
   }, []);
 
   const startGame = () => {

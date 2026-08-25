@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Star, Timer, Heart, RotateCcw, Zap, Sparkles, Check, RefreshCw } from 'lucide-react';
 
+import apiClient from '@/lib/api';
+
 interface CardItem {
   id: number;
   pairId: number;
@@ -68,13 +70,11 @@ export default function WordMatchGame() {
   };
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('smp_elearning_custom_games');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        const vocabGame = parsed.find((g: any) => g.id === 'vocab' || g.mode === 'match');
-        if (vocabGame && vocabGame.questions?.length > 0) {
-          const customPairs = vocabGame.questions.map((q: any, i: number) => ({
+    apiClient.get('/elearning-games/vocab')
+      .then(res => {
+        const gameData = res.data?.data;
+        if (gameData && gameData.questions?.length > 0) {
+          const customPairs = gameData.questions.map((q: any, i: number) => ({
             pairId: i + 1,
             text: q.question,
             subtext: q.options?.[0] || q.explanation || 'Definisi',
@@ -82,9 +82,11 @@ export default function WordMatchGame() {
           PAIRS_DATA.length = 0;
           PAIRS_DATA.push(...customPairs);
         }
-      }
-    } catch (e) {}
-    initGame();
+        initGame();
+      })
+      .catch(() => {
+        initGame();
+      });
   }, []);
 
   useEffect(() => {
