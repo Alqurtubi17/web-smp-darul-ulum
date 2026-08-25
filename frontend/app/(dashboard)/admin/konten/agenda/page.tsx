@@ -332,23 +332,29 @@ export default function AdminAgendaPage() {
     const fetchAgendasBackend = async () => {
       try {
         const res = await contentService.getEvents();
+        let apiMapped: AcademicAgendaItem[] = [];
         if (res?.data && Array.isArray(res.data)) {
-          const mapped: AcademicAgendaItem[] = res.data.map((ev: any) => ({
+          apiMapped = res.data.map((ev: any) => ({
             id: ev.id,
             title: ev.title,
             category: ev.category === 'Kalender Akademik Sekolah' ? 'Kalender Akademik Sekolah' : 'Agenda Kepala Sekolah & Guru',
             date: ev.startDate ? String(ev.startDate).split('T')[0] : todayStr,
             startTime: '08:00',
             endTime: '12:00',
-            organizer: ev.organizer || 'SMP Darul Ulum',
-            location: ev.location || 'Kampus SMP Darul Ulum',
+            organizer: ev.organizer || 'Dinas Pendidikan Kota Surabaya',
+            location: ev.location || 'SMP Darul Ulum Surabaya',
             description: ev.description || ev.title,
           }));
-          setAgendas(mapped);
         }
-      } catch (err) {
 
+        const combined = apiMapped.length > 0 ? [...apiMapped, ...getInitialAgendas()] : getInitialAgendas();
+        const unique = combined.filter((item, idx, self) =>
+          idx === self.findIndex((t) => t.title.trim().toLowerCase() === item.title.trim().toLowerCase())
+        );
+        setAgendas(unique);
+      } catch (err) {
         console.warn('Backend agenda load warning:', err);
+        setAgendas(getInitialAgendas());
       }
     };
     fetchAgendasBackend();

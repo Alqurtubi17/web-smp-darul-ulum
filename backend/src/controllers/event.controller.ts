@@ -12,33 +12,35 @@ export const listEvents = async (req: Request, res: Response): Promise<void> => 
     const { page, limit, skip } = parsePagination(req.query as Record<string, string>);
     const { month, year, category } = req.query as Record<string, string>;
 
-    const now = new Date();
-    const filterYear = year ? parseInt(year) : now.getFullYear();
-    const filterMonth = month ? parseInt(month) - 1 : undefined;
-
-    const startDate = filterMonth !== undefined
-      ? new Date(filterYear, filterMonth, 1)
-      : new Date(filterYear, 0, 1);
-    const endDate = filterMonth !== undefined
-      ? new Date(filterYear, filterMonth + 1, 0, 23, 59, 59)
-      : new Date(filterYear, 11, 31, 23, 59, 59);
-
-    const where = {
+    const where: any = {
       isPublic: true,
-      startDate: { gte: startDate, lte: endDate },
       ...(category && { category }),
     };
 
-    const [total, items] = await Promise.all([
-      prisma.event.count({ where }),
-      prisma.event.findMany({
-        where, skip, take: limit,
-        orderBy: { startDate: 'asc' },
-      }),
-    ]);
+    if (year) {
+      const filterYear = parseInt(year);
+      const filterMonth = month ? parseInt(month) - 1 : undefined;
+      const startDate = filterMonth !== undefined
+        ? new Date(filterYear, filterMonth, 1)
+        : new Date(filterYear, 0, 1);
+      const endDate = filterMonth !== undefined
+        ? new Date(filterYear, filterMonth + 1, 0, 23, 59, 59)
+        : new Date(filterYear, 11, 31, 23, 59, 59);
+      where.startDate = { gte: startDate, lte: endDate };
+    }
 
-    sendSuccess(res, items, 'Agenda berhasil diambil', 200, buildPaginationMeta(total, page, limit));
-  } catch { sendError(res, 'Gagal mengambil agenda'); }
+    const items = await prisma.event.findMany({
+      where,
+      orderBy: { startDate: 'asc' },
+    });
+
+    const paginated = items.slice(skip, skip + limit);
+
+    sendSuccess(res, paginated, 'Agenda berhasil diambil', 200, buildPaginationMeta(items.length, page, limit));
+  } catch (err) {
+    console.error('List events error:', err);
+    sendError(res, 'Gagal mengambil agenda');
+  }
 };
 
 export const getUpcomingEvents = async (_req: Request, res: Response): Promise<void> => {
