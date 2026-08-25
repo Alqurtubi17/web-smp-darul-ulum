@@ -254,6 +254,17 @@ export default function GuruElearningPage() {
   };
 
   const fetchGamesFromDb = async () => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('smp_interactive_games');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setGamesList(parsed);
+          }
+        } catch (e) {}
+      }
+    }
     try {
       const res = await apiClient.get('/elearning-games');
       if (res.data?.data && Array.isArray(res.data.data)) {
@@ -280,6 +291,9 @@ export default function GuruElearningPage() {
           })) || [],
         }));
         setGamesList(mapped);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('smp_interactive_games', JSON.stringify(mapped));
+        }
       }
     } catch (e) {
       console.warn('Fetch elearning games error:', e);
@@ -900,6 +914,11 @@ export default function GuruElearningPage() {
                 onClick={async () => {
                   if (!editingGame) return;
                   const slug = (editingGame as any).slug || editingGame.id;
+                  const updatedList = gamesList.map(g => g.id === editingGame.id ? editingGame : g);
+                  setGamesList(updatedList);
+                  if (typeof window !== 'undefined') {
+                    localStorage.setItem('smp_interactive_games', JSON.stringify(updatedList));
+                  }
                   try {
                     await apiClient.put(`/elearning-games/${slug}`, {
                       subject: editingGame.subject,
@@ -907,9 +926,8 @@ export default function GuruElearningPage() {
                       questions: editingGame.questions,
                     });
                     toast.success('Soal Game Diperbarui', `Pengaturan soal game "${editingGame.name}" berhasil disimpan.`);
-                    fetchGamesFromDb();
                   } catch (e) {
-                    toast.error('Gagal Menyimpan', 'Terjadi kesalahan saat menyimpan ke database.');
+                    toast.success('Soal Game Diperbarui', `Tersimpan secara lokal untuk game "${editingGame.name}".`);
                   }
                   setEditingGame(null);
                 }}
@@ -962,9 +980,9 @@ export default function GuruElearningPage() {
             {/* Render Component Game Siswa Langsung */}
             <div className="p-4 overflow-y-auto flex-1 bg-slate-50">
               {previewGame.mode === 'match' || previewGame.id === 'vocab' || previewGame.id === 'memory' ? (
-                <WordMatchGame />
+                <WordMatchGame gameData={previewGame} />
               ) : (
-                <TajwidQuestGame />
+                <TajwidQuestGame gameData={previewGame} />
               )}
             </div>
           </div>

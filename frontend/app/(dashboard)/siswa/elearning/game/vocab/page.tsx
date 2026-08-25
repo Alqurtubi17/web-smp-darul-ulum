@@ -24,20 +24,43 @@ const PAIRS_DATA = [
   { pairId: 6, text: 'Proklamasi 1945', subtext: 'Peristiwa sejarah kemerdekaan Indonesia' },
 ];
 
-export default function WordMatchGame() {
+export default function WordMatchGame({ gameData }: { gameData?: any } = {}) {
   const [cards, setCards] = useState<CardItem[]>([]);
   const [selectedCards, setSelectedCards] = useState<number[]>([]);
+  const [activePairs, setActivePairs] = useState(PAIRS_DATA);
   const [score, setScore] = useState(0);
   const [moves, setMoves] = useState(0);
   const [timeLeft, setTimeLeft] = useState(60);
   const [gameEnded, setGameEnded] = useState(false);
   const [isWon, setIsWon] = useState(false);
 
+  useEffect(() => {
+    let activeData = gameData;
+    if (!activeData && typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('smp_interactive_games');
+        if (saved) {
+          const list = JSON.parse(saved);
+          activeData = list.find((g: any) => g.id === 'vocab' || g.id === 'memory' || g.mode === 'match');
+        }
+      } catch (e) {}
+    }
+
+    if (activeData && activeData.questions && activeData.questions.length > 0) {
+      const customPairs = activeData.questions.map((q: any, idx: number) => ({
+        pairId: idx + 1,
+        text: q.question,
+        subtext: q.options?.[0] || q.explanation || 'Definisi',
+      }));
+      setActivePairs(customPairs);
+    }
+  }, [gameData]);
+
   const initGame = () => {
     let cardList: CardItem[] = [];
     let idCounter = 1;
 
-    PAIRS_DATA.forEach(pair => {
+    activePairs.forEach(pair => {
       // Card A (Term)
       cardList.push({
         id: idCounter++,
@@ -70,24 +93,8 @@ export default function WordMatchGame() {
   };
 
   useEffect(() => {
-    apiClient.get('/elearning-games/vocab')
-      .then(res => {
-        const gameData = res.data?.data;
-        if (gameData && gameData.questions?.length > 0) {
-          const customPairs = gameData.questions.map((q: any, i: number) => ({
-            pairId: i + 1,
-            text: q.question,
-            subtext: q.options?.[0] || q.explanation || 'Definisi',
-          }));
-          PAIRS_DATA.length = 0;
-          PAIRS_DATA.push(...customPairs);
-        }
-        initGame();
-      })
-      .catch(() => {
-        initGame();
-      });
-  }, []);
+    initGame();
+  }, [activePairs]);
 
   useEffect(() => {
     if (gameEnded) return;

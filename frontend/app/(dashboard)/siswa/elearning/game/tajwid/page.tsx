@@ -136,7 +136,7 @@ const TAJWID_QUESTIONS: Record<Difficulty, Question[]> = {
   ]
 };
 
-export default function TajwidQuestGame() {
+export default function TajwidQuestGame({ gameData }: { gameData?: any } = {}) {
   const [phase, setPhase] = useState<GamePhase>('menu');
   const [difficulty, setDifficulty] = useState<Difficulty>('sedang');
   const [questionList, setQuestionList] = useState<Question[]>([]);
@@ -154,26 +154,60 @@ export default function TajwidQuestGame() {
   const TOTAL_ROUNDS = questionList.length || 5;
 
   useEffect(() => {
-    apiClient.get('/elearning-games/tajwid')
-      .then(res => {
-        const gameData = res.data?.data;
-        if (gameData && gameData.questions?.length > 0) {
-          const customMapped: Question[] = gameData.questions.map((q: any) => ({
-            verse: q.explanation || 'القرآن الكريم',
-            highlight: 'Tajwid',
-            question: q.question,
-            options: q.options || ['Izhar Halqi', 'Idgham Bighunnah', 'Ikhfa Hakiki', 'Iqlab'],
-            answer: q.options?.[q.correct] || q.options?.[0] || 'Izhar Halqi',
-            explanation: q.explanation || 'Pembahasan Tajwid dari Database Guru',
-            points: q.xpReward || 100,
-          }));
-          TAJWID_QUESTIONS.mudah = customMapped;
-          TAJWID_QUESTIONS.sedang = customMapped;
-          TAJWID_QUESTIONS.sulit = customMapped;
+    let activeData = gameData;
+    if (!activeData && typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('smp_interactive_games');
+        if (saved) {
+          const list = JSON.parse(saved);
+          activeData = list.find((g: any) => g.id === 'tajwid');
         }
-      })
-      .catch(() => {});
-  }, []);
+      } catch (e) {}
+    }
+
+    if (activeData) {
+      if (activeData.difficulty) {
+        const diffStr = String(activeData.difficulty).toLowerCase();
+        if (diffStr === 'mudah' || diffStr === 'sedang' || diffStr === 'sulit') {
+          setDifficulty(diffStr as Difficulty);
+        }
+      }
+      if (activeData.questions && activeData.questions.length > 0) {
+        const customMapped: Question[] = activeData.questions.map((q: any) => ({
+          verse: q.explanation || 'القرآن الكريم',
+          highlight: 'Tajwid',
+          question: q.question,
+          options: q.options || ['Izhar Halqi', 'Idgham Bighunnah', 'Ikhfa Hakiki', 'Iqlab'],
+          answer: q.options?.[q.correct] || q.options?.[0] || 'Izhar Halqi',
+          explanation: q.explanation || 'Pembahasan Tajwid dari Database Guru',
+          points: q.xpReward || 100,
+        }));
+        TAJWID_QUESTIONS.mudah = customMapped;
+        TAJWID_QUESTIONS.sedang = customMapped;
+        TAJWID_QUESTIONS.sulit = customMapped;
+      }
+    } else {
+      apiClient.get('/elearning-games/tajwid')
+        .then(res => {
+          const fetched = res.data?.data;
+          if (fetched && fetched.questions?.length > 0) {
+            const customMapped: Question[] = fetched.questions.map((q: any) => ({
+              verse: q.explanation || 'القرآن الكريم',
+              highlight: 'Tajwid',
+              question: q.question,
+              options: q.options || ['Izhar Halqi', 'Idgham Bighunnah', 'Ikhfa Hakiki', 'Iqlab'],
+              answer: q.options?.[q.correct] || q.options?.[0] || 'Izhar Halqi',
+              explanation: q.explanation || 'Pembahasan Tajwid dari Database Guru',
+              points: q.xpReward || 100,
+            }));
+            TAJWID_QUESTIONS.mudah = customMapped;
+            TAJWID_QUESTIONS.sedang = customMapped;
+            TAJWID_QUESTIONS.sulit = customMapped;
+          }
+        })
+        .catch(() => {});
+    }
+  }, [gameData]);
 
   const startGame = () => {
     const list = [...TAJWID_QUESTIONS[difficulty]].sort(() => Math.random() - 0.5);
