@@ -371,6 +371,7 @@ export default function AdminDashboard() {
           </div>
           <div className="p-4 space-y-2">
             {[
+              { label: '+ Upload Kaldik & Scan AI (PDF/Gambar)', href: '/admin/konten/agenda', color: 'bg-emerald-50 border-emerald-200 text-emerald-950 hover:bg-emerald-100 font-extrabold' },
               { label: '+ Buat Berita Artikel Baru', href: '/admin/konten/berita', color: 'bg-emerald-50 border-emerald-200 text-emerald-950 hover:bg-emerald-100' },
               { label: '+ Publikasikan Pengumuman', href: '/admin/konten/pengumuman', color: 'bg-teal-50 border-teal-200 text-teal-950 hover:bg-teal-100' },
               { label: 'Kelola Pendaftaran PPDB', href: '/admin/ppdb', color: 'bg-blue-50 border-blue-200 text-blue-950 hover:bg-blue-100' },
