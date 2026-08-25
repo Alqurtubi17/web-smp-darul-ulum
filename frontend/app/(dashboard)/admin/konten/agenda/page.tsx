@@ -872,23 +872,7 @@ export default function AdminAgendaPage() {
     }
     setIsDeletingAllAgendas(true);
     try {
-      // Delete events from database
-      for (const a of agendas) {
-        await contentService.deleteEvent(a.id).catch(() => {});
-      }
-
-      // Also clean up announcements table
-      try {
-        const announcementsRes = await contentService.getAnnouncements();
-        if (announcementsRes?.data && Array.isArray(announcementsRes.data)) {
-          for (const ann of announcementsRes.data) {
-            await contentService.deleteAnnouncement(ann.id).catch(() => {});
-          }
-        }
-      } catch (errAnn) {
-        console.warn('Backend clear announcements failed:', errAnn);
-      }
-
+      await contentService.deleteAllEvents();
       setAgendas([]);
       toast.success('Seluruh Agenda & Pengumuman Dihapus', 'Semua catatan agenda dan pengumuman akademik berhasil dibersihkan.');
       addLog({

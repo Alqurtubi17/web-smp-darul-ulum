@@ -33,6 +33,7 @@ eventRouter.get('/upcoming', eventCtrl.getUpcomingEvents);
 eventRouter.get('/:id', eventCtrl.getEventById);
 eventRouter.post('/', optionalAuth, eventCtrl.createEvent);
 eventRouter.put('/:id', optionalAuth, eventCtrl.updateEvent);
+eventRouter.delete('/', optionalAuth, eventCtrl.deleteAllEvents);
 eventRouter.delete('/:id', optionalAuth, eventCtrl.deleteEvent);
 
 // ─── GALLERY (URL dari UploadThing di body) ───────────────────────────────────

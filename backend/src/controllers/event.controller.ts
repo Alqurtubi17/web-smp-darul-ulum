@@ -99,7 +99,34 @@ export const updateEvent = async (req: Request, res: Response): Promise<void> =>
 
 export const deleteEvent = async (req: Request, res: Response): Promise<void> => {
   try {
-    await prisma.event.delete({ where: { id: req.params.id } });
+    const { id } = req.params;
+    const existing = await prisma.event.findUnique({ where: { id } });
+    if (existing) {
+      await prisma.announcement.deleteMany({
+        where: {
+          OR: [
+            { title: existing.title },
+            { title: { contains: existing.title } },
+          ],
+        },
+      }).catch(() => {});
+    }
+
+    await prisma.event.deleteMany({ where: { id } });
     sendSuccess(res, null, 'Agenda dihapus');
-  } catch { sendError(res, 'Gagal menghapus agenda'); }
+  } catch (err) {
+    console.error('Delete event error:', err);
+    sendError(res, 'Gagal menghapus agenda');
+  }
+};
+
+export const deleteAllEvents = async (_req: Request, res: Response): Promise<void> => {
+  try {
+    await prisma.event.deleteMany({});
+    await prisma.announcement.deleteMany({});
+    sendSuccess(res, null, 'Seluruh agenda dan pengumuman berhasil dihapus');
+  } catch (err) {
+    console.error('Delete all events error:', err);
+    sendError(res, 'Gagal menghapus seluruh agenda');
+  }
 };

@@ -54,6 +54,10 @@ export const contentService = {
     const { data } = await apiClient.delete(`/events/${id}`);
     return data;
   },
+  async deleteAllEvents() {
+    const { data } = await apiClient.delete('/events');
+    return data;
+  },
 
   // ── GALERI (GALLERY) ────────────────────────────────────────────────────────
   async getAlbums() {
