@@ -46,7 +46,7 @@ const INITIAL_MATERIALS = [
     type: 'quiz_game',
     subject: 'Matematika',
     class: '8A',
-    fileUrl: '#',
+    fileUrl: '/siswa/elearning/game/matematika',
     size: '3 Soal Custom (50 XP)',
     downloads: 58,
     date: '2026-08-08',
@@ -68,6 +68,54 @@ const INITIAL_MATERIALS = [
           correct: 0,
           explanation: '3(4) - 2 = 12 - 2 = 10 (Benar!)',
           xpReward: 50,
+        }
+      ]
+    }
+  },
+  {
+    id: '4',
+    title: 'Game Interaktif: Tajwid & Hukum Bacaan Al-Qur’an',
+    type: 'quiz_game',
+    subject: 'PAI',
+    class: '8A',
+    fileUrl: '/siswa/elearning/game/tajwid',
+    size: '5 Level Quest (100 XP)',
+    downloads: 72,
+    date: '2026-08-20',
+    quizData: {
+      mode: 'adventure',
+      questions: [
+        {
+          id: 101,
+          question: 'Hukum bacaan Nun Sukun (نْ) bertemu dengan huruf Kho (خ) adalah...',
+          options: ['Izhar Halqi', 'Idgham Bighunnah', 'Ikhfa Hakiki', 'Iqlab'],
+          correct: 0,
+          explanation: 'Izhar Halqi terjadi jika Nun Sukun / Tanwin bertemu 6 huruf halq: ء, هـ, ع, ح, غ, خ.',
+          xpReward: 100,
+        }
+      ]
+    }
+  },
+  {
+    id: '5',
+    title: 'Game Interaktif: Word Match & Concept Match Kosakata Sains',
+    type: 'quiz_game',
+    subject: 'IPA',
+    class: '8A',
+    fileUrl: '/siswa/elearning/game/vocab',
+    size: 'Match Memory (150 XP)',
+    downloads: 64,
+    date: '2026-08-22',
+    quizData: {
+      mode: 'match',
+      questions: [
+        {
+          id: 201,
+          question: 'Cocokkan istilah Photosynthesis dengan definisinya yang tepat!',
+          options: ['Proses pembuatan makanan pada tumbuhan hijau', 'Pelepasan energi', 'Persamaan 1 variabel', 'Gaya bahasa personifikasi'],
+          correct: 0,
+          explanation: 'Fotosintesis adalah proses tumbuhan hijau mengubah air dan CO2 menjadi glukosa.',
+          xpReward: 150,
         }
       ]
     }

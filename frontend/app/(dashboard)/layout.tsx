@@ -55,6 +55,8 @@ const SEARCHABLE_ITEMS: SearchItem[] = [
   { label: 'Materi Belajar', href: '/siswa/materi', category: 'Akademik', keywords: 'download modul' },
   { label: 'E-Learning Interaktif', href: '/siswa/elearning', category: 'E-Learning', keywords: 'game kuis blitz' },
   { label: 'Game Math Blitz', href: '/siswa/elearning/game/matematika', category: 'Games', keywords: 'matematika hitung aljabar' },
+  { label: 'Game Tajwid & PAI Quest', href: '/siswa/elearning/game/tajwid', category: 'Games', keywords: 'pai tajwid quran hukum bacaan' },
+  { label: 'Game Word & Concept Match', href: '/siswa/elearning/game/vocab', category: 'Games', keywords: 'kosakata istilah match sains' },
   { label: 'Game Word Scramble', href: '/siswa/elearning/game/scramble', category: 'Games', keywords: 'inggris kata susun' },
   { label: 'Game IPA Memory Match', href: '/siswa/elearning/game/memory', category: 'Games', keywords: 'sains ipa cocok' },
   { label: 'Game Science Quiz', href: '/siswa/elearning/game/quiz-ipa', category: 'Games', keywords: 'kuis ipa fisika biologi' },

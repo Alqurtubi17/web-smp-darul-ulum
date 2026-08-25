@@ -16,6 +16,8 @@ const SUBJECTS = [
 ];
 
 const GAMES = [
+  { id:'tajwid',     name:'Tajwid & PAI Quest', icon:'☪️', color:'bg-gradient-to-br from-emerald-600 to-teal-700', desc:'Kuis Tajwid & hukum bacaan Al-Qur’an interaktif!', bestScore:980, played:18, difficulty:'Sedang' },
+  { id:'vocab',      name:'Word & Concept Match', icon:'🧩', color:'bg-gradient-to-br from-indigo-500 to-purple-600', desc:'Cocokkan istilah dan definisi pelajaran!', bestScore:1050, played:14, difficulty:'Mudah' },
   { id:'matematika', name:'Math Blitz', icon:'⚡', color:'bg-gradient-to-br from-blue-500 to-indigo-600', desc:'Jawab soal matematika sebelum waktu habis!', bestScore:850, played:12, difficulty:'Sedang' },
   { id:'scramble',   name:'Word Scramble', icon:'🔤', color:'bg-gradient-to-br from-purple-500 to-violet-600', desc:'Susun huruf jadi kata bahasa Inggris!', bestScore:1200, played:8, difficulty:'Mudah' },
   { id:'memory',     name:'IPA Memory', icon:'🧬', color:'bg-gradient-to-br from-green-500 to-emerald-600', desc:'Pasangkan istilah IPA dengan definisi!', bestScore:640, played:5, difficulty:'Sedang' },
