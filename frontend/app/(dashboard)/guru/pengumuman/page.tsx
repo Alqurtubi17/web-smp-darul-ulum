@@ -33,10 +33,7 @@ export default function GuruPengumumanPage() {
     fetchAnnouncements();
   }, []);
 
-  const rawList = announcements.length > 0 ? announcements : [
-    { id: '1', title: 'Rapat Pleno Guru & Tendik Persiapan PTS Semester Ganjil', createdAt: new Date().toISOString(), content: 'Diberitahukan kepada seluruh Bapak/Ibu Guru untuk menghadiri Rapat Pleno Persiapan Penilaian Tengah Semester pada hari Rabu pukul 13.00 WIB di Aula Utama Sekolah.', isPinned: true },
-    { id: '2', title: 'Batas Akhir Input Nilai Rapor Semester Ganjil', createdAt: new Date().toISOString(), content: 'Batas akhir pengisian nilai tugas dan ujian harian pada portal akademik diselesaikan paling lambat hari Jumat pukul 23.59 WIB.', isPinned: false },
-  ];
+  const rawList = announcements;
 
   // Semester filtering logic
   const filteredList = rawList.filter((item) => {
