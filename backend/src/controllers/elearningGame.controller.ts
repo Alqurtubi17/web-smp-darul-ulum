@@ -47,7 +47,11 @@ const DEFAULT_GAMES = [
       { question: 'Linear Equation', options: ['Persamaan dengan variabel pangkat 1'], correct: 0, explanation: 'Istilah Aljabar Matematika', xpReward: 150 },
       { question: 'Majas Personifikasi', options: ['Gaya bahasa yang menganggap benda mati bernyawa'], correct: 0, explanation: 'Istilah Bahasa Indonesia', xpReward: 150 },
       { question: 'Narrative Text', options: ['Teks cerita rekaan untuk menghibur pembaca'], correct: 0, explanation: 'Istilah Bahasa Inggris', xpReward: 150 },
-      { question: 'Proklamasi 1945', options: ['Peristiwa sejarah kemerdekaan Indonesia'], correct: 0, explanation: 'Istilah Sejarah IPS', xpReward: 150 }
+      { question: 'Proklamasi 1945', options: ['Peristiwa sejarah kemerdekaan Indonesia'], correct: 0, explanation: 'Istilah Sejarah IPS', xpReward: 150 },
+      { question: 'Osmosis', options: ['Perpindahan molekul air melalui membran semipermeabel'], correct: 0, explanation: 'Istilah Fisika Biologi', xpReward: 150 },
+      { question: 'Mitokondria', options: ['Organel sel tempat penghasil energi selular'], correct: 0, explanation: 'Istilah Biologi Sel', xpReward: 150 },
+      { question: 'Pancasila', options: ['Dasar dan ideologi negara Republik Indonesia'], correct: 0, explanation: 'Istilah PPKn', xpReward: 150 },
+      { question: 'Klorofil', options: ['Zat hijau daun penyerap energi cahaya matahari'], correct: 0, explanation: 'Istilah Biologi Tumbuhan', xpReward: 150 }
     ]
   },
   {
@@ -67,7 +71,11 @@ const DEFAULT_GAMES = [
       { question: 'Hasil dari 15 + (4 × 5) adalah...', options: ['35', '95', '40', '50'], correct: 0, explanation: 'Perkalian dikerjakan lebih dahulu: 4 × 5 = 20, 15 + 20 = 35', xpReward: 50 },
       { question: 'Berapakah 25% dari 200 ?', options: ['50', '25', '75', '100'], correct: 0, explanation: '25/100 × 200 = 50', xpReward: 50 },
       { question: 'Akar kuadrat dari 144 adalah...', options: ['12', '14', '16', '10'], correct: 0, explanation: '12 × 12 = 144', xpReward: 50 },
-      { question: 'Hasil dari 3³ + 2² adalah...', options: ['31', '25', '35', '29'], correct: 0, explanation: '27 + 4 = 31', xpReward: 50 }
+      { question: 'Hasil dari 3³ + 2² adalah...', options: ['31', '25', '35', '29'], correct: 0, explanation: '27 + 4 = 31', xpReward: 50 },
+      { question: 'Hasil dari 1/2 + 1/4 adalah...', options: ['3/4', '2/6', '2/4', '1/6'], correct: 0, explanation: '2/4 + 1/4 = 3/4', xpReward: 50 },
+      { question: 'Keliling persegi dengan panjang sisi 8 cm adalah...', options: ['32 cm', '64 cm', '16 cm', '24 cm'], correct: 0, explanation: 'Keliling = 4 × sisi = 4 × 8 = 32 cm', xpReward: 50 },
+      { question: 'Luas segitiga dengan alas 10 cm dan tinggi 6 cm adalah...', options: ['30 cm²', '60 cm²', '16 cm²', '20 cm²'], correct: 0, explanation: 'Luas = 1/2 × alas × tinggi = 1/2 × 10 × 6 = 30 cm²', xpReward: 50 },
+      { question: 'Berapakah hasil dari 5! (5 Faktorial)?', options: ['120', '60', '24', '100'], correct: 0, explanation: '5 × 4 × 3 × 2 × 1 = 120', xpReward: 50 }
     ]
   },
   {
@@ -86,7 +94,12 @@ const DEFAULT_GAMES = [
       { question: 'Susun kata: L - E - A - R - N - I - N - G', options: ['LEARNING', 'READING', 'WRITING', 'LISTENING'], correct: 0, explanation: 'Artinya: Pembelajaran', xpReward: 100 },
       { question: 'Susun kata: K - N - O - W - L - E - D - G - E', options: ['KNOWLEDGE', 'ACKNOWLEDGMENT', 'CHALLENGE', 'ADVANTAGE'], correct: 0, explanation: 'Artinya: Pengetahuan', xpReward: 100 },
       { question: 'Susun kata: S - C - H - O - O - L', options: ['SCHOOL', 'SCHOLAR', 'SCHEDULE', 'SCHEME'], correct: 0, explanation: 'Artinya: Sekolah', xpReward: 100 },
-      { question: 'Susun kata: T - E - A - C - H - E - R', options: ['TEACHER', 'TRAINER', 'THEATER', 'TUTORIAL'], correct: 0, explanation: 'Artinya: Guru', xpReward: 100 }
+      { question: 'Susun kata: T - E - A - C - H - E - R', options: ['TEACHER', 'TRAINER', 'THEATER', 'TUTORIAL'], correct: 0, explanation: 'Artinya: Guru', xpReward: 100 },
+      { question: 'Susun kata: S - T - U - D - E - N - T', options: ['STUDENT', 'STUDIO', 'STUDIED', 'STATION'], correct: 0, explanation: 'Artinya: Siswa', xpReward: 100 },
+      { question: 'Susun kata: A - L - G - E - B - R - A', options: ['ALGEBRA', 'ANALOGY', 'ANALYTIC', 'ALGORITHM'], correct: 0, explanation: 'Artinya: Aljabar Matematika', xpReward: 100 },
+      { question: 'Susun kata: B - I - O - L - O - G - Y', options: ['BIOLOGY', 'BOTANY', 'BIOCHEM', 'BIOGRAPHY'], correct: 0, explanation: 'Artinya: Ilmu Biologi', xpReward: 100 },
+      { question: 'Susun kata: H - I - S - T - O - R - Y', options: ['HISTORY', 'HERITAGE', 'HARMONY', 'HIGHWAY'], correct: 0, explanation: 'Artinya: Sejarah', xpReward: 100 },
+      { question: 'Susun kata: S - C - I - E - N - C - E', options: ['SCIENCE', 'SCENERY', 'SILENCE', 'SCENARIO'], correct: 0, explanation: 'Artinya: Sains / Ilmu Pengetahuan', xpReward: 100 }
     ]
   },
   {
@@ -105,7 +118,12 @@ const DEFAULT_GAMES = [
       { question: 'Mitokondria', options: ['Organel sel penghasil energi selular'], correct: 0, explanation: 'Biologi Sel', xpReward: 100 },
       { question: 'Stomata', options: ['Celah mulut daun tempat pertukaran gas'], correct: 0, explanation: 'Anatomi Tumbuhan', xpReward: 100 },
       { question: 'Osmosis', options: ['Perpindahan molekul air melalui membran'], correct: 0, explanation: 'Fisika Biologi', xpReward: 100 },
-      { question: 'Kapiler', options: ['Pembuluh darah terkecil penyuplai sel'], correct: 0, explanation: 'Sistem Peredaran Darah', xpReward: 100 }
+      { question: 'Kapiler', options: ['Pembuluh darah terkecil penyuplai sel'], correct: 0, explanation: 'Sistem Peredaran Darah', xpReward: 100 },
+      { question: 'Ribosom', options: ['Organel tempat sintesis protein dalam sel'], correct: 0, explanation: 'Biologi Sel', xpReward: 100 },
+      { question: 'Enzim', options: ['Biokatalisator yang mempercepat reaksi kimia'], correct: 0, explanation: 'Biokimia', xpReward: 100 },
+      { question: 'Phloem', options: ['Pembuluh pengangkut hasil fotosintesis'], correct: 0, explanation: 'Anatomi Tumbuhan', xpReward: 100 },
+      { question: 'Xylem', options: ['Pembuluh pengangkut air dan hara dari akar'], correct: 0, explanation: 'Anatomi Tumbuhan', xpReward: 100 },
+      { question: 'Nefron', options: ['Unit penyaring utama pada ginjal manusia'], correct: 0, explanation: 'Sistem Ekskresi', xpReward: 100 }
     ]
   },
   {
@@ -124,7 +142,12 @@ const DEFAULT_GAMES = [
       { question: 'Gas yang diserap tumbuhan saat fotosintesis adalah...', options: ['Karbondioksida (CO2)', 'Oksigen (O2)', 'Nitrogen (N2)', 'Hidrogen (H2)'], correct: 0, explanation: 'Tumbuhan menyerap CO2 dan merilis Oksigen.', xpReward: 100 },
       { question: 'Satuan internasional untuk mengukur arus listrik adalah...', options: ['Ampere', 'Volt', 'Ohm', 'Watt'], correct: 0, explanation: 'Arus listrik diukur dalam Ampere (A).', xpReward: 100 },
       { question: 'Planet terbesar dalam tata surya kita adalah...', options: ['Jupiter', 'Saturnus', 'Neptunus', 'Bumi'], correct: 0, explanation: 'Jupiter adalah planet terbesar di Tata Surya.', xpReward: 100 },
-      { question: 'Urutan lapisan atmosfer terendah adalah...', options: ['Troposfer', 'Stratosfer', 'Mesosfer', 'Termosfer'], correct: 0, explanation: 'Troposfer tempat terjadinya fenomena cuaca.', xpReward: 100 }
+      { question: 'Urutan lapisan atmosfer terendah adalah...', options: ['Troposfer', 'Stratosfer', 'Mesosfer', 'Termosfer'], correct: 0, explanation: 'Troposfer tempat terjadinya fenomena cuaca.', xpReward: 100 },
+      { question: 'Alat yang digunakan untuk mengukur getaran gempa bumi adalah...', options: ['Seismograf', 'Barometer', 'Termometer', 'Anemometer'], correct: 0, explanation: 'Seismograf mencatat gelombang seismik gempa.', xpReward: 100 },
+      { question: 'Zat kimia perantara dalam pengiriman impuls sel saraf adalah...', options: ['Neurotransmitter', 'Hormon', 'Hemoglobin', 'Antibodi'], correct: 0, explanation: 'Neurotransmitter meneruskan sinyal di sinapsis.', xpReward: 100 },
+      { question: 'Unsur kimia yang memiliki simbol Au pada tabel periodik adalah...', options: ['Emas (Gold)', 'Perak (Silver)', 'Aluminium', 'Argon'], correct: 0, explanation: 'Au berasal dari bahasa Latin Aurum (Emas).', xpReward: 100 },
+      { question: 'Kecepatan cahaya di ruang hampa adalah sekitar...', options: ['300.000 km/detik', '150.000 km/detik', '500.000 km/detik', '1.000.000 km/detik'], correct: 0, explanation: 'Cahaya merambat ~3 × 10⁸ m/s.', xpReward: 100 },
+      { question: 'Bagian mata yang berfungsi membias dan memfokuskan cahaya adalah...', options: ['Lensa Mata', 'Pupil', 'Retina', 'Kornea'], correct: 0, explanation: 'Lensa mata mengatur fokus pembiasan cahaya ke retina.', xpReward: 100 }
     ]
   },
   {
@@ -143,42 +166,54 @@ const DEFAULT_GAMES = [
       { question: 'Peristiwa Sumpah Pemuda dicetuskan pada tahun...', options: ['1928', '1908', '1945', '1912'], correct: 0, explanation: 'Kongres Pemuda II pada 28 Oktober 1928.', xpReward: 100 },
       { question: 'Peristiwa Rengasdengklok terjadi pada tanggal...', options: ['16 Agustus 1945', '17 Agustus 1945', '18 Agustus 1945', '15 Agustus 1945'], correct: 0, explanation: 'Penjelapan Soekarno-Hatta ke Rengasdengklok.', xpReward: 100 },
       { question: 'Kongres Pemuda Pertama dilaksanakan pada tahun...', options: ['1926', '1928', '1945', '1930'], correct: 0, explanation: 'Kongres Pemuda I di Batavia tahun 1926.', xpReward: 100 },
-      { question: 'Berdirinya organisasi Budi Utomo pada tahun...', options: ['1908', '1912', '1928', '1945'], correct: 0, explanation: '20 Mei 1908 sebagai Hari Kebangkitan Nasional.', xpReward: 100 }
+      { question: 'Berdirinya organisasi Budi Utomo pada tahun...', options: ['1908', '1912', '1928', '1945'], correct: 0, explanation: '20 Mei 1908 sebagai Hari Kebangkitan Nasional.', xpReward: 100 },
+      { question: 'Peristiwa Bandung Lautan Api terjadi pada tahun...', options: ['1946', '1945', '1947', '1948'], correct: 0, explanation: '24 Maret 1946 di kota Bandung.', xpReward: 100 },
+      { question: 'Konferensi Meja Bundar (KMB) dilaksanakan pada tahun...', options: ['1949', '1945', '1950', '1948'], correct: 0, explanation: 'Penyerahan kedaulatan RI di Den Haag 1949.', xpReward: 100 },
+      { question: 'Sumpah Palapa diucapkan oleh Mahapatih Gajah Mada pada tahun...', options: ['1336', '1293', '1400', '1350'], correct: 0, explanation: 'Sumpah menyatukan Nusantara di Kerajaan Majapahit.', xpReward: 100 },
+      { question: 'Deklarasi Djuanda yang menetapkan batas laut teritorial Indonesia dicetuskan tahun...', options: ['1957', '1945', '1960', '1950'], correct: 0, explanation: '13 Desember 1957 oleh PM Djuanda Kartawidjaja.', xpReward: 100 },
+      { question: 'Peristiwa Pertempuran Surabaya terjadi pada tanggal...', options: ['10 November 1945', '17 Agustus 1945', '28 Oktober 1945', '10 Oktober 1945'], correct: 0, explanation: '10 November diperingati sebagai Hari Pahlawan.', xpReward: 100 }
     ]
   }
 ];
 
+const seedFullGamesData = async () => {
+  await prisma.elearningQuestion.deleteMany({});
+  await prisma.elearningGame.deleteMany({});
+
+  for (const g of DEFAULT_GAMES) {
+    await prisma.elearningGame.create({
+      data: {
+        slug: g.slug,
+        name: g.name,
+        icon: g.icon,
+        subject: g.subject,
+        desc: g.desc,
+        color: g.color,
+        difficulty: g.difficulty,
+        mode: g.mode,
+        played: g.played,
+        bestScore: g.bestScore,
+        questions: {
+          create: g.questions.map((q, idx) => ({
+            question: q.question,
+            options: q.options,
+            correct: q.correct,
+            explanation: q.explanation,
+            xpReward: q.xpReward,
+            order: idx + 1,
+          })),
+        },
+      },
+    });
+  }
+};
+
 export const listGames = async (req: Request, res: Response) => {
   try {
-    const count = await prisma.elearningGame.count();
-    if (count === 0) {
-      // Auto Seed all 7 games & questions to DB
-      for (const g of DEFAULT_GAMES) {
-        await prisma.elearningGame.create({
-          data: {
-            slug: g.slug,
-            name: g.name,
-            icon: g.icon,
-            subject: g.subject,
-            desc: g.desc,
-            color: g.color,
-            difficulty: g.difficulty,
-            mode: g.mode,
-            played: g.played,
-            bestScore: g.bestScore,
-            questions: {
-              create: g.questions.map((q, idx) => ({
-                question: q.question,
-                options: q.options,
-                correct: q.correct,
-                explanation: q.explanation,
-                xpReward: q.xpReward,
-                order: idx + 1,
-              })),
-            },
-          },
-        });
-      }
+    const totalQuestions = await prisma.elearningQuestion.count();
+    if (totalQuestions < 60) {
+      // Auto Seed/Re-seed full 70+ questions to PostgreSQL DB
+      await seedFullGamesData();
     }
 
     const games = await prisma.elearningGame.findMany({
@@ -206,38 +241,12 @@ export const getGameBySlug = async (req: Request, res: Response) => {
       },
     });
 
-    if (!game) {
-      const defaultG = DEFAULT_GAMES.find(g => g.slug === slug);
-      if (defaultG) {
-        game = await prisma.elearningGame.create({
-          data: {
-            slug: defaultG.slug,
-            name: defaultG.name,
-            icon: defaultG.icon,
-            subject: defaultG.subject,
-            desc: defaultG.desc,
-            color: defaultG.color,
-            difficulty: defaultG.difficulty,
-            mode: defaultG.mode,
-            played: defaultG.played,
-            bestScore: defaultG.bestScore,
-            questions: {
-              create: defaultG.questions.map((q, idx) => ({
-                question: q.question,
-                options: q.options,
-                correct: q.correct,
-                explanation: q.explanation,
-                xpReward: q.xpReward,
-                order: idx + 1,
-              })),
-            },
-          },
-          include: { questions: true },
-        });
-      } else {
-        sendNotFound(res, 'Game tidak ditemukan');
-        return;
-      }
+    if (!game || !game.questions || game.questions.length < 5) {
+      await seedFullGamesData();
+      game = await prisma.elearningGame.findUnique({
+        where: { slug },
+        include: { questions: { orderBy: { order: 'asc' } } },
+      });
     }
 
     sendSuccess(res, game, 'Detail game berhasil diambil');
