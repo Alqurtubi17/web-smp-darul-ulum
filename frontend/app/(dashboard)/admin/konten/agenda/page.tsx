@@ -684,23 +684,27 @@ export default function AdminAgendaPage() {
     // Async save to Express API & Auto-create Announcements for Kaldik Holidays
     for (const item of newItems) {
       try {
+        const isoDate = `${item.date}T00:00:00.000Z`;
         await contentService.createEvent({
           title: item.title,
           description: item.description,
-          location: item.location,
-          startDate: item.date,
-          endDate: item.date,
+          location: item.location || 'SMP Darul Ulum Surabaya',
+          organizer: item.organizer || 'Dinas Pendidikan Kota Surabaya',
+          category: item.category || 'Kalender Akademik Sekolah',
+          startDate: isoDate,
+          endDate: isoDate,
+          isPublic: true,
         });
 
         // Auto-generate official announcement if item is a holiday / academic event
         const titleLower = item.title.toLowerCase();
         if (titleLower.includes('libur') || titleLower.includes('peringatan') || titleLower.includes('puasa') || item.category === 'Kalender Akademik Sekolah') {
           await contentService.createAnnouncement({
-            title: `[Pengumuman Resmi] ${item.title}`,
+            title: item.title,
             content: `Diberitahukan kepada seluruh siswa, guru, dan orang tua/wali murid SMP Darul Ulum Surabaya bahwa dalam rangka ${item.title}, kegiatan sekolah diliburkan/disesuaikan pada tanggal ${item.date}.`,
             isPinned: titleLower.includes('libur'),
-            targetRole: 'SEMUA',
-            expiresAt: item.date,
+            targetRoles: ['ADMIN', 'GURU', 'SISWA', 'ORANG_TUA'],
+            expiresAt: isoDate,
           });
         }
       } catch (err) {

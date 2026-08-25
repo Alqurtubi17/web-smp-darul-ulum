@@ -62,11 +62,28 @@ export const getEventById = async (req: Request, res: Response): Promise<void> =
 
 export const createEvent = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    const { title, description, location, organizer, category, startDate, endDate, isPublic } = req.body;
+    const start = startDate ? new Date(startDate) : new Date();
+    const end = endDate ? new Date(endDate) : start;
+
     const item = await prisma.event.create({
-      data: { ...req.body, authorId: req.user?.userId },
+      data: {
+        title,
+        description: description || title,
+        location: location || 'SMP Darul Ulum Surabaya',
+        organizer: organizer || 'Dinas Pendidikan Kota Surabaya',
+        category: category || 'Kalender Akademik Sekolah',
+        startDate: start,
+        endDate: end,
+        isPublic: isPublic !== undefined ? Boolean(isPublic) : true,
+        authorId: req.user?.userId || null,
+      },
     });
     sendCreated(res, item, 'Agenda berhasil dibuat');
-  } catch { sendError(res, 'Gagal membuat agenda'); }
+  } catch (err) {
+    console.error('Create event error:', err);
+    sendError(res, 'Gagal membuat agenda');
+  }
 };
 
 export const updateEvent = async (req: Request, res: Response): Promise<void> => {
