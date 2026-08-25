@@ -16,6 +16,7 @@ export const elearningGameRouter = Router();
 elearningGameRouter.get('/', elearningGameCtrl.listGames);
 elearningGameRouter.get('/:slug', elearningGameCtrl.getGameBySlug);
 elearningGameRouter.put('/:slug', elearningGameCtrl.updateGame);
+elearningGameRouter.post('/:slug/score', elearningGameCtrl.recordScore);
 
 // ─── ANNOUNCEMENTS ────────────────────────────────────────────────────────────
 export const announcementRouter = Router();

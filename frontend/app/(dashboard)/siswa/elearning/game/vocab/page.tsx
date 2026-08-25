@@ -125,6 +125,7 @@ export default function WordMatchGame() {
             if (updated.every(c => c.isMatched)) {
               setGameEnded(true);
               setIsWon(true);
+              apiClient.post('/elearning-games/vocab/score', { score: score + 150 }).catch(() => {});
             }
             return updated;
           });

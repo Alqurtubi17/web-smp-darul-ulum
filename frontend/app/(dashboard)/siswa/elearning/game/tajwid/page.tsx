@@ -228,7 +228,10 @@ export default function TajwidQuestGame() {
     }
 
     if (questionIndex + 1 >= TOTAL_ROUNDS) {
-      setTimeout(() => setPhase('result'), 1800);
+      setTimeout(() => {
+        setPhase('result');
+        apiClient.post('/elearning-games/tajwid/score', { score: score + (isCorrect ? streak * 20 : 0) }).catch(() => {});
+      }, 1800);
     } else {
       setTimeout(() => {
         setQuestionIndex(i => i + 1);

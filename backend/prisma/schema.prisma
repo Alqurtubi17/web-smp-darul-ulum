@@ -758,6 +758,7 @@ model ElearningGame {
   played       Int                 @default(0)
   bestScore    Int                 @default(1000)
   questions    ElearningQuestion[]
+  scores       ElearningScore[]
   createdAt    DateTime            @default(now())
   updatedAt    DateTime            @updatedAt
 
@@ -778,5 +779,17 @@ model ElearningQuestion {
   updatedAt    DateTime      @updatedAt
 
   @@map("elearning_questions")
+}
+
+model ElearningScore {
+  id           String        @id @default(uuid())
+  gameId       String
+  game         ElearningGame @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  userId       String?
+  studentName  String        @default("Siswa")
+  score        Int
+  createdAt    DateTime      @default(now())
+
+  @@map("elearning_scores")
 }
 

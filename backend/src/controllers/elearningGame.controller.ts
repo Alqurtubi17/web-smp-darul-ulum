@@ -301,3 +301,44 @@ export const updateGame = async (req: Request, res: Response) => {
     sendError(res, 'Gagal memperbarui game di Database');
   }
 };
+
+export const recordScore = async (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+    const { score, studentName, userId } = req.body;
+
+    const game = await prisma.elearningGame.findUnique({ where: { slug } });
+    if (!game) {
+      sendNotFound(res, 'Game tidak ditemukan');
+      return;
+    }
+
+    const newPlayed = game.played + 1;
+    const newBest = Math.max(game.bestScore, Number(score) || 0);
+
+    // Update game stats in elearning_games table
+    const updatedGame = await prisma.elearningGame.update({
+      where: { slug },
+      data: {
+        played: newPlayed,
+        bestScore: newBest,
+      },
+    });
+
+    // Save individual attempt in elearning_scores table
+    if (score !== undefined) {
+      await prisma.elearningScore.create({
+        data: {
+          gameId: game.id,
+          userId: userId || null,
+          studentName: studentName || 'Siswa',
+          score: Number(score) || 0,
+        },
+      });
+    }
+
+    sendSuccess(res, updatedGame, 'Skor game berhasil diperbarui di database');
+  } catch (err) {
+    sendError(res, 'Gagal mencatat skor game');
+  }
+};
