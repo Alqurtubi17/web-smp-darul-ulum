@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import {
   Calendar as CalendarIcon, Clock, MapPin, Building2, Plus, ChevronLeft, ChevronRight,
   X, Filter, Grid, List, Eye, Edit2, Trash2, Search, Upload, FileText, FileSpreadsheet,
-  Sparkles, CheckCircle2, AlertCircle, Loader2, Image as ImageIcon
+  Sparkles, CheckCircle2, AlertCircle, AlertTriangle, Loader2, Image as ImageIcon
 } from 'lucide-react';
 import { useActivityLogStore } from '@/store/activity-log.store';
 import { toast } from '@/store/toast.store';
@@ -299,11 +299,17 @@ export default function AdminAgendaPage() {
   // Hourly Date
   const [selectedHourlyDate, setSelectedHourlyDate] = useState(todayStr);
 
-  // Modals State
+  // Modals & Pagination State
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showUploadKaldikModal, setShowUploadKaldikModal] = useState(false);
+  const [showDeleteAllAgendasModal, setShowDeleteAllAgendasModal] = useState(false);
+  const [confirmTypedText, setConfirmTypedText] = useState('');
+  const [isDeletingAllAgendas, setIsDeletingAllAgendas] = useState(false);
+
+  const [listPage, setListPage] = useState(1);
+  const listPageSize = 6;
 
   // Kaldik Upload & Extraction State
   const [kaldikFile, setKaldikFile] = useState<File | null>(null);
@@ -428,6 +434,12 @@ export default function AdminAgendaPage() {
       return matchSearch && matchCat;
     });
   }, [agendas, searchQuery, categoryFilter]);
+
+  const totalListPages = Math.max(Math.ceil(filteredListAgendas.length / listPageSize), 1);
+  const paginatedListAgendas = useMemo(() => {
+    const start = (listPage - 1) * listPageSize;
+    return filteredListAgendas.slice(start, start + listPageSize);
+  }, [filteredListAgendas, listPage]);
 
   // Handlers for File Kaldik Upload & Parsing
   const handleKaldikFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -853,6 +865,36 @@ export default function AdminAgendaPage() {
     setSelectedAgenda(null);
   };
 
+  const handleDeleteAllAgendas = async () => {
+    if (confirmTypedText.trim().toUpperCase() !== 'HAPUS') {
+      toast.error('Validasi Gagal', 'Ketik kata "HAPUS" untuk mengonfirmasi.');
+      return;
+    }
+    setIsDeletingAllAgendas(true);
+    try {
+      for (const a of agendas) {
+        await contentService.deleteEvent(a.id).catch(() => {});
+      }
+      setAgendas([]);
+      toast.success('Seluruh Agenda Dihapus', 'Semua catatan agenda akademik berhasil dibersihkan.');
+      addLog({
+        user: actorName,
+        role: 'ADMIN',
+        action: 'Menghapus Seluruh Agenda Akademik',
+        module: 'Pengguna',
+        severity: 'DANGER',
+        details: 'Seluruh agenda akademik telah dikosongkan oleh admin.',
+      });
+      setShowDeleteAllAgendasModal(false);
+      setConfirmTypedText('');
+      setListPage(1);
+    } catch (err) {
+      toast.error('Gagal Menghapus', 'Terjadi kesalahan saat menghapus seluruh agenda.');
+    } finally {
+      setIsDeletingAllAgendas(false);
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* ── 1. HEADER TITLE (CLEAN WITHOUT H1 ICON) ───────────────────────── */}
@@ -1149,33 +1191,52 @@ export default function AdminAgendaPage() {
                 Daftar Seluruh Agenda Akademik &amp; Kegiatan ({filteredListAgendas.length})
               </h3>
 
-              <div className="flex items-center gap-3 w-full sm:w-auto">
-                <div className="relative w-full sm:w-64">
+              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                <div className="relative w-full sm:w-56">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                   <input
                     type="text"
                     placeholder="Cari agenda, lokasi..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setListPage(1);
+                    }}
                     className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
                   />
                 </div>
 
                 <select
                   value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  onChange={(e) => {
+                    setCategoryFilter(e.target.value);
+                    setListPage(1);
+                  }}
                   className="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 bg-white focus:outline-none cursor-pointer"
                 >
                   <option value="SEMUA">Semua Kategori</option>
                   <option value="Kalender Akademik Sekolah">Kalender Akademik Sekolah</option>
                   <option value="Agenda Kepala Sekolah & Guru">Agenda Kepala Sekolah &amp; Guru</option>
                 </select>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfirmTypedText('');
+                    setShowDeleteAllAgendasModal(true);
+                  }}
+                  disabled={agendas.length === 0}
+                  className="px-3.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 text-xs font-extrabold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Hapus Semua Agenda
+                </button>
               </div>
             </div>
 
             <div className="space-y-3.5">
-              {filteredListAgendas.length > 0 ? (
-                filteredListAgendas.map((item) => (
+              {paginatedListAgendas.length > 0 ? (
+                paginatedListAgendas.map((item) => (
                   <div
                     key={item.id}
                     className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:shadow-2xs ${
@@ -1244,9 +1305,114 @@ export default function AdminAgendaPage() {
                 </div>
               )}
             </div>
+
+            {/* Pagination Controls */}
+            {filteredListAgendas.length > listPageSize && (
+              <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                <span className="text-xs font-bold text-slate-500">
+                  Menampilkan {((listPage - 1) * listPageSize) + 1} - {Math.min(listPage * listPageSize, filteredListAgendas.length)} dari {filteredListAgendas.length} agenda (Halaman {listPage} dari {totalListPages})
+                </span>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setListPage((p) => Math.max(p - 1, 1))}
+                    disabled={listPage === 1}
+                    className="px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-extrabold text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-2xs"
+                  >
+                    Sebelumnya
+                  </button>
+
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalListPages }, (_, i) => i + 1).map((pg) => (
+                      <button
+                        key={pg}
+                        onClick={() => setListPage(pg)}
+                        className={`w-8 h-8 rounded-xl text-xs font-extrabold cursor-pointer transition-colors ${
+                          listPage === pg
+                            ? 'bg-slate-900 text-white'
+                            : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        {pg}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setListPage((p) => Math.min(p + 1, totalListPages))}
+                    disabled={listPage === totalListPages}
+                    className="px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-extrabold text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-2xs"
+                  >
+                    Selanjutnya
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
+
+      {/* ── MODAL KONFIRMASI HAPUS SEMUA AGENDA DENGAN KONFIRMASI KETIK ─────── */}
+      {showDeleteAllAgendasModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-slate-900 text-base">Hapus Seluruh Agenda?</h3>
+                  <p className="text-[11px] text-slate-500 font-medium">Tindakan ini akan mengosongkan seluruh agenda ({agendas.length} item)</p>
+                </div>
+              </div>
+              <button onClick={() => setShowDeleteAllAgendasModal(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-rose-50/70 border border-rose-200 text-xs text-rose-900 space-y-2">
+              <p className="font-bold">⚠️ Peringatan Keamanan Data Agenda:</p>
+              <p className="leading-relaxed text-slate-700">
+                Seluruh catatan jadwal dan kegiatan akademik ({agendas.length} agenda) akan dihapus secara permanen dari sistem.
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-extrabold text-slate-800">
+                Ketik <strong className="text-rose-600 uppercase tracking-wider">HAPUS</strong> untuk mengonfirmasi:
+              </label>
+              <input
+                type="text"
+                placeholder='Ketik "HAPUS"'
+                value={confirmTypedText}
+                onChange={(e) => setConfirmTypedText(e.target.value)}
+                className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-extrabold text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-500"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setShowDeleteAllAgendasModal(false)}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-extrabold text-slate-700 hover:bg-slate-50 cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteAllAgendas}
+                disabled={confirmTypedText.trim().toUpperCase() !== 'HAPUS' || isDeletingAllAgendas}
+                className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+              >
+                {isDeletingAllAgendas ? 'Menghapus...' : 'Ya, Hapus Semua Agenda'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── MODAL UPLOAD & EXTRACTION KALENDER PENDIDIKAN (PDF/GAMBAR) ────── */}
       {showUploadKaldikModal && (
