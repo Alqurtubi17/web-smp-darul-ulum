@@ -6,6 +6,7 @@ import { formatDate } from '@/lib/utils';
 import { FileUpload } from '@/components/ui/FileUpload';
 import apiClient from '@/lib/api';
 import { toast } from '@/store/toast.store';
+import Link from 'next/link';
 
 interface Module {
   id: string;
@@ -164,11 +165,17 @@ export default function GuruElearningPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => fetchModules()}
-            className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition-colors cursor-pointer"
+            className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition-colors cursor-pointer shadow-2xs"
             title="Refresh Data"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
+          <Link
+            href="/guru/akademik/materi"
+            className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-amber-950 text-xs font-bold transition-all shadow-xs cursor-pointer"
+          >
+            <Gamepad2 className="w-4 h-4" /> Builder Game Kuis
+          </Link>
           <button
             onClick={() => handleOpenForm()}
             className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
