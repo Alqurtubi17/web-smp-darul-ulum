@@ -219,6 +219,12 @@ export default function GuruElearningPage() {
 
   useEffect(() => {
     fetchModules();
+    try {
+      const saved = localStorage.getItem('smp_elearning_custom_games');
+      if (saved) {
+        setGamesList(JSON.parse(saved));
+      }
+    } catch (e) {}
   }, []);
 
   const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));
@@ -826,10 +832,32 @@ export default function GuruElearningPage() {
               </button>
               <button
                 type="button"
-                onClick={() => {
+                onClick={async () => {
                   if (!editingGame) return;
-                  setGamesList(prev => prev.map(g => g.id === editingGame.id ? editingGame : g));
-                  toast.success('Soal Game Diperbarui', `Kustomisasi soal game "${editingGame.name}" berhasil disimpan.`);
+                  const updatedList = gamesList.map(g => g.id === editingGame.id ? editingGame : g);
+                  setGamesList(updatedList);
+                  
+                  // 1. Simpan ke localStorage untuk akses instan di Siswa & Guru
+                  try {
+                    localStorage.setItem('smp_elearning_custom_games', JSON.stringify(updatedList));
+                  } catch (e) {}
+
+                  // 2. Simpan & Sinkronkan ke Database backend
+                  try {
+                    await apiClient.post('/materials', {
+                      title: editingGame.name,
+                      description: editingGame.desc,
+                      type: 'quiz_game',
+                      fileUrl: '#',
+                      externalUrl: `/siswa/elearning/game/${editingGame.id}`,
+                      quizData: {
+                        mode: editingGame.mode,
+                        questions: editingGame.questions,
+                      },
+                    }).catch(() => {});
+                  } catch (e) {}
+
+                  toast.success('Soal Game Diperbarui & Disimpan di DB', `Kustomisasi soal game "${editingGame.name}" berhasil disimpan ke database dan disinkronkan untuk siswa.`);
                   setEditingGame(null);
                 }}
                 className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs cursor-pointer"

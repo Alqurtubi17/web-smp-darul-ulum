@@ -68,6 +68,22 @@ export default function WordMatchGame() {
   };
 
   useEffect(() => {
+    try {
+      const saved = localStorage.getItem('smp_elearning_custom_games');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const vocabGame = parsed.find((g: any) => g.id === 'vocab' || g.mode === 'match');
+        if (vocabGame && vocabGame.questions?.length > 0) {
+          const customPairs = vocabGame.questions.map((q: any, i: number) => ({
+            pairId: i + 1,
+            text: q.question,
+            subtext: q.options?.[0] || q.explanation || 'Definisi',
+          }));
+          PAIRS_DATA.length = 0;
+          PAIRS_DATA.push(...customPairs);
+        }
+      }
+    } catch (e) {}
     initGame();
   }, []);
 

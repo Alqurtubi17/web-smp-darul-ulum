@@ -151,6 +151,30 @@ export default function TajwidQuestGame() {
   const currentQuestion = questionList[questionIndex];
   const TOTAL_ROUNDS = questionList.length || 5;
 
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('smp_elearning_custom_games');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const tajwidGame = parsed.find((g: any) => g.id === 'tajwid');
+        if (tajwidGame && tajwidGame.questions?.length > 0) {
+          const customMapped: Question[] = tajwidGame.questions.map((q: any) => ({
+            verse: q.explanation || 'القرآن الكريم',
+            highlight: 'Tajwid',
+            question: q.question,
+            options: q.options || ['Izhar Halqi', 'Idgham Bighunnah', 'Ikhfa Hakiki', 'Iqlab'],
+            answer: q.options?.[q.correct] || q.options?.[0] || 'Izhar Halqi',
+            explanation: q.explanation || 'Pembahasan Tajwid dari Guru',
+            points: q.xpReward || 100,
+          }));
+          TAJWID_QUESTIONS.mudah = customMapped;
+          TAJWID_QUESTIONS.sedang = customMapped;
+          TAJWID_QUESTIONS.sulit = customMapped;
+        }
+      }
+    } catch (e) {}
+  }, []);
+
   const startGame = () => {
     const list = [...TAJWID_QUESTIONS[difficulty]].sort(() => Math.random() - 0.5);
     setQuestionList(list);
