@@ -248,9 +248,6 @@ export default function TajwidQuestGame() {
   if (phase === 'menu') {
     return (
       <div className="max-w-lg mx-auto space-y-6 pb-12">
-        <Link href="/siswa/elearning" className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-emerald-700">
-          <ArrowLeft className="w-4 h-4" /> Kembali ke E-Learning
-        </Link>
 
         <div className="bg-gradient-to-br from-teal-700 via-emerald-600 to-cyan-700 rounded-3xl p-8 text-white text-center shadow-xl relative overflow-hidden">
           <div className="text-6xl mb-3">☪️</div>

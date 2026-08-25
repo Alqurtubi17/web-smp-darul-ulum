@@ -144,9 +144,6 @@ export default function WordMatchGame() {
 
   return (
     <div className="max-w-xl mx-auto space-y-6 pb-12">
-      <Link href="/siswa/elearning" className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-purple-700">
-        <ArrowLeft className="w-4 h-4" /> Kembali ke E-Learning
-      </Link>
 
       <div className="bg-gradient-to-br from-purple-600 via-indigo-600 to-violet-700 rounded-3xl p-6 text-white text-center shadow-xl">
         <div className="text-5xl mb-2">🔤</div>
