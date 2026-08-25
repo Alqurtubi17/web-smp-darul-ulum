@@ -445,9 +445,20 @@ export default function GuruMateriPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                        <Zap className="w-4 h-4 text-amber-500 fill-amber-500" /> Kustomisasi Soal Kuis ({customQuestions.length} Soal)
+                        <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
+                        {quizMode === 'match'
+                          ? `Kustomisasi Pasangan Kartu (${customQuestions.length} Pasangan)`
+                          : quizMode === 'adventure'
+                          ? `Kustomisasi Quest & Studi Kasus (${customQuestions.length} Quest Level)`
+                          : `Kustomisasi Soal Kuis (${customQuestions.length} Soal)`}
                       </h3>
-                      <p className="text-[11px] text-slate-500 font-medium">Atur pertanyaan, opsi A-D, kunci jawaban, dan pembahasan.</p>
+                      <p className="text-[11px] text-slate-500 font-medium">
+                        {quizMode === 'match'
+                          ? 'Atur pasangan Istilah (Kartu A) dan Definisi/Artinya (Kartu B) untuk dicocokkan siswa.'
+                          : quizMode === 'adventure'
+                          ? 'Atur ayat / konteks cerita, pertanyaan quest, pilihan jawaban A-D, dan pembahasan.'
+                          : 'Atur pertanyaan kuis cepat, opsi pilihan A-D, kunci jawaban, dan pembahasan.'}
+                      </p>
                     </div>
 
                     <button
@@ -455,7 +466,8 @@ export default function GuruMateriPage() {
                       onClick={addQuestion}
                       className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 text-xs font-bold shadow-2xs transition-all cursor-pointer"
                     >
-                      <PlusCircle className="w-3.5 h-3.5" /> Tambah Soal
+                      <PlusCircle className="w-3.5 h-3.5" />
+                      {quizMode === 'match' ? 'Tambah Pasangan' : 'Tambah Soal'}
                     </button>
                   </div>
 
@@ -464,7 +476,7 @@ export default function GuruMateriPage() {
                       <div key={q.id} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-extrabold bg-emerald-600 text-white px-2.5 py-0.5 rounded-md">
-                            Soal #{qIdx + 1}
+                            {quizMode === 'match' ? `Pasangan Kartu #${qIdx + 1}` : quizMode === 'adventure' ? `Quest Level #${qIdx + 1}` : `Soal #${qIdx + 1}`}
                           </span>
                           <div className="flex items-center gap-2">
                             <span className="text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-200 px-2 py-0.5 rounded-md">
@@ -481,54 +493,123 @@ export default function GuruMateriPage() {
                           </div>
                         </div>
 
-                        <div>
-                          <label className="block text-[11px] font-semibold text-slate-700 mb-1">Pertanyaan Soal</label>
-                          <input
-                            type="text"
-                            value={q.question}
-                            onChange={e => updateQuestion(q.id, 'question', e.target.value)}
-                            placeholder="Tuliskan pertanyaan kuis..."
-                            className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                          />
-                        </div>
-
-                        {/* 4 Pilihan Jawaban */}
-                        <div>
-                          <label className="block text-[11px] font-semibold text-slate-700 mb-1.5">Opsi Pilihan Ganda (Tandai Kunci Jawaban Benar)</label>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {q.options.map((optVal, optIdx) => (
-                              <div key={optIdx} className="flex items-center gap-2 bg-white p-2 rounded-xl border border-slate-200">
-                                <input
-                                  type="radio"
-                                  name={`correct-${q.id}`}
-                                  checked={q.correct === optIdx}
-                                  onChange={() => updateQuestion(q.id, 'correct', optIdx)}
-                                  className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
-                                />
-                                <span className="text-xs font-bold text-slate-500 w-4">{String.fromCharCode(65 + optIdx)}.</span>
+                        {quizMode === 'match' ? (
+                          /* Mode Term Matcher Form (Kartu A -> Kartu B) */
+                          <div className="space-y-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                                  Kartu A (Kata / Istilah) *
+                                </label>
                                 <input
                                   type="text"
-                                  value={optVal}
-                                  onChange={e => updateQuestionOption(q.id, optIdx, e.target.value)}
-                                  className="flex-1 text-xs font-semibold text-slate-900 bg-transparent focus:outline-none"
-                                  placeholder={`Opsi ${String.fromCharCode(65 + optIdx)}`}
+                                  value={q.question}
+                                  onChange={e => updateQuestion(q.id, 'question', e.target.value)}
+                                  placeholder="cth: Photosynthesis / Aljabar Linear"
+                                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                                 />
                               </div>
-                            ))}
+                              <div>
+                                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                                  Kartu B (Definisi / Arti Pasangan) *
+                                </label>
+                                <input
+                                  type="text"
+                                  value={q.options[0]}
+                                  onChange={e => updateQuestionOption(q.id, 0, e.target.value)}
+                                  placeholder="cth: Proses pembuatan makanan pada tumbuhan hijau"
+                                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                                Catatan / Kategori Pasangan (Opsional)
+                              </label>
+                              <input
+                                type="text"
+                                value={q.explanation}
+                                onChange={e => updateQuestion(q.id, 'explanation', e.target.value)}
+                                placeholder="cth: Istilah Biologi Tumbuhan"
+                                className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                              />
+                            </div>
                           </div>
-                        </div>
+                        ) : (
+                          /* Mode Speed Quiz & Adventure Quest Form */
+                          <div className="space-y-3">
+                            {quizMode === 'adventure' && (
+                              <div>
+                                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                                  Potongan Ayat / Teks Studi Kasus (Context Text)
+                                </label>
+                                <input
+                                  type="text"
+                                  value={q.explanation}
+                                  onChange={e => updateQuestion(q.id, 'explanation', e.target.value)}
+                                  placeholder="cth: مِنْ خَوْفٍ (Nun Sukun bertemu Kho)"
+                                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                />
+                              </div>
+                            )}
 
-                        {/* Pembahasan */}
-                        <div>
-                          <label className="block text-[11px] font-semibold text-slate-700 mb-1">Penjelasan / Pembahasan Jawaban</label>
-                          <input
-                            type="text"
-                            value={q.explanation}
-                            onChange={e => updateQuestion(q.id, 'explanation', e.target.value)}
-                            placeholder="Penjelasan pembahasan jawaban benar..."
-                            className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                          />
-                        </div>
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                                {quizMode === 'adventure' ? 'Pertanyaan Quest Level' : 'Pertanyaan Soal'}
+                              </label>
+                              <input
+                                type="text"
+                                value={q.question}
+                                onChange={e => updateQuestion(q.id, 'question', e.target.value)}
+                                placeholder="Tuliskan pertanyaan kuis..."
+                                className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                              />
+                            </div>
+
+                            {/* 4 Pilihan Jawaban */}
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-700 mb-1.5">
+                                Opsi Pilihan Ganda (Tandai Kunci Jawaban Benar)
+                              </label>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {q.options.map((optVal, optIdx) => (
+                                  <div key={optIdx} className="flex items-center gap-2 bg-white p-2 rounded-xl border border-slate-200">
+                                    <input
+                                      type="radio"
+                                      name={`correct-${q.id}`}
+                                      checked={q.correct === optIdx}
+                                      onChange={() => updateQuestion(q.id, 'correct', optIdx)}
+                                      className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                                    />
+                                    <span className="text-xs font-bold text-slate-500 w-4">{String.fromCharCode(65 + optIdx)}.</span>
+                                    <input
+                                      type="text"
+                                      value={optVal}
+                                      onChange={e => updateQuestionOption(q.id, optIdx, e.target.value)}
+                                      className="flex-1 text-xs font-semibold text-slate-900 bg-transparent focus:outline-none"
+                                      placeholder={`Opsi ${String.fromCharCode(65 + optIdx)}`}
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {quizMode === 'speed' && (
+                              <div>
+                                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                                  Penjelasan / Pembahasan Jawaban
+                                </label>
+                                <input
+                                  type="text"
+                                  value={q.explanation}
+                                  onChange={e => updateQuestion(q.id, 'explanation', e.target.value)}
+                                  placeholder="Penjelasan pembahasan jawaban benar..."
+                                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -593,29 +674,74 @@ export default function GuruMateriPage() {
               {previewMaterial.type === 'quiz_game' && previewMaterial.quizData?.questions ? (
                 <div className="space-y-4">
                   <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between">
-                    <span className="text-xs font-bold text-amber-900">Mode: {previewMaterial.quizData.mode || 'Speed Quiz'}</span>
-                    <span className="text-xs font-extrabold text-emerald-800">{previewMaterial.quizData.questions.length} Soal Custom</span>
+                    <span className="text-xs font-bold text-amber-900">
+                      Mode: {previewMaterial.quizData.mode === 'match' ? '🧩 Term Matcher' : previewMaterial.quizData.mode === 'adventure' ? '🎮 Adventure Quest' : '⚡ Speed Quiz'}
+                    </span>
+                    <span className="text-xs font-extrabold text-emerald-800">{previewMaterial.quizData.questions.length} Item Game</span>
                   </div>
 
-                  {previewMaterial.quizData.questions.map((q: any, idx: number) => (
-                    <div key={idx} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-                      <p className="text-xs font-bold text-slate-900">
-                        Soal #{idx + 1}: {q.question}
-                      </p>
-                      <div className="grid grid-cols-2 gap-2 pt-1">
-                        {q.options?.map((opt: string, oIdx: number) => (
-                          <div key={oIdx} className={`p-2 rounded-lg text-xs font-semibold border ${oIdx === q.correct ? 'bg-emerald-100 border-emerald-300 text-emerald-950 font-bold' : 'bg-white border-slate-200 text-slate-700'}`}>
-                            {String.fromCharCode(65 + oIdx)}. {opt} {oIdx === q.correct && '✓'}
+                  {previewMaterial.quizData.mode === 'match' ? (
+                    /* Pratinjau Term Matcher */
+                    <div className="space-y-3">
+                      <p className="text-xs font-bold text-slate-700">Kartu Istilah &amp; Definisi Pasangan:</p>
+                      <div className="grid grid-cols-1 gap-2">
+                        {previewMaterial.quizData.questions.map((q: any, idx: number) => (
+                          <div key={idx} className="p-3 bg-indigo-50/70 border border-indigo-200 rounded-xl flex items-center justify-between text-xs">
+                            <div className="font-extrabold text-indigo-950 max-w-[150px]">{q.question}</div>
+                            <div className="text-slate-400 font-extrabold">↔</div>
+                            <div className="font-semibold text-slate-700 flex-1 text-right pl-3">{q.options?.[0] || 'Definisi'}</div>
                           </div>
                         ))}
                       </div>
-                      {q.explanation && (
-                        <p className="text-[11px] text-slate-500 pt-1 font-medium">
-                          💡 Pembahasan: {q.explanation}
-                        </p>
-                      )}
                     </div>
-                  ))}
+                  ) : previewMaterial.quizData.mode === 'adventure' ? (
+                    /* Pratinjau Adventure Quest */
+                    <div className="space-y-3">
+                      {previewMaterial.quizData.questions.map((q: any, idx: number) => (
+                        <div key={idx} className="p-4 bg-teal-50/60 border border-teal-200 rounded-xl space-y-2">
+                          <span className="text-[10px] font-extrabold bg-teal-700 text-white px-2 py-0.5 rounded-md">
+                            Quest Level #{idx + 1}
+                          </span>
+                          {q.explanation && (
+                            <p className="text-sm font-extrabold font-serif text-teal-900 bg-white p-2.5 rounded-lg border border-teal-100 text-center">
+                              {q.explanation}
+                            </p>
+                          )}
+                          <p className="text-xs font-bold text-slate-900">{q.question}</p>
+                          <div className="grid grid-cols-2 gap-1.5 pt-1">
+                            {q.options?.map((opt: string, oIdx: number) => (
+                              <div key={oIdx} className={`p-2 rounded-lg text-xs font-semibold border ${oIdx === q.correct ? 'bg-emerald-100 border-emerald-300 text-emerald-950 font-bold' : 'bg-white border-slate-200 text-slate-700'}`}>
+                                {String.fromCharCode(65 + oIdx)}. {opt} {oIdx === q.correct && '✓'}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    /* Pratinjau Speed Quiz */
+                    <div className="space-y-3">
+                      {previewMaterial.quizData.questions.map((q: any, idx: number) => (
+                        <div key={idx} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                          <p className="text-xs font-bold text-slate-900">
+                            Soal #{idx + 1}: {q.question}
+                          </p>
+                          <div className="grid grid-cols-2 gap-2 pt-1">
+                            {q.options?.map((opt: string, oIdx: number) => (
+                              <div key={oIdx} className={`p-2 rounded-lg text-xs font-semibold border ${oIdx === q.correct ? 'bg-emerald-100 border-emerald-300 text-emerald-950 font-bold' : 'bg-white border-slate-200 text-slate-700'}`}>
+                                {String.fromCharCode(65 + oIdx)}. {opt} {oIdx === q.correct && '✓'}
+                              </div>
+                            ))}
+                          </div>
+                          {q.explanation && (
+                            <p className="text-[11px] text-slate-500 pt-1 font-medium">
+                              💡 Pembahasan: {q.explanation}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="p-8 text-center space-y-3">
