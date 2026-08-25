@@ -8,6 +8,9 @@ import apiClient from '@/lib/api';
 import { toast } from '@/store/toast.store';
 import Link from 'next/link';
 
+import TajwidQuestGame from '../../siswa/elearning/game/tajwid/page';
+import WordMatchGame from '../../siswa/elearning/game/vocab/page';
+
 interface Module {
   id: string;
   title: string;
@@ -919,166 +922,50 @@ export default function GuruElearningPage() {
         </div>
       )}
 
-      {/* Modal Preview Live Game Siswa (Pure React Simulator) */}
+      {/* Modal Preview Live Game Siswa (Render Component Siswa Langsung) */}
       {previewGame && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden flex flex-col max-h-[88vh]">
+          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-3xl overflow-hidden flex flex-col h-[85vh]">
             {/* Header Modal */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-emerald-700 via-teal-700 to-cyan-800 text-white shrink-0">
+            <div className="flex items-center justify-between px-6 py-3.5 border-b border-slate-100 bg-slate-900 text-white shrink-0">
               <div className="flex items-center gap-3">
-                <span className="text-3xl bg-white/20 p-2 rounded-2xl backdrop-blur-xs">{previewGame.icon}</span>
+                <span className="text-2xl">{previewGame.icon}</span>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="font-extrabold text-white text-base">Preview Game: {previewGame.name}</h2>
-                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-white/20 text-white border border-white/30">
+                    <h2 className="font-extrabold text-white text-sm">Preview Live Game Siswa: {previewGame.name}</h2>
+                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                       {previewGame.subject}
                     </span>
                   </div>
-                  <p className="text-xs text-teal-100 font-medium mt-0.5">{previewGame.desc}</p>
+                  <p className="text-[11px] text-slate-400 font-medium">Tampilan &amp; permainan game interaktif 100% sama dengan milik siswa</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Link
-                  href={`/siswa/elearning/game/${(previewGame as any).slug || previewGame.id}`}
-                  target="_blank"
-                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                <button
+                  onClick={() => {
+                    setEditingGame(previewGame);
+                    setPreviewGame(null);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-amber-950 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
                 >
-                  Buka Halaman Siswa ↗
-                </Link>
+                  <Settings className="w-3.5 h-3.5" /> Edit Soal Game Ini
+                </button>
                 <button
                   onClick={() => setPreviewGame(null)}
-                  className="p-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                  className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
 
-            {/* Interactive Player Body */}
-            <div className="p-6 space-y-5 overflow-y-auto flex-1">
-              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-bold text-emerald-900">🎮 Interactive Simulator Player</p>
-                  <p className="text-[11px] text-emerald-700 mt-0.5">Uji coba pertanyaan dan uji klik opsi jawaban persis seperti yang dimainkan siswa.</p>
-                </div>
-                <button
-                  onClick={() => {
-                    setEditingGame(previewGame);
-                    setPreviewGame(null);
-                  }}
-                  className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shrink-0 shadow-xs cursor-pointer flex items-center gap-1.5"
-                >
-                  <Settings className="w-3.5 h-3.5" /> Edit Soal Game
-                </button>
-              </div>
-
-              {previewGame.questions && previewGame.questions.length > 0 ? (
-                <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 space-y-4">
-                  {/* Navigator Bar */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-extrabold text-slate-800">
-                      Soal {previewQuestionIdx + 1} dari {previewGame.questions.length}
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        disabled={previewQuestionIdx === 0}
-                        onClick={() => {
-                          setPreviewQuestionIdx(p => Math.max(0, p - 1));
-                          setPreviewUserAns(null);
-                        }}
-                        className="px-3 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 text-xs font-bold text-slate-700 cursor-pointer shadow-2xs"
-                      >
-                        ← Prev
-                      </button>
-                      <button
-                        disabled={previewQuestionIdx >= previewGame.questions.length - 1}
-                        onClick={() => {
-                          setPreviewQuestionIdx(p => Math.min(previewGame.questions.length - 1, p + 1));
-                          setPreviewUserAns(null);
-                        }}
-                        className="px-3 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 text-xs font-bold text-slate-700 cursor-pointer shadow-2xs"
-                      >
-                        Next →
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Question Card Box */}
-                  <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs space-y-4">
-                    <div className="p-3.5 bg-slate-900 text-white rounded-xl">
-                      <p className="text-xs font-bold leading-relaxed">
-                        {previewGame.questions[previewQuestionIdx]?.question}
-                      </p>
-                    </div>
-
-                    {/* Mode Match vs Speed/Adventure */}
-                    {previewGame.mode === 'match' ? (
-                      <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-xl space-y-2">
-                        <span className="text-[10px] font-extrabold text-indigo-700 uppercase tracking-wide block">Pasangan Kartu / Definisi Jawaban Benar:</span>
-                        <p className="text-xs font-bold text-indigo-950 bg-white p-3 rounded-lg border border-indigo-200 shadow-2xs">
-                          {previewGame.questions[previewQuestionIdx]?.options?.[0] || previewGame.questions[previewQuestionIdx]?.explanation}
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <p className="text-[11px] font-semibold text-slate-500">Klik opsi di bawah untuk menguji jawaban:</p>
-                        <div className="grid grid-cols-2 gap-2">
-                          {previewGame.questions[previewQuestionIdx]?.options?.map((opt: string, optIdx: number) => {
-                            const isCorrectOpt = previewGame.questions[previewQuestionIdx]?.correct === optIdx;
-                            const isSelected = previewUserAns === optIdx;
-                            
-                            let btnStyle = 'bg-white border-slate-200 text-slate-800 hover:border-emerald-400 hover:bg-emerald-50/50';
-                            if (previewUserAns !== null) {
-                              if (isCorrectOpt) {
-                                btnStyle = 'bg-emerald-500 border-emerald-600 text-white font-bold ring-2 ring-emerald-300';
-                              } else if (isSelected) {
-                                btnStyle = 'bg-rose-500 border-rose-600 text-white font-bold';
-                              } else {
-                                btnStyle = 'bg-slate-50 border-slate-200 text-slate-400 opacity-60';
-                              }
-                            }
-
-                            return (
-                              <button
-                                key={optIdx}
-                                type="button"
-                                onClick={() => setPreviewUserAns(optIdx)}
-                                className={`p-3 rounded-xl border text-xs text-left transition-all cursor-pointer flex items-center justify-between ${btnStyle}`}
-                              >
-                                <span><strong className="mr-1">{String.fromCharCode(65 + optIdx)}.</strong> {opt}</span>
-                                {previewUserAns !== null && isCorrectOpt && <CheckCircle2 className="w-4 h-4 text-white shrink-0" />}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Explanation Box when tested */}
-                    {(previewUserAns !== null || previewGame.mode === 'match') && previewGame.questions[previewQuestionIdx]?.explanation && (
-                      <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs font-medium text-amber-950 animate-fadeIn">
-                        <span className="font-bold block mb-0.5 text-amber-900">💡 Pembahasan &amp; Kunci Jawaban:</span>
-                        {previewGame.questions[previewQuestionIdx]?.explanation}
-                      </div>
-                    )}
-                  </div>
-                </div>
+            {/* Render Component Game Siswa Langsung */}
+            <div className="p-4 overflow-y-auto flex-1 bg-slate-50">
+              {previewGame.mode === 'match' || previewGame.id === 'vocab' || previewGame.id === 'memory' ? (
+                <WordMatchGame />
               ) : (
-                <div className="text-center py-12 text-slate-400 text-xs font-medium">
-                  Belum ada soal tersimpan untuk game ini.
-                </div>
+                <TajwidQuestGame />
               )}
-            </div>
-
-            {/* Footer Modal */}
-            <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/50 shrink-0">
-              <span className="text-xs text-slate-500 font-medium">Mode: <strong className="text-slate-900 uppercase">{previewGame.mode || 'Speed Quiz'}</strong></span>
-              <button
-                onClick={() => setPreviewGame(null)}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 cursor-pointer"
-              >
-                Tutup Preview
-              </button>
             </div>
           </div>
         </div>
