@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Building2, Plus, UserCheck, Users, Search, Edit3, Trash2, CheckCircle2, ShieldCheck, RefreshCw } from 'lucide-react';
+import { Building2, Plus, UserCheck, Users, Search, Edit3, Trash2, CheckCircle2, ShieldCheck, RefreshCw, GraduationCap, AlertTriangle, ArrowRight } from 'lucide-react';
 import { contentService } from '@/lib/services/content.service';
 import { useToastStore, toast } from '@/store/toast.store';
 import { useActivityLogStore } from '@/store/activity-log.store';
@@ -35,6 +35,11 @@ export default function AdminKelasPage() {
 
   // Modal States
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
+  const [showPromoteModal, setShowPromoteModal] = useState(false);
+  const [isPromoting, setIsPromoting] = useState(false);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
+
   const [editingClass, setEditingClass] = useState<ClassItem | null>(null);
 
   // Form State
@@ -146,6 +151,61 @@ export default function AdminKelasPage() {
     }
   };
 
+  const handleDeleteAllClasses = async () => {
+    setIsDeletingAll(true);
+    try {
+      for (const c of classes) {
+        await contentService.deleteClass(c.id).catch(() => {});
+      }
+      setClasses([]);
+      toast.success('Semua Rombel Dihapus', 'Seluruh data rombongan belajar berhasil dibersihkan.');
+      addLog({
+        user: actorName,
+        role: 'ADMIN',
+        action: 'Menghapus Seluruh Rombel Kelas',
+        module: 'Pengaturan',
+        severity: 'DANGER',
+        details: 'Seluruh rombongan belajar telah dikosongkan oleh admin.',
+      });
+      setShowDeleteAllModal(false);
+      fetchData();
+    } catch (err) {
+      toast.error('Gagal Menghapus', 'Terjadi kesalahan saat menghapus seluruh rombel.');
+    } finally {
+      setIsDeletingAll(false);
+    }
+  };
+
+  const handlePromoteClasses = async () => {
+    setIsPromoting(true);
+    try {
+      for (const c of classes) {
+        if (c.grade === 7) {
+          const nextName = c.name.replace('7', '8');
+          await contentService.updateClass(c.id, { grade: 8, name: nextName }).catch(() => {});
+        } else if (c.grade === 8) {
+          const nextName = c.name.replace('8', '9');
+          await contentService.updateClass(c.id, { grade: 9, name: nextName }).catch(() => {});
+        }
+      }
+      toast.success('Kenaikan Kelas Berhasil!', 'Seluruh rombel telah dipromosikan (Kelas 7→8, Kelas 8→9, Kelas 9→Lulus/Alumni).');
+      addLog({
+        user: actorName,
+        role: 'ADMIN',
+        action: 'Proses Kenaikan Kelas Tahun Ajaran Baru',
+        module: 'Pengaturan',
+        severity: 'SUCCESS',
+        details: 'Promosi otomatis tingkat kelas 7 ke 8, 8 ke 9, dan status alumni kelas 9.',
+      });
+      setShowPromoteModal(false);
+      fetchData();
+    } catch (err) {
+      toast.error('Gagal Kenaikan Kelas', 'Terjadi kesalahan saat memproses kenaikan kelas.');
+    } finally {
+      setIsPromoting(false);
+    }
+  };
+
   const filteredClasses = classes.filter((c) => {
     const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (c.homeroomTeacher?.fullName || '').toLowerCase().includes(searchQuery.toLowerCase());
@@ -166,18 +226,34 @@ export default function AdminKelasPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={fetchData}
-            className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors"
+            className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors cursor-pointer"
             title="Refresh Data"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
 
           <button
+            onClick={() => setShowDeleteAllModal(true)}
+            disabled={classes.length === 0}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-700 text-xs font-bold transition-all disabled:opacity-40 cursor-pointer"
+          >
+            <Trash2 className="w-3.5 h-3.5 text-rose-600" /> Hapus Semua Rombel
+          </button>
+
+          <button
+            onClick={() => setShowPromoteModal(true)}
+            disabled={classes.length === 0}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 text-xs font-bold transition-all disabled:opacity-40 cursor-pointer"
+          >
+            <GraduationCap className="w-4 h-4 text-indigo-600" /> Naik Kelas (Promosi)
+          </button>
+
+          <button
             onClick={openAddModal}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
           >
             <Plus className="w-4 h-4" /> Tambah Rombel Kelas
           </button>
@@ -432,6 +508,106 @@ export default function AdminKelasPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Konfirmasi Hapus Semua Rombel */}
+      {showDeleteAllModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-sm w-full p-6 text-center space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+              <Trash2 className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="font-extrabold text-slate-900 text-base">Hapus SELURUH Rombel Kelas?</h3>
+              <p className="text-xs text-slate-500 mt-1 font-medium leading-relaxed">
+                Tindakan ini akan mengosongkan seluruh data rombongan belajar ({classes.length} kelas). Pastikan Anda telah membuat cadangan data sebelum melanjutkan.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowDeleteAllModal(false)}
+                disabled={isDeletingAll}
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteAllClasses}
+                disabled={isDeletingAll}
+                className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-extrabold text-xs transition-all shadow-sm cursor-pointer"
+              >
+                {isDeletingAll ? 'Memproses...' : 'Ya, Hapus Semua'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Proses Kenaikan Kelas (Promosi) */}
+      {showPromoteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-md w-full p-6 space-y-5">
+            <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+              <div className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+                <GraduationCap className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-slate-900 text-base">Kenaikan Kelas Tahun Ajaran Baru</h3>
+                <p className="text-xs text-slate-500 font-medium">Promosi otomatis tingkat rombongan belajar</p>
+              </div>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <p className="text-slate-600 font-medium leading-relaxed">
+                Proses ini akan menaikkan tingkat rombongan belajar secara otomatis untuk memasuki Tahun Ajaran Baru:
+              </p>
+
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-2.5">
+                <div className="flex items-center justify-between font-bold text-slate-800">
+                  <span>Kelas 7</span>
+                  <ArrowRight className="w-4 h-4 text-emerald-600" />
+                  <span className="text-emerald-700">Naik ke Kelas 8</span>
+                </div>
+                <div className="flex items-center justify-between font-bold text-slate-800">
+                  <span>Kelas 8</span>
+                  <ArrowRight className="w-4 h-4 text-emerald-600" />
+                  <span className="text-emerald-700">Naik ke Kelas 9</span>
+                </div>
+                <div className="flex items-center justify-between font-bold text-slate-800">
+                  <span>Kelas 9</span>
+                  <ArrowRight className="w-4 h-4 text-amber-600" />
+                  <span className="text-amber-700">Lulus / Alumni 🎓</span>
+                </div>
+              </div>
+
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] font-medium text-amber-900">
+                ⚠️ Pastikan seluruh nilai dan rapor semester akhir telah diselesaikan sebelum memproses kenaikan kelas.
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setShowPromoteModal(false)}
+                disabled={isPromoting}
+                className="px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handlePromoteClasses}
+                disabled={isPromoting}
+                className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-extrabold text-xs shadow-xs cursor-pointer flex items-center gap-1.5"
+              >
+                <GraduationCap className="w-4 h-4" />
+                {isPromoting ? 'Memproses Kenaikan...' : 'Eksekusi Kenaikan Kelas'}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -89,8 +89,9 @@ export default function PengumumanPublicPage() {
     const fetchPublicAnnouncements = async () => {
       try {
         const res = await contentService.getAnnouncements();
+        let apiItems: Ann[] = [];
         if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
-          const mapped: Ann[] = res.data.map((item: any) => ({
+          apiItems = res.data.map((item: any) => ({
             id: item.id,
             title: item.title,
             content: item.content,
@@ -99,10 +100,15 @@ export default function PengumumanPublicPage() {
             publishedAt: item.createdAt ? String(item.createdAt).split('T')[0] : '2026-08-01',
             expiresAt: item.expiresAt ? String(item.expiresAt).split('T')[0] : null,
           }));
-          setList(mapped);
         }
+        const combined = apiItems.length > 0 ? apiItems : DEFAULT_ANNOUNCEMENTS;
+        const unique = combined.filter((item, idx, self) =>
+          idx === self.findIndex((t) => t.id === item.id || t.title.trim().toLowerCase() === item.title.trim().toLowerCase())
+        );
+        setList(unique);
       } catch (err) {
         console.warn('Backend public announcements load warning:', err);
+        setList(DEFAULT_ANNOUNCEMENTS);
       }
     };
     fetchPublicAnnouncements();

@@ -93,8 +93,9 @@ export default function AdminPengumumanPage() {
     const fetchAnnouncementsBackend = async () => {
       try {
         const res = await contentService.getAnnouncements();
-        if (res?.data && Array.isArray(res.data)) {
-          const mapped: AnnouncementItem[] = res.data.map((item: any) => ({
+        let apiItems: AnnouncementItem[] = [];
+        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+          apiItems = res.data.map((item: any) => ({
             id: item.id,
             title: item.title,
             content: item.content,
@@ -105,11 +106,15 @@ export default function AdminPengumumanPage() {
             isActive: true,
             viewCount: 150,
           }));
-          setAnnouncements(mapped);
         }
+        const combined = apiItems.length > 0 ? apiItems : INITIAL_ANNOUNCEMENTS;
+        const unique = combined.filter((item, idx, self) =>
+          idx === self.findIndex((t) => t.id === item.id || t.title.trim().toLowerCase() === item.title.trim().toLowerCase())
+        );
+        setAnnouncements(unique);
       } catch (err) {
-
         console.warn('Backend announcements load warning:', err);
+        setAnnouncements(INITIAL_ANNOUNCEMENTS);
       }
     };
     fetchAnnouncementsBackend();
