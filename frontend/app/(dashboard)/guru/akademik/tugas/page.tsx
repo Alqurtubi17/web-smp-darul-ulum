@@ -10,72 +10,8 @@ import { toast } from '@/store/toast.store';
 
 const CLASSES = ['7A','7B','7C','8A','8B','8C','9A','9B','9C'];
 
-const INITIAL_DUMMY_ASSIGNMENTS = [
-  {
-    id: 'dummy-1',
-    title: 'Laporan Praktikum IPA: Fotosintesis & Respirasi Tumbuhan',
-    subject: 'IPA',
-    class: '8A',
-    classId: '8A',
-    description: 'Amati proses fotosintesis pada daun Hydrilla, dokumentasikan dalam bentuk laporan PDF max 5 halaman.',
-    dueDate: '2026-08-30T23:59',
-    maxScore: 100,
-    status: 'AKTIF',
-    submissions: 24,
-    total: 32,
-    fileUrl: '',
-    submissionLink: 'https://forms.google.com/sample-form-ipa-8a',
-  },
-  {
-    id: 'dummy-2',
-    title: 'Tugas Mandiri Matematika: Latihan Soal Persamaan Kuadrat',
-    subject: 'Matematika',
-    class: '8A',
-    classId: '8A',
-    description: 'Kerjakan LKS halaman 45 No. 1-10 di buku tugas, foto jawaban yang rapi lalu unggah ke portal.',
-    dueDate: '2026-09-02T17:00',
-    maxScore: 100,
-    status: 'AKTIF',
-    submissions: 18,
-    total: 32,
-    fileUrl: '',
-    submissionLink: 'https://drive.google.com/drive/folders/sample-matematika-8a',
-  },
-  {
-    id: 'dummy-3',
-    title: 'Essay Bahasa Indonesia: Analisis Cerpen & Unsur Intrinsik',
-    subject: 'Bahasa Indonesia',
-    class: '7B',
-    classId: '7B',
-    description: 'Tuliskan ulasan analisis unsur intrinsik dari cerpen pilihan di buku paket halaman 88.',
-    dueDate: '2026-08-28T23:59',
-    maxScore: 100,
-    status: 'AKTIF',
-    submissions: 30,
-    total: 30,
-    fileUrl: '',
-    submissionLink: '',
-  },
-  {
-    id: 'dummy-4',
-    title: 'Daily Practice English: Descriptive Text Essay',
-    subject: 'Bahasa Inggris',
-    class: '9A',
-    classId: '9A',
-    description: 'Write a 200-word descriptive text about your favorite historical place in Indonesia.',
-    dueDate: '2026-09-05T20:00',
-    maxScore: 100,
-    status: 'AKTIF',
-    submissions: 12,
-    total: 28,
-    fileUrl: '',
-    submissionLink: 'https://forms.google.com/sample-english-essay',
-  },
-];
-
 export default function GuruTugasPage() {
   const [assignments, setAssignments] = useState<any[]>([]);
-  const [dummyAssignments, setDummyAssignments] = useState<any[]>(INITIAL_DUMMY_ASSIGNMENTS);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -90,25 +26,7 @@ export default function GuruTugasPage() {
 
   // Interactive Submissions Modal state
   const [viewingAssignment, setViewingAssignment] = useState<any | null>(null);
-  const [sampleSubmissions, setSampleSubmissions] = useState<Record<string, any[]>>({
-    'dummy-1': [
-      { id: 'sub-1', studentName: 'Ahmad Rizki Pratama', nis: '2026001', submittedAt: '2026-08-28 14:30', fileName: 'Laporan_Fotosintesis_Ahmad.pdf', status: 'Selesai', score: '88' },
-      { id: 'sub-2', studentName: 'Budi Permana', nis: '2026003', submittedAt: '2026-08-29 09:15', fileName: 'Tugas_IPA_Budi.pdf', status: 'Selesai', score: '92' },
-      { id: 'sub-3', studentName: 'Dewi Anggraini', nis: '2026004', submittedAt: '2026-08-30 22:45', fileName: 'Laporan_Dewi.pdf', status: 'Terlambat', score: '75' },
-      { id: 'sub-4', studentName: 'Daffa Afrizal', nis: '2026007', submittedAt: 'Dikumpulkan Offline', fileName: '', status: 'Offline', score: '80' },
-      { id: 'sub-5', studentName: 'Eva Nurmalasari', nis: '2026008', submittedAt: '2026-08-30 18:20', fileName: 'TugasIPA_Eva.pdf', status: 'Selesai', score: '85' },
-      { id: 'sub-6', studentName: 'Siti Nur Aisyah', nis: '2026002', submittedAt: '-', fileName: '', status: 'Belum Mengumpulkan', score: '' },
-    ],
-    'dummy-2': [
-      { id: 'sub-7', studentName: 'Ahmad Rizki Pratama', nis: '2026001', submittedAt: '2026-09-01 16:20', fileName: 'Jawaban_Math_Ahmad.pdf', status: 'Selesai', score: '95' },
-      { id: 'sub-8', studentName: 'Budi Permana', nis: '2026003', submittedAt: '2026-09-02 10:05', fileName: 'Math_Budi.jpg', status: 'Selesai', score: '80' },
-      { id: 'sub-9', studentName: 'Dewi Anggraini', nis: '2026004', submittedAt: '-', fileName: '', status: 'Belum Mengumpulkan', score: '' },
-    ],
-    'dummy-3': [
-      { id: 'sub-10', studentName: 'Amelia Rahmawati', nis: '2026006', submittedAt: '2026-08-27 15:40', fileName: 'Essay_Bahasa_Amelia.pdf', status: 'Selesai', score: '90' },
-      { id: 'sub-11', studentName: 'Faris Hidayat', nis: '2026009', submittedAt: '2026-08-28 08:10', fileName: 'Cerpen_Faris.docx', status: 'Selesai', score: '85' },
-    ],
-  });
+  const [sampleSubmissions, setSampleSubmissions] = useState<Record<string, any[]>>({});
 
   const handleUpdateStudentScore = (subId: string, val: string) => {
     if (!viewingAssignment) return;
@@ -162,11 +80,14 @@ export default function GuruTugasPage() {
     setIsLoading(true);
     try {
       const res = await apiClient.get('/assignments');
-      if (res.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
+      if (res.data?.data && Array.isArray(res.data.data)) {
         setAssignments(res.data.data);
+      } else {
+        setAssignments([]);
       }
     } catch (err) {
-      console.warn('Fetch assignments warning:', err);
+      console.warn('Fetch assignments error:', err);
+      setAssignments([]);
     } finally {
       setIsLoading(false);
     }
@@ -208,59 +129,47 @@ export default function GuruTugasPage() {
     }
 
     const payload = {
-      id: editingId || `tugas-${Date.now()}`,
       title: form.title,
       description: form.description,
       subject: form.subject,
-      class: form.classId,
       classId: form.classId,
       dueDate: form.dueDate,
       maxScore: parseFloat(form.maxScore) || 100,
-      fileUrl: fileUrl || undefined,
+      fileUrl: fileUrl || form.submissionLink || undefined,
       submissionLink: form.submissionLink ? (form.submissionLink.startsWith('http') ? form.submissionLink : `https://${form.submissionLink}`) : undefined,
-      status: 'AKTIF',
-      submissions: editingId ? (dummyAssignments.find(a => a.id === editingId)?.submissions || 0) : 0,
-      total: 32,
     };
 
     try {
       if (editingId) {
-        await apiClient.put(`/assignments/${editingId}`, payload).catch(() => {});
-        setDummyAssignments(prev => prev.map(a => a.id === editingId ? { ...a, ...payload } : a));
+        await apiClient.put(`/assignments/${editingId}`, payload);
         toast.success('Tugas Diperbarui', `Tugas "${form.title}" berhasil diperbarui.`);
       } else {
-        await apiClient.post('/assignments', payload).catch(() => {});
-        setDummyAssignments(prev => [payload, ...prev]);
-        toast.success('Tugas Dipublikasikan', 'Tugas baru berhasil disimpan.');
+        await apiClient.post('/assignments', payload);
+        toast.success('Tugas Dipublikasikan', 'Tugas baru berhasil disimpan di Database.');
       }
-    } catch {
-      if (editingId) {
-        setDummyAssignments(prev => prev.map(a => a.id === editingId ? { ...a, ...payload } : a));
-        toast.success('Tugas Diperbarui', `Tugas "${form.title}" berhasil diperbarui.`);
-      } else {
-        setDummyAssignments(prev => [payload, ...prev]);
-        toast.success('Tugas Dipublikasikan', 'Tugas baru berhasil disimpan.');
-      }
+      setShowForm(false);
+      setEditingId(null);
+      setForm({ title: '', subject: 'Matematika', classId: '8A', description: '', dueDate: '', maxScore: '100', type: 'TUGAS', submissionLink: '' });
+      setFileUrl('');
+      fetchAssignments();
+    } catch (err) {
+      toast.error('Gagal Menyimpan', 'Terjadi kesalahan saat menyimpan tugas.');
     }
-
-    setShowForm(false);
-    setEditingId(null);
-    setForm({ title: '', subject: 'Matematika', classId: '8A', description: '', dueDate: '', maxScore: '100', type: 'TUGAS', submissionLink: '' });
-    setFileUrl('');
   };
 
   const handleDelete = async () => {
     if (!deleteId) return;
     try {
-      await apiClient.delete(`/assignments/${deleteId}`).catch(() => {});
-    } catch {}
-
-    setDummyAssignments(prev => prev.filter(a => a.id !== deleteId));
-    toast.warning('Tugas Dihapus', 'Tugas telah dihapus.');
-    setDeleteId(null);
+      await apiClient.delete(`/assignments/${deleteId}`);
+      toast.warning('Tugas Dihapus', 'Tugas telah dihapus dari Database.');
+      setDeleteId(null);
+      fetchAssignments();
+    } catch (err) {
+      toast.error('Gagal Menghapus', 'Terjadi kesalahan saat menghapus tugas.');
+    }
   };
 
-  const displayList = assignments.length > 0 ? assignments : dummyAssignments;
+  const displayList = assignments;
 
   const filteredAssignments = useMemo(() => {
     return displayList.filter(a => {

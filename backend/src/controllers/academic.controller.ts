@@ -207,8 +207,25 @@ export const inputAttendance = async (req: AuthRequest, res: Response) => {
 // CLASSES & HOMEROOM TEACHERS (WALI KELAS)
 // ══════════════════════════════════════════════════════════════════════════════
 
+const DEFAULT_CLASSES = [
+  { name: '7A', grade: 7, academicYear: '2026/2027', capacity: 32 },
+  { name: '7B', grade: 7, academicYear: '2026/2027', capacity: 32 },
+  { name: '8A', grade: 8, academicYear: '2026/2027', capacity: 32 },
+  { name: '8B', grade: 8, academicYear: '2026/2027', capacity: 32 },
+  { name: '9A', grade: 9, academicYear: '2026/2027', capacity: 32 },
+  { name: '9B', grade: 9, academicYear: '2026/2027', capacity: 32 },
+];
+
 export const listClasses = async (_req: Request, res: Response) => {
   try {
+    const count = await prisma.class.count();
+    if (count === 0) {
+      await prisma.class.createMany({
+        data: DEFAULT_CLASSES,
+        skipDuplicates: true,
+      });
+    }
+
     const [classes, teachers] = await Promise.all([
       prisma.class.findMany({
         orderBy: [{ grade: 'asc' }, { name: 'asc' }],
@@ -300,8 +317,31 @@ export const deleteClass = async (req: Request, res: Response) => {
 // SUBJECTS (MATA PELAJARAN)
 // ══════════════════════════════════════════════════════════════════════════════
 
+const DEFAULT_SUBJECTS = [
+  { code: 'MTK', name: 'Matematika', grade: null, creditHours: 4, description: 'Aljabar, Geometri & Aritmatika' },
+  { code: 'IPA', name: 'Ilmu Pengetahuan Alam', grade: null, creditHours: 4, description: 'Fisika, Biologi & Kimia Dasar' },
+  { code: 'IPS', name: 'Ilmu Pengetahuan Sosial', grade: null, creditHours: 3, description: 'Sejarah, Geografi & Ekonomi' },
+  { code: 'BIN', name: 'Bahasa Indonesia', grade: null, creditHours: 4, description: 'Literasi & Tata Bahasa Indonesia' },
+  { code: 'BIG', name: 'Bahasa Inggris', grade: null, creditHours: 4, description: 'English Grammar & Conversation' },
+  { code: 'PAI', name: 'Pendidikan Agama Islam & Budi Pekerti', grade: null, creditHours: 3, description: 'Fiqih, Aqidah Akhlak & Al-Qur’an Hadits' },
+  { code: 'PKN', name: 'Pancasila & Kewarganegaraan', grade: null, creditHours: 2, description: 'Ideologi Negara & Kebangsaan' },
+  { code: 'TIK', name: 'Informatika / TIK', grade: null, creditHours: 2, description: 'Teknologi Informasi & Komputer' },
+  { code: 'PJOK', name: 'PJOK & Olahraga', grade: null, creditHours: 2, description: 'Pendidikan Jasmani & Kesehatan' },
+  { code: 'SBK', name: 'Seni Budaya & Keterampilan', grade: null, creditHours: 2, description: 'Seni Rupa & Keberagaman Budaya' },
+  { code: 'BAR', name: 'Bahasa Arab', grade: null, creditHours: 2, description: 'Muatan Lokal Keislaman & Mufrodat' },
+  { code: 'THF', name: 'Tahfidz Al-Qur’an', grade: null, creditHours: 3, description: 'Hafalan Al-Qur’an & Tajwid' },
+];
+
 export const listSubjects = async (_req: Request, res: Response) => {
   try {
+    const count = await prisma.subject.count();
+    if (count === 0) {
+      await prisma.subject.createMany({
+        data: DEFAULT_SUBJECTS,
+        skipDuplicates: true,
+      });
+    }
+
     const subjects = await prisma.subject.findMany({
       orderBy: { code: 'asc' },
     });

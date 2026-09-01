@@ -177,8 +177,8 @@ const DEFAULT_GAMES = [
 ];
 
 const seedFullGamesData = async () => {
-  await prisma.elearningQuestion.deleteMany({});
-  await prisma.elearningGame.deleteMany({});
+  const existingCount = await prisma.elearningGame.count();
+  if (existingCount > 0) return;
 
   for (const g of DEFAULT_GAMES) {
     await prisma.elearningGame.create({
@@ -210,9 +210,8 @@ const seedFullGamesData = async () => {
 
 export const listGames = async (req: Request, res: Response) => {
   try {
-    const totalQuestions = await prisma.elearningQuestion.count();
-    if (totalQuestions < 60) {
-      // Auto Seed/Re-seed full 70+ questions to PostgreSQL DB
+    const totalGames = await prisma.elearningGame.count();
+    if (totalGames === 0) {
       await seedFullGamesData();
     }
 
@@ -241,12 +240,20 @@ export const getGameBySlug = async (req: Request, res: Response) => {
       },
     });
 
-    if (!game || !game.questions || game.questions.length < 5) {
-      await seedFullGamesData();
-      game = await prisma.elearningGame.findUnique({
-        where: { slug },
-        include: { questions: { orderBy: { order: 'asc' } } },
-      });
+    if (!game) {
+      const count = await prisma.elearningGame.count();
+      if (count === 0) {
+        await seedFullGamesData();
+        game = await prisma.elearningGame.findUnique({
+          where: { slug },
+          include: { questions: { orderBy: { order: 'asc' } } },
+        });
+      }
+    }
+
+    if (!game) {
+      sendNotFound(res, 'Game tidak ditemukan');
+      return;
     }
 
     sendSuccess(res, game, 'Detail game berhasil diambil');
@@ -255,10 +262,62 @@ export const getGameBySlug = async (req: Request, res: Response) => {
   }
 };
 
+export const createGame = async (req: Request, res: Response) => {
+  try {
+    const { name, slug, icon, subject, desc, color, difficulty, mode, questions } = req.body;
+
+    if (!name || !subject) {
+      sendError(res, 'Nama game dan mata pelajaran wajib diisi');
+      return;
+    }
+
+    let finalSlug = slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    if (!finalSlug) finalSlug = `game-${Date.now()}`;
+
+    const existing = await prisma.elearningGame.findUnique({ where: { slug: finalSlug } });
+    if (existing) {
+      finalSlug = `${finalSlug}-${Date.now().toString().slice(-4)}`;
+    }
+
+    const game = await prisma.elearningGame.create({
+      data: {
+        slug: finalSlug,
+        name: name,
+        icon: icon || '🎮',
+        subject: subject,
+        desc: desc || `Game pembelajaran ${subject}`,
+        color: color || 'from-emerald-600 to-teal-700',
+        difficulty: difficulty || 'Sedang',
+        mode: mode || 'speed',
+        played: 0,
+        bestScore: 1000,
+        questions: {
+          create: Array.isArray(questions) ? questions.map((q: any, idx: number) => ({
+            question: q.question || 'Soal Game Baru',
+            options: q.options || ['Opsi A', 'Opsi B', 'Opsi C', 'Opsi D'],
+            correct: q.correct ?? 0,
+            explanation: q.explanation || '',
+            xpReward: q.xpReward || 100,
+            order: idx + 1,
+          })) : [],
+        },
+      },
+      include: {
+        questions: { orderBy: { order: 'asc' } },
+      },
+    });
+
+    sendSuccess(res, game, 'Game pembelajaran baru berhasil dibuat di Database!');
+  } catch (err) {
+    console.error('Create game error:', err);
+    sendError(res, 'Gagal membuat game baru di Database');
+  }
+};
+
 export const updateGame = async (req: Request, res: Response) => {
   try {
     const { slug } = req.params;
-    const { subject, difficulty, questions } = req.body;
+    const { name, icon, subject, desc, color, difficulty, mode, questions } = req.body;
 
     const game = await prisma.elearningGame.findUnique({ where: { slug } });
     if (!game) {
@@ -270,8 +329,13 @@ export const updateGame = async (req: Request, res: Response) => {
     await prisma.elearningGame.update({
       where: { slug },
       data: {
+        ...(name && { name }),
+        ...(icon && { icon }),
         ...(subject && { subject }),
+        ...(desc !== undefined && { desc }),
+        ...(color && { color }),
         ...(difficulty && { difficulty }),
+        ...(mode && { mode }),
       },
     });
 
@@ -299,6 +363,24 @@ export const updateGame = async (req: Request, res: Response) => {
     sendSuccess(res, updatedGame, 'Game dan soal berhasil diperbarui di Database!');
   } catch (err) {
     sendError(res, 'Gagal memperbarui game di Database');
+  }
+};
+
+export const deleteGame = async (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+
+    const game = await prisma.elearningGame.findUnique({ where: { slug } });
+    if (!game) {
+      sendNotFound(res, 'Game tidak ditemukan');
+      return;
+    }
+
+    await prisma.elearningGame.delete({ where: { slug } });
+
+    sendSuccess(res, null, `Game "${game.name}" berhasil dihapus dari Database`);
+  } catch (err) {
+    sendError(res, 'Gagal menghapus game');
   }
 };
 
@@ -342,3 +424,4 @@ export const recordScore = async (req: Request, res: Response) => {
     sendError(res, 'Gagal mencatat skor game');
   }
 };
+

@@ -153,41 +153,40 @@ export default function MathBlitzGame() {
   const timerBg = timeLeft > 8 ? 'bg-green-500' : timeLeft > 4 ? 'bg-yellow-500' : 'bg-red-500';
 
   if (phase === 'menu') return (
-    <div className="max-w-lg mx-auto space-y-6">
-      <Link href="/siswa/elearning" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700">
-        <ArrowLeft className="w-4 h-4"/> Kembali ke E-Learning
+    <div className="max-w-md mx-auto space-y-3.5">
+      <Link href="/siswa/elearning" className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 font-bold">
+        <ArrowLeft className="w-3.5 h-3.5"/> Kembali
       </Link>
-      <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl p-8 text-white text-center shadow-2xl">
-        <div className="text-6xl mb-4">⚡</div>
-        <h1 className="text-3xl font-extrabold mb-2">Math Blitz!</h1>
-        <p className="text-blue-100 text-sm">Jawab soal matematika sebelum waktu habis.<br/>Combo streak = bonus poin! 🔥</p>
+      <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-4 text-white text-center shadow-md">
+        <div className="text-3xl mb-1.5">⚡</div>
+        <h1 className="text-lg font-extrabold mb-1">Math Blitz</h1>
+        <p className="text-blue-100 text-xs font-medium">Jawab soal matematika sebelum waktu habis.<br/>Combo streak = bonus poin! 🔥</p>
       </div>
-      <div className="bg-white rounded-2xl border border-gray-200 p-5">
-        <p className="font-semibold text-gray-900 mb-3">Pilih Tingkat Kesulitan</p>
-        <div className="grid grid-cols-3 gap-3">
+      <div className="bg-white rounded-xl border border-gray-200 p-3 space-y-2 shadow-2xs">
+        <p className="font-bold text-xs text-gray-900">Pilih Tingkat Kesulitan</p>
+        <div className="grid grid-cols-3 gap-2">
           {([
-            { val:'mudah', label:'😊 Mudah', desc:'20 detik/soal\nBilangan & Persen', pts:100 },
-            { val:'sedang', label:'🤔 Sedang', desc:'15 detik/soal\nAljabar & Persentase', pts:150 },
-            { val:'sulit', label:'🔥 Sulit', desc:'10 detik/soal\nKuadrat & Statistik', pts:200 },
+            { val:'mudah', label:'😊 Mudah', desc:'20s/soal\nBilangan', pts:100 },
+            { val:'sedang', label:'🤔 Sedang', desc:'15s/soal\nAljabar', pts:150 },
+            { val:'sulit', label:'🔥 Sulit', desc:'10s/soal\nKuadrat', pts:200 },
           ] as {val:Difficulty; label:string; desc:string; pts:number}[]).map(d => (
             <button key={d.val} onClick={() => setDifficulty(d.val)}
-              className={`p-3.5 rounded-xl border-2 text-center transition-all ${difficulty===d.val?'border-blue-500 bg-blue-50':'border-gray-200 hover:border-blue-300'}`}>
-              <p className="text-sm font-bold text-gray-900">{d.label}</p>
-              <p className="text-[10px] text-gray-400 mt-1 whitespace-pre-line">{d.desc}</p>
+              className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${difficulty===d.val?'border-blue-500 bg-blue-50 shadow-2xs':'border-gray-200 hover:border-blue-300'}`}>
+              <p className="text-xs font-bold text-gray-900">{d.label}</p>
+              <p className="text-[9px] text-gray-400 mt-0.5 whitespace-pre-line leading-tight">{d.desc}</p>
               <p className="text-xs font-bold text-blue-600 mt-1">+{d.pts} pts</p>
             </button>
           ))}
         </div>
       </div>
-      <div className="bg-gray-50 rounded-2xl p-4 text-xs text-gray-500 space-y-1">
+      <div className="bg-gray-50 rounded-xl p-3 text-[11px] text-gray-600 space-y-1 border border-gray-200 font-medium">
         <p>🎯 10 soal per permainan</p>
-        <p>❤️ 3 nyawa — jawab salah atau waktu habis = -1 nyawa</p>
+        <p>❤️ 3 nyawa — jawab salah / waktu habis = -1 nyawa</p>
         <p>🔥 Streak 3+ jawaban benar = bonus poin ×1.5!</p>
-        <p>⚡ Jawab cepat = poin lebih banyak</p>
       </div>
       <button onClick={startGame}
-        className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-extrabold text-lg transition-all hover:scale-105 shadow-lg">
-        ⚡ Mulai Main!
+        className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-2xs cursor-pointer">
+        ⚡ Mulai Main
       </button>
     </div>
   );

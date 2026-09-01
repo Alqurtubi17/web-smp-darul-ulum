@@ -91,30 +91,30 @@ export default function TimelineGame() {
   const correctCount = checked ? items.filter((item, i) => item.id === correctOrder[i].id).length : 0;
 
   if (phase === 'menu') return (
-    <div className="max-w-lg mx-auto space-y-5">
-      <Link href="/siswa/elearning" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700"><ArrowLeft className="w-4 h-4"/> Kembali</Link>
-      <div className="bg-gradient-to-br from-orange-500 to-amber-600 rounded-3xl p-8 text-white text-center shadow-2xl">
-        <div className="text-6xl mb-3">📅</div>
-        <h1 className="text-3xl font-extrabold mb-2">Sejarah Timeline!</h1>
-        <p className="text-orange-100 text-sm">Urutkan peristiwa sejarah dari yang paling awal!<br/>3 set soal, 5 peristiwa tiap set 🏛️</p>
+    <div className="max-w-md mx-auto space-y-3.5">
+      <Link href="/siswa/elearning" className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 font-bold"><ArrowLeft className="w-3.5 h-3.5"/> Kembali</Link>
+      <div className="bg-gradient-to-br from-orange-500 to-amber-600 rounded-2xl p-4 text-white text-center shadow-md">
+        <div className="text-3xl mb-1.5">📅</div>
+        <h1 className="text-lg font-extrabold mb-1">Sejarah Timeline</h1>
+        <p className="text-orange-100 text-xs font-medium">Urutkan peristiwa sejarah dari yang paling awal!<br/>3 set soal, 5 peristiwa tiap set 🏛️</p>
       </div>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2">
         {EVENT_SETS.map((s, i) => (
-          <div key={i} className="bg-white rounded-xl border border-gray-200 p-3 text-center">
-            <span className="text-xl">📜</span>
-            <p className="text-xs font-bold text-gray-900 mt-1">{s.name}</p>
-            <p className="text-[10px] text-gray-400">{s.events.length} peristiwa</p>
+          <div key={i} className="bg-white rounded-xl border border-gray-200 p-2 text-center shadow-2xs">
+            <span className="text-base">📜</span>
+            <p className="text-[11px] font-bold text-gray-900 mt-0.5 truncate">{s.name}</p>
+            <p className="text-[9px] text-gray-400">{s.events.length} peristiwa</p>
           </div>
         ))}
       </div>
-      <div className="bg-gray-50 rounded-2xl p-4 text-xs text-gray-500 space-y-1">
+      <div className="bg-gray-50 rounded-xl p-3 text-[11px] text-gray-600 space-y-1 border border-gray-200 font-medium">
         <p>↕️ Gunakan tombol ↑↓ untuk menggeser urutan peristiwa</p>
         <p>✅ Klik "Cek Jawaban" setelah yakin dengan urutan</p>
         <p>🎯 Setiap posisi benar = +200 poin</p>
-        <p>📚 Ada 3 set soal — sejarah Indonesia & dunia!</p>
+        <p>📚 Ada 3 set soal — sejarah Indonesia &amp; dunia!</p>
       </div>
-      <button onClick={startGame} className="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 text-white font-extrabold text-lg hover:scale-105 transition-all shadow-lg">
-        📅 Mulai Main!
+      <button onClick={startGame} className="w-full py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 text-white font-extrabold text-xs uppercase tracking-wider hover:opacity-90 transition-all shadow-2xs cursor-pointer">
+        📅 Mulai Main
       </button>
     </div>
   );

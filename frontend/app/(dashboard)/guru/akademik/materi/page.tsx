@@ -17,113 +17,8 @@ const TYPE_CONFIG: Record<string, { icon: React.ReactNode; label: string; color:
   quiz_game: { icon:<Gamepad2 className="w-4 h-4"/>, label:'Game Kuis Custom', color:'text-amber-800 bg-amber-100 border-amber-200' },
 };
 
-const INITIAL_MATERIALS = [
-  {
-    id: '1',
-    title: 'Modul Bab 5 — Aljabar Linear & Persamaan',
-    type: 'document',
-    subject: 'Matematika',
-    class: '8A',
-    fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-    size: '2.4 MB',
-    downloads: 24,
-    date: '2026-08-15',
-  },
-  {
-    id: '2',
-    title: 'Video Tutorial: Cara Mudah Memahami Persamaan Kuadrat',
-    type: 'video',
-    subject: 'Matematika',
-    class: '9A',
-    fileUrl: 'https://youtube.com',
-    size: 'Video Youtube',
-    downloads: 45,
-    date: '2026-08-10',
-  },
-  {
-    id: '3',
-    title: 'Kuis Interaktif: Tantangan Aljabar & Persamaan Linear',
-    type: 'quiz_game',
-    subject: 'Matematika',
-    class: '8A',
-    fileUrl: '/siswa/elearning/game/matematika',
-    size: '3 Soal Custom (50 XP)',
-    downloads: 58,
-    date: '2026-08-08',
-    quizData: {
-      mode: 'speed',
-      questions: [
-        {
-          id: 1,
-          question: 'Berapakah nilai x dari persamaan aljabar: 2x + 6 = 16 ?',
-          options: ['x = 3', 'x = 5', 'x = 7', 'x = 9'],
-          correct: 1,
-          explanation: '2x = 16 - 6 => 2x = 10 => x = 5',
-          xpReward: 50,
-        },
-        {
-          id: 2,
-          question: 'Persamaan linear satu variabel berikut yang memiliki penyelesaian x = 4 adalah...',
-          options: ['3x - 2 = 10', '2x + 4 = 10', '5x - 5 = 15', 'x + 8 = 10'],
-          correct: 0,
-          explanation: '3(4) - 2 = 12 - 2 = 10 (Benar!)',
-          xpReward: 50,
-        }
-      ]
-    }
-  },
-  {
-    id: '4',
-    title: 'Game Interaktif: Tajwid & Hukum Bacaan Al-Qur’an',
-    type: 'quiz_game',
-    subject: 'PAI',
-    class: '8A',
-    fileUrl: '/siswa/elearning/game/tajwid',
-    size: '5 Level Quest (100 XP)',
-    downloads: 72,
-    date: '2026-08-20',
-    quizData: {
-      mode: 'adventure',
-      questions: [
-        {
-          id: 101,
-          question: 'Hukum bacaan Nun Sukun (نْ) bertemu dengan huruf Kho (خ) adalah...',
-          options: ['Izhar Halqi', 'Idgham Bighunnah', 'Ikhfa Hakiki', 'Iqlab'],
-          correct: 0,
-          explanation: 'Izhar Halqi terjadi jika Nun Sukun / Tanwin bertemu 6 huruf halq: ء, هـ, ع, ح, غ, خ.',
-          xpReward: 100,
-        }
-      ]
-    }
-  },
-  {
-    id: '5',
-    title: 'Game Interaktif: Word Match & Concept Match Kosakata Sains',
-    type: 'quiz_game',
-    subject: 'IPA',
-    class: '8A',
-    fileUrl: '/siswa/elearning/game/vocab',
-    size: 'Match Memory (150 XP)',
-    downloads: 64,
-    date: '2026-08-22',
-    quizData: {
-      mode: 'match',
-      questions: [
-        {
-          id: 201,
-          question: 'Cocokkan istilah Photosynthesis dengan definisinya yang tepat!',
-          options: ['Proses pembuatan makanan pada tumbuhan hijau', 'Pelepasan energi', 'Persamaan 1 variabel', 'Gaya bahasa personifikasi'],
-          correct: 0,
-          explanation: 'Fotosintesis adalah proses tumbuhan hijau mengubah air dan CO2 menjadi glukosa.',
-          xpReward: 150,
-        }
-      ]
-    }
-  },
-];
-
 export default function GuruMateriPage() {
-  const [materials, setMaterials] = useState<any[]>(INITIAL_MATERIALS);
+  const [materials, setMaterials] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Form Modal state
@@ -162,11 +57,14 @@ export default function GuruMateriPage() {
     setIsLoading(true);
     try {
       const res = await apiClient.get('/materials');
-      if (res.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
+      if (res.data?.data && Array.isArray(res.data.data)) {
         setMaterials(res.data.data);
+      } else {
+        setMaterials([]);
       }
     } catch (err) {
       console.warn('Load materials warning:', err);
+      setMaterials([]);
     } finally {
       setIsLoading(false);
     }
@@ -260,30 +158,22 @@ export default function GuruMateriPage() {
         title: form.title,
         description: form.description,
         type: uploadType,
+        classId: form.classId,
         fileUrl: uploadType === 'link' ? form.externalUrl : fileUrl || '#',
         externalUrl: form.externalUrl,
         quizData: uploadType === 'quiz_game' ? { mode: quizMode, questions: customQuestions } : null,
       };
 
       if (selectedMaterial) {
-        await apiClient.put(`/materials/${selectedMaterial.id}`, payload).catch(() => {});
-        setMaterials(prev => prev.map(m => m.id === selectedMaterial.id ? { ...m, ...payload } : m));
+        await apiClient.put(`/materials/${selectedMaterial.id}`, payload);
         toast.success('Materi Diperbarui', 'Perubahan modul / game kuis berhasil disimpan.');
       } else {
-        const res = await apiClient.post('/materials', payload).catch(() => null);
-        const newObj = res?.data?.data || {
-          id: String(Date.now()),
-          ...payload,
-          subject: 'Matematika',
-          class: form.classId || '8A',
-          downloads: 0,
-          date: new Date().toISOString(),
-        };
-        setMaterials(prev => [newObj, ...prev]);
+        await apiClient.post('/materials', payload);
         toast.success('Materi Berhasil Disimpan', uploadType === 'quiz_game' ? 'Game kuis custom telah dipublikasikan ke siswa!' : 'Berkas materi pembelajaran berhasil diunggah.');
       }
 
       setShowForm(false);
+      fetchMaterials();
     } catch (err) {
       toast.error('Gagal Menyimpan', 'Terjadi kesalahan saat menyimpan materi.');
     }
@@ -292,10 +182,10 @@ export default function GuruMateriPage() {
   const handleDeleteMaterial = async () => {
     if (!deleteMaterial) return;
     try {
-      await apiClient.delete(`/materials/${deleteMaterial.id}`).catch(() => {});
-      setMaterials(prev => prev.filter(m => m.id !== deleteMaterial.id));
+      await apiClient.delete(`/materials/${deleteMaterial.id}`);
       toast.warning('Materi Dihapus', `Modul "${deleteMaterial.title}" telah dihapus.`);
       setDeleteMaterial(null);
+      fetchMaterials();
     } catch (err) {
       toast.error('Gagal Menghapus', 'Terjadi kesalahan saat menghapus materi.');
     }
@@ -329,61 +219,81 @@ export default function GuruMateriPage() {
         </div>
       </div>
 
-      {/* Material Grid */}
-      <div className="grid md:grid-cols-2 gap-5">
-        {materials.map(m => {
-          const cfg = TYPE_CONFIG[m.type] || TYPE_CONFIG.document;
-          return (
-            <div key={m.id} className="bg-white rounded-2xl border border-slate-200/80 p-5 hover:border-emerald-300 hover:shadow-xs transition-all flex flex-col justify-between space-y-4">
-              <div className="flex items-start gap-3.5">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border shadow-2xs ${cfg.color}`}>
-                  {cfg.icon}
+      {/* Material Grid / Empty State */}
+      {materials.length === 0 ? (
+        <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center space-y-4 max-w-md mx-auto my-8 shadow-xs">
+          <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center mx-auto border border-emerald-100">
+            <FileText className="w-7 h-7" />
+          </div>
+          <div>
+            <h3 className="font-bold text-slate-900 text-base">Belum Ada Modul / Materi</h3>
+            <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
+              Materi pembelajaran berkas PDF, video, atau kuis yang diunggah akan tersimpan di database dan tampil di sini.
+            </p>
+          </div>
+          <button
+            onClick={() => handleOpenForm()}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+          >
+            <Plus className="w-4 h-4" /> Buat Modul / Game Kuis Baru
+          </button>
+        </div>
+      ) : (
+        <div className="grid md:grid-cols-2 gap-5">
+          {materials.map(m => {
+            const cfg = TYPE_CONFIG[m.type] || TYPE_CONFIG.document;
+            return (
+              <div key={m.id} className="bg-white rounded-2xl border border-slate-200/80 p-5 hover:border-emerald-300 hover:shadow-xs transition-all flex flex-col justify-between space-y-4">
+                <div className="flex items-start gap-3.5">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border shadow-2xs ${cfg.color}`}>
+                    {cfg.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${cfg.color}`}>
+                        {cfg.label}
+                      </span>
+                      <span className="text-[11px] font-bold text-emerald-800">Kelas {m.class || m.classId || '8A'}</span>
+                    </div>
+                    <p className="font-bold text-xs sm:text-sm text-slate-900 leading-snug mt-1.5">{m.title}</p>
+                    <div className="flex items-center gap-3 mt-2 text-[11px] font-semibold text-slate-400">
+                      <span>{formatDate(m.date || new Date(), { day:'numeric', month:'short', year:'numeric' })}</span>
+                      {m.size && <span>· {m.size}</span>}
+                      <span className="flex items-center gap-1"><Download className="w-3.5 h-3.5 text-emerald-600"/>{m.downloads || 0}× diunduh</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${cfg.color}`}>
-                      {cfg.label}
-                    </span>
-                    <span className="text-[11px] font-bold text-emerald-800">Kelas {m.class || m.classId || '8A'}</span>
-                  </div>
-                  <p className="font-bold text-xs sm:text-sm text-slate-900 leading-snug mt-1.5">{m.title}</p>
-                  <div className="flex items-center gap-3 mt-2 text-[11px] font-semibold text-slate-400">
-                    <span>{formatDate(m.date || new Date(), { day:'numeric', month:'short', year:'numeric' })}</span>
-                    {m.size && <span>· {m.size}</span>}
-                    <span className="flex items-center gap-1"><Download className="w-3.5 h-3.5 text-emerald-600"/>{m.downloads || 0}× diunduh</span>
-                  </div>
+                
+                {/* Tombol Aksi Lengkap & Aktif */}
+                <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
+                  <button
+                    onClick={() => setPreviewMaterial(m)}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200/80 text-xs font-bold hover:bg-emerald-100 transition-colors cursor-pointer"
+                  >
+                    <Eye className="w-3.5 h-3.5"/> {m.type === 'quiz_game' ? 'Pratinjau Kuis' : 'Lihat Modul'}
+                  </button>
+
+                  <button
+                    onClick={() => handleOpenForm(m)}
+                    className="p-2 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                    title="Edit Modul / Kuis"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    onClick={() => setDeleteMaterial(m)}
+                    className="p-2 text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                    title="Hapus Modul"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
-              
-              {/* Tombol Aksi Lengkap & Aktif */}
-              <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
-                <button
-                  onClick={() => setPreviewMaterial(m)}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200/80 text-xs font-bold hover:bg-emerald-100 transition-colors cursor-pointer"
-                >
-                  <Eye className="w-3.5 h-3.5"/> {m.type === 'quiz_game' ? 'Pratinjau Kuis' : 'Lihat Modul'}
-                </button>
-
-                <button
-                  onClick={() => handleOpenForm(m)}
-                  className="p-2 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
-                  title="Edit Modul / Kuis"
-                >
-                  <Edit2 className="w-4 h-4" />
-                </button>
-
-                <button
-                  onClick={() => setDeleteMaterial(m)}
-                  className="p-2 text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
-                  title="Hapus Modul"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Modal Form Builder */}
       {showForm && (

@@ -14,14 +14,7 @@ export const listAssignments = async (req: AuthRequest, res: Response) => {
     const { page, limit, skip } = parsePagination(req.query);
     const { subjectId, classId, status } = req.query;
 
-    let teacherId;
-    if (req.user?.role === 'GURU') {
-      const teacher = await prisma.teacher.findFirst({ where: { userId: req.user.userId } });
-      teacherId = teacher?.id;
-    }
-
     const where = {
-      ...(teacherId && { teacherId }),
       ...(subjectId && { subjectId }),
       ...(classId && { classId }),
       ...(status && { status }),
@@ -30,11 +23,16 @@ export const listAssignments = async (req: AuthRequest, res: Response) => {
     const [total, items] = await Promise.all([
       prisma.assignment.count({ where }),
       prisma.assignment.findMany({
-        where, skip, take: limit,
+        where,
         orderBy: { createdAt: 'desc' },
         include: {
           subject: { select: { id: true, name: true, code: true } },
           teacher: { select: { id: true, fullName: true } },
+          submissions: {
+            include: {
+              student: { select: { id: true, fullName: true, nis: true } }
+            }
+          },
           _count: { select: { submissions: true } },
         },
       }),
@@ -46,26 +44,48 @@ export const listAssignments = async (req: AuthRequest, res: Response) => {
 
 export const createAssignment = async (req: AuthRequest, res: Response) => {
   try {
-    const teacher = await prisma.teacher.findFirst({ where: { userId: req.user.userId } });
+    let teacher = req.user?.userId ? await prisma.teacher.findFirst({ where: { userId: req.user.userId } }) : null;
+    if (!teacher) {
+      teacher = await prisma.teacher.findFirst();
+    }
     if (!teacher) { sendError(res, 'Data guru tidak ditemukan', 403); return; }
 
-    const { title, description, subjectId, classId, dueDate, maxScore, fileUrl, academicYear, semester } = req.body;
+    const { title, description, subject, subjectId, classId, dueDate, maxScore, fileUrl, submissionLink, academicYear, semester } = req.body;
+
+    let subObj = null;
+    if (subjectId) {
+      subObj = await prisma.subject.findUnique({ where: { id: subjectId } });
+    }
+    if (!subObj && subject) {
+      subObj = await prisma.subject.findFirst({ where: { name: subject } });
+    }
+    if (!subObj) {
+      subObj = await prisma.subject.findFirst();
+    }
+    if (!subObj) {
+      subObj = await prisma.subject.create({ data: { name: subject || 'Matematika', code: 'MTK' } });
+    }
 
     const assignment = await prisma.assignment.create({
       data: {
-        title, description,
+        title: title || 'Tugas Baru',
+        description: description || null,
         teacherId: teacher.id,
-        subjectId, classId,
-        dueDate: new Date(dueDate),
+        subjectId: subObj.id,
+        classId: classId || '8A',
+        dueDate: dueDate ? new Date(dueDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         maxScore: parseFloat(maxScore || '100'),
-        fileUrl: fileUrl || null, // URL dari UploadThing
+        fileUrl: fileUrl || submissionLink || null,
         academicYear: academicYear || '2024/2025',
         semester: parseInt(semester || '1'),
       },
-      include: { subject: true },
+      include: { subject: true, teacher: { select: { fullName: true } } },
     });
     sendCreated(res, assignment, 'Tugas berhasil dibuat');
-  } catch { sendError(res, 'Gagal membuat tugas'); }
+  } catch (err) {
+    console.error('Create assignment error:', err);
+    sendError(res, 'Gagal membuat tugas');
+  }
 };
 
 export const getAssignmentById = async (req: Request, res: Response) => {
@@ -76,7 +96,7 @@ export const getAssignmentById = async (req: Request, res: Response) => {
         subject: true,
         teacher: { select: { fullName: true } },
         submissions: {
-          include: { student: { select: { fullName: true, nis: true } } },
+          include: { student: { select: { id: true, fullName: true, nis: true } } },
         },
       },
     });
@@ -89,9 +109,24 @@ export const updateAssignment = async (req: Request, res: Response) => {
   try {
     const existing = await prisma.assignment.findUnique({ where: { id: req.params.id } });
     if (!existing) { sendNotFound(res); return; }
-    const updated = await prisma.assignment.update({ where: { id: req.params.id }, data: req.body });
+    const { title, description, classId, dueDate, maxScore, fileUrl } = req.body;
+    const updated = await prisma.assignment.update({
+      where: { id: req.params.id },
+      data: {
+        ...(title && { title }),
+        ...(description !== undefined && { description }),
+        ...(classId && { classId }),
+        ...(dueDate && { dueDate: new Date(dueDate) }),
+        ...(maxScore !== undefined && { maxScore: parseFloat(maxScore) }),
+        ...(fileUrl !== undefined && { fileUrl }),
+      },
+      include: { subject: true },
+    });
     sendSuccess(res, updated, 'Tugas diperbarui');
-  } catch { sendError(res, 'Gagal memperbarui tugas'); }
+  } catch (err) {
+    console.error('Update assignment error:', err);
+    sendError(res, 'Gagal memperbarui tugas');
+  }
 };
 
 export const deleteAssignment = async (req: Request, res: Response) => {
@@ -185,25 +220,62 @@ export const listMaterials = async (req: AuthRequest, res: Response) => {
 
 export const uploadMaterial = async (req: AuthRequest, res: Response) => {
   try {
-    const teacher = await prisma.teacher.findFirst({ where: { userId: req.user.userId } });
+    let teacher = await prisma.teacher.findFirst({ where: { userId: req.user?.userId } });
+    if (!teacher) {
+      teacher = await prisma.teacher.findFirst();
+    }
     if (!teacher) { sendError(res, 'Data guru tidak ditemukan', 403); return; }
+
+    let subject = await prisma.subject.findFirst();
+    if (!subject) {
+      subject = await prisma.subject.create({ data: { name: 'Umum', code: 'UMUM' } });
+    }
 
     const { title, description, subjectId, classId, fileUrl, externalUrl, type, academicYear, semester } = req.body;
 
     const material = await prisma.material.create({
       data: {
-        title, description,
+        title: title || 'Modul Pembelajaran',
+        description: description || null,
         teacherId: teacher.id,
-        subjectId, classId,
-        fileUrl: fileUrl || null,       // dari UploadThing
-        externalUrl: externalUrl || null, // link YouTube/web
+        subjectId: subjectId || subject.id,
+        classId: classId || '8A',
+        fileUrl: fileUrl || null,
+        externalUrl: externalUrl || null,
         type: type || 'document',
         academicYear: academicYear || '2024/2025',
         semester: parseInt(semester || '1'),
       },
+      include: {
+        subject: true,
+        teacher: { select: { fullName: true } }
+      }
     });
     sendCreated(res, material, 'Materi berhasil diupload');
-  } catch { sendError(res, 'Gagal mengupload materi'); }
+  } catch (err) {
+    console.error('Upload material error:', err);
+    sendError(res, 'Gagal mengupload materi');
+  }
+};
+
+export const updateMaterial = async (req: Request, res: Response) => {
+  try {
+    const existing = await prisma.material.findUnique({ where: { id: req.params.id } });
+    if (!existing) { sendNotFound(res); return; }
+    const { title, description, classId, fileUrl, externalUrl, type } = req.body;
+    const updated = await prisma.material.update({
+      where: { id: req.params.id },
+      data: {
+        ...(title && { title }),
+        ...(description !== undefined && { description }),
+        ...(classId !== undefined && { classId }),
+        ...(fileUrl !== undefined && { fileUrl }),
+        ...(externalUrl !== undefined && { externalUrl }),
+        ...(type !== undefined && { type }),
+      },
+    });
+    sendSuccess(res, updated, 'Materi berhasil diperbarui');
+  } catch { sendError(res, 'Gagal memperbarui materi'); }
 };
 
 export const deleteMaterial = async (req: Request, res: Response) => {

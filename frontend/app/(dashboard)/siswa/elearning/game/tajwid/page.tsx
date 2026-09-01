@@ -278,52 +278,51 @@ export default function TajwidQuestGame({ gameData }: { gameData?: any } = {}) {
 
   if (phase === 'menu') {
     return (
-      <div className="max-w-lg mx-auto space-y-6 pb-12">
-
-        <div className="bg-gradient-to-br from-teal-700 via-emerald-600 to-cyan-700 rounded-3xl p-8 text-white text-center shadow-xl relative overflow-hidden">
-          <div className="text-6xl mb-3">☪️</div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Tajwid &amp; PAI Quest</h1>
-          <p className="text-teal-100 text-xs font-medium mt-2 leading-relaxed">
+      <div className="max-w-md mx-auto space-y-3.5">
+        <div className="bg-gradient-to-br from-teal-700 via-emerald-600 to-cyan-700 rounded-2xl p-4 text-white text-center shadow-md relative overflow-hidden">
+          <div className="text-3xl mb-1.5">☪️</div>
+          <h1 className="text-lg font-extrabold tracking-tight">Tajwid &amp; PAI Quest</h1>
+          <p className="text-teal-100 text-xs font-medium mt-1 leading-relaxed">
             Asah pemahaman hukum Tajwid dan Al-Qur’an dalam kuis interaktif!<br />Dapatkan XP dan poin combo streak! ✨
           </p>
         </div>
 
-        <div className="bg-white rounded-3xl border border-emerald-100 p-6 shadow-2xs space-y-4">
-          <p className="font-extrabold text-slate-900 text-sm">Pilih Tingkat Kesulitan</p>
-          <div className="grid grid-cols-3 gap-3">
+        <div className="bg-white rounded-xl border border-emerald-100 p-3.5 shadow-2xs space-y-2">
+          <p className="font-extrabold text-slate-900 text-xs">Pilih Tingkat Kesulitan</p>
+          <div className="grid grid-cols-3 gap-2">
             {([
               { val: 'mudah', label: '🌱 Pemula', desc: '20s/soal\nIzhar & Idgham', pts: 100 },
-              { val: 'sedang', label: '⭐ Menengah', desc: '15s/soal\nMim Sukun & PAI', pts: 150 },
-              { val: 'sulit', label: '🔥 Mahir', desc: '12s/soal\nHukum Mad & Waqaf', pts: 200 },
+              { val: 'sedang', label: '⭐ Menengah', desc: '15s/soal\nMim Sukun', pts: 150 },
+              { val: 'sulit', label: '🔥 Mahir', desc: '12s/soal\nHukum Mad', pts: 200 },
             ] as { val: Difficulty; label: string; desc: string; pts: number }[]).map(d => (
               <button
                 key={d.val}
                 type="button"
                 onClick={() => setDifficulty(d.val)}
-                className={`p-4 rounded-2xl border-2 text-center transition-all cursor-pointer ${
+                className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
                   difficulty === d.val ? 'border-emerald-600 bg-emerald-50 shadow-2xs' : 'border-slate-200 hover:border-emerald-300'
                 }`}
               >
                 <p className="text-xs font-bold text-slate-900">{d.label}</p>
-                <p className="text-[10px] text-slate-500 mt-1 whitespace-pre-line leading-tight">{d.desc}</p>
-                <p className="text-xs font-extrabold text-emerald-700 mt-1.5">+{d.pts} XP</p>
+                <p className="text-[9px] text-slate-500 mt-0.5 whitespace-pre-line leading-tight">{d.desc}</p>
+                <p className="text-xs font-extrabold text-emerald-700 mt-1">+{d.pts} XP</p>
               </button>
             ))}
           </div>
         </div>
 
-        <div className="bg-emerald-50/60 rounded-2xl p-4 text-xs text-emerald-900 space-y-1.5 border border-emerald-100 font-medium">
+        <div className="bg-emerald-50/60 rounded-xl p-3 text-[11px] text-emerald-900 space-y-1 border border-emerald-100 font-medium">
           <p>🎯 5 Soal Tajwid pilihan per sesi permainan</p>
           <p>❤️ 3 Nyawa — Salah jawab atau habis waktu = -1 nyawa</p>
-          <p>🔥 Streak 3+ jawaban benar berturut-turut = Bonus Multiplier XP 1.5x!</p>
+          <p>🔥 Streak 3+ jawaban benar = Bonus Multiplier XP 1.5x!</p>
         </div>
 
         <button
           type="button"
           onClick={startGame}
-          className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-base transition-all hover:scale-[1.02] active:scale-[0.98] shadow-md cursor-pointer flex items-center justify-center gap-2"
+          className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-2xs cursor-pointer flex items-center justify-center gap-2"
         >
-          <Zap className="w-5 h-5 fill-white" /> Mulai Petualangan!
+          <span>☪️</span> Mulai Petualangan
         </button>
       </div>
     );

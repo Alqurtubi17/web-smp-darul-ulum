@@ -153,21 +153,21 @@ export default function WordScrambleGame() {
   };
 
   if (phase === 'menu') return (
-    <div className="max-w-lg mx-auto space-y-5">
-      <Link href="/siswa/elearning" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700"><ArrowLeft className="w-4 h-4"/> Kembali</Link>
-      <div className="bg-gradient-to-br from-purple-500 to-violet-600 rounded-3xl p-8 text-white text-center shadow-2xl">
-        <div className="text-6xl mb-4">🔤</div>
-        <h1 className="text-3xl font-extrabold mb-2">Word Scramble!</h1>
-        <p className="text-purple-100 text-sm">Susun huruf acak menjadi kata yang benar.<br/>Ada 10 kata dari berbagai mata pelajaran!</p>
+    <div className="max-w-md mx-auto space-y-3.5">
+      <Link href="/siswa/elearning" className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 font-bold"><ArrowLeft className="w-3.5 h-3.5"/> Kembali</Link>
+      <div className="bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl p-4 text-white text-center shadow-md">
+        <div className="text-3xl mb-1.5">🔤</div>
+        <h1 className="text-lg font-extrabold mb-1">Word Scramble</h1>
+        <p className="text-purple-100 text-xs font-medium">Susun huruf acak menjadi kata yang benar.<br/>Ada 10 kata dari berbagai mata pelajaran!</p>
       </div>
-      <div className="bg-gray-50 rounded-2xl p-4 text-xs text-gray-500 space-y-1.5">
+      <div className="bg-gray-50 rounded-xl p-3 text-[11px] text-gray-600 space-y-1 border border-gray-200 font-medium">
         <p>🔤 Ketuk huruf secara berurutan membentuk kata</p>
         <p>⏰ 60 detik per kata — semakin cepat semakin banyak poin</p>
         <p>💡 Gunakan hint (-50 poin) jika bingung</p>
         <p>🔀 Shuffle untuk mengacak ulang huruf</p>
       </div>
-      <button onClick={startGame} className="w-full py-4 rounded-2xl bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-400 text-white font-extrabold text-lg transition-all hover:scale-105 shadow-lg">
-        🔤 Mulai Main!
+      <button onClick={startGame} className="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-2xs cursor-pointer">
+        🔤 Mulai Main
       </button>
     </div>
   );

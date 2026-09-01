@@ -10,6 +10,12 @@ import Link from 'next/link';
 
 import TajwidQuestGame from '../../siswa/elearning/game/tajwid/page';
 import WordMatchGame from '../../siswa/elearning/game/vocab/page';
+import MathBlitzGame from '../../siswa/elearning/game/matematika/page';
+import WordScrambleGame from '../../siswa/elearning/game/scramble/page';
+import MemoryMatchGame from '../../siswa/elearning/game/memory/page';
+import ScienceQuizGame from '../../siswa/elearning/game/quiz-ipa/page';
+import SejarahTimelineGame from '../../siswa/elearning/game/timeline/page';
+import { QuizizzGameArena } from '@/components/game/QuizizzGameArena';
 
 interface Module {
   id: string;
@@ -40,18 +46,28 @@ const TYPE_COLOR: Record<string, string> = {
   DOCUMENT: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
 };
 
-interface CustomGameQuestion {
-  id: number;
-  question: string;
-  options: [string, string, string, string];
-  correct: number;
-  explanation: string;
-  xpReward: number;
-}
-
-const INITIAL_7_GAMES = [
+const INITIAL_MASTER_GAMES = [
+  {
+    id: 'quizizz',
+    slug: 'quizizz',
+    name: 'Quizizz Live Arena',
+    icon: '🎯',
+    subject: 'Umum / Semua Mapel',
+    color: 'from-amber-500 via-orange-600 to-rose-600',
+    bgColor: 'bg-amber-50 border-amber-200 text-amber-900',
+    desc: 'Arena Kuis Live persis Quizizz dengan QR Code & PIN Akses Siswa / Tamu!',
+    played: 42,
+    bestScore: 1450,
+    difficulty: 'Sedang',
+    mode: 'quizizz',
+    questions: [
+      { id: 1, question: 'Berapakah nilai x dari 3x - 9 = 12 ?', options: ['x = 7', 'x = 5', 'x = 9', 'x = 3'], correct: 0, explanation: '3x = 21 => x = 7', xpReward: 200 },
+      { id: 2, question: 'Organel sel tempat fotosintesis adalah...', options: ['Kloroplas', 'Mitokondria', 'Ribosom', 'Golgi'], correct: 0, explanation: 'Kloroplas mengandung klorofil', xpReward: 200 },
+    ]
+  },
   {
     id: 'tajwid',
+    slug: 'tajwid',
     name: 'Tajwid & PAI Quest',
     icon: '☪️',
     subject: 'PAI',
@@ -68,17 +84,11 @@ const INITIAL_7_GAMES = [
       { id: 3, question: 'Hukum bacaan Nun Sukun (نْ) bertemu Ra (ر) adalah...', options: ['Idgham Bilaghunnah', 'Idgham Bighunnah', 'Iqlab', 'Izhar Halqi'], correct: 0, explanation: 'مِنْ رَّبِّهِمْ — Idgham Bilaghunnah dibaca melebur tanpa dengung.', xpReward: 100 },
       { id: 4, question: 'Hukum bacaan Nun Sukun (نْ) bertemu Ba (ب) adalah...', options: ['Iqlab', 'Ikhfa Hakiki', 'Izhar Halqi', 'Idgham Bighunnah'], correct: 0, explanation: 'مِنْ بَعْدِ — Iqlab terjadi jika Nun Sukun bertemu Ba, suara nun diganti menjadi Mim (م).', xpReward: 100 },
       { id: 5, question: 'Hukum bacaan Nun Sukun (نْ) bertemu Qaf (ق) adalah...', options: ['Ikhfa Hakiki', 'Izhar Halqi', 'Idgham Bilaghunnah', 'Iqlab'], correct: 0, explanation: 'مِنْ قَبْلِ — Ikhfa Hakiki dibaca samar-samar dengan dengung.', xpReward: 100 },
-      { id: 6, question: 'Hukum Mim Sukun (مْ) bertemu dengan Mim (م) adalah...', options: ['Idgham Mimi (Mitsli)', 'Ikhfa Syafawi', 'Izhar Syafawi', 'Izhar Halqi'], correct: 0, explanation: 'لَهُمْ مَّا يَشَاءُونَ — Idgham Mimi terjadi apabila Mim Sukun bertemu huruf Mim.', xpReward: 150 },
-      { id: 7, question: 'Hukum Mim Sukun (مْ) bertemu dengan Ba (ب) adalah...', options: ['Ikhfa Syafawi', 'Izhar Syafawi', 'Idgham Mimi', 'Iqlab'], correct: 0, explanation: 'تَرْمِيهِمْ بِحِجَارَةٍ — Ikhfa Syafawi terjadi apabila Mim Sukun bertemu huruf Ba.', xpReward: 150 },
-      { id: 8, question: 'Hukum Mim Sukun (مْ) bertemu Ta (ت) adalah...', options: ['Izhar Syafawi', 'Ikhfa Syafawi', 'Idgham Bighunnah', 'Iqlab'], correct: 0, explanation: 'أَلَمْ تَرَ كَيْفَ — Izhar Syafawi dibaca jelas tanpa dengung.', xpReward: 150 },
-      { id: 9, question: 'Berapakah jumlah rukun Islam dan rukun Iman secara berturut-turut?', options: ['5 dan 6', '6 dan 5', '5 dan 5', '6 dan 6'], correct: 0, explanation: 'Rukun Islam ada 5 perkara dan Rukun Iman ada 6 perkara.', xpReward: 150 },
-      { id: 10, question: 'Hukum Mad pada kata وَالسَّمَاءِ (Hamzah dalam satu kata) adalah...', options: ['Mad Wajib Muttashil', 'Mad Jaiz Munfashil', 'Mad Arid Lissukun', 'Mad Badal'], correct: 0, explanation: 'Mad Wajib Muttashil terjadi jika Mad Thabi’i bertemu Hamzah dalam satu kata (4-5 harakat).', xpReward: 200 },
-      { id: 11, question: 'Hukum Mad pada بِمَا أُنْزِلَ (Mad Thabi’i bertemu Hamzah di lain kata) adalah...', options: ['Mad Jaiz Munfashil', 'Mad Wajib Muttashil', 'Mad Iwadh', 'Mad Shilah'], correct: 0, explanation: 'Mad Jaiz Munfashil terjadi jika Mad Thabi’i bertemu Hamzah di kata terpisah.', xpReward: 200 },
-      { id: 12, question: 'Panjang hukum bacaan Mad Arid Lissukun di akhir ayat adalah...', options: ['2, 4, atau 6 Harakat', '1 Harakat saja', '8 Harakat', '3 Harakat saja'], correct: 0, explanation: 'الْعَالَمِينَ — Boleh dibaca 2, 4, atau 6 harakat.', xpReward: 200 }
     ]
   },
   {
     id: 'vocab',
+    slug: 'vocab',
     name: 'Word & Concept Match',
     icon: '🧩',
     subject: 'IPA / Bahasa',
@@ -94,12 +104,11 @@ const INITIAL_7_GAMES = [
       { id: 2, question: 'Respiration', options: ['Proses pelepasan energi dari glukosa', '', '', ''], correct: 0, explanation: 'Istilah Biologi Respirasi', xpReward: 150 },
       { id: 3, question: 'Linear Equation', options: ['Persamaan dengan variabel pangkat 1', '', '', ''], correct: 0, explanation: 'Istilah Aljabar Matematika', xpReward: 150 },
       { id: 4, question: 'Majas Personifikasi', options: ['Gaya bahasa yang menganggap benda mati bernyawa', '', '', ''], correct: 0, explanation: 'Istilah Bahasa Indonesia', xpReward: 150 },
-      { id: 5, question: 'Narrative Text', options: ['Teks cerita rekaan untuk menghibur pembaca', '', '', ''], correct: 0, explanation: 'Istilah Bahasa Inggris', xpReward: 150 },
-      { id: 6, question: 'Proklamasi 1945', options: ['Peristiwa sejarah kemerdekaan Indonesia', '', '', ''], correct: 0, explanation: 'Istilah Sejarah IPS', xpReward: 150 }
     ]
   },
   {
     id: 'matematika',
+    slug: 'matematika',
     name: 'Math Blitz',
     icon: '⚡',
     subject: 'Matematika',
@@ -114,13 +123,11 @@ const INITIAL_7_GAMES = [
       { id: 1, question: 'Berapakah nilai x dari persamaan aljabar: 2x + 6 = 16 ?', options: ['x = 3', 'x = 5', 'x = 7', 'x = 9'], correct: 1, explanation: '2x = 16 - 6 => 2x = 10 => x = 5', xpReward: 50 },
       { id: 2, question: 'Persamaan linear satu variabel dengan x = 4 adalah...', options: ['3x - 2 = 10', '2x + 4 = 10', '5x - 5 = 15', 'x + 8 = 10'], correct: 0, explanation: '3(4) - 2 = 12 - 2 = 10', xpReward: 50 },
       { id: 3, question: 'Hasil dari 15 + (4 × 5) adalah...', options: ['35', '95', '40', '50'], correct: 0, explanation: 'Perkalian dikerjakan lebih dahulu: 4 × 5 = 20, 15 + 20 = 35', xpReward: 50 },
-      { id: 4, question: 'Berapakah 25% dari 200 ?', options: ['50', '25', '75', '100'], correct: 0, explanation: '25/100 × 200 = 50', xpReward: 50 },
-      { id: 5, question: 'Akar kuadrat dari 144 adalah...', options: ['12', '14', '16', '10'], correct: 0, explanation: '12 × 12 = 144', xpReward: 50 },
-      { id: 6, question: 'Hasil dari 3³ + 2² adalah...', options: ['31', '25', '35', '29'], correct: 0, explanation: '27 + 4 = 31', xpReward: 50 }
     ]
   },
   {
     id: 'scramble',
+    slug: 'scramble',
     name: 'Word Scramble',
     icon: '🔤',
     subject: 'B. Inggris',
@@ -130,17 +137,15 @@ const INITIAL_7_GAMES = [
     played: 8,
     bestScore: 1200,
     difficulty: 'Mudah',
-    mode: 'speed',
+    mode: 'scramble',
     questions: [
       { id: 1, question: 'Susun kata: E - D - U - C - A - T - I - O - N', options: ['EDUCATION', 'DEDICATION', 'EVALUATION', 'ELEVATION'], correct: 0, explanation: 'Artinya: Pendidikan', xpReward: 100 },
       { id: 2, question: 'Susun kata: L - E - A - R - N - I - N - G', options: ['LEARNING', 'READING', 'WRITING', 'LISTENING'], correct: 0, explanation: 'Artinya: Pembelajaran', xpReward: 100 },
-      { id: 3, question: 'Susun kata: K - N - O - W - L - E - D - G - E', options: ['KNOWLEDGE', 'ACKNOWLEDGMENT', 'CHALLENGE', 'ADVANTAGE'], correct: 0, explanation: 'Artinya: Pengetahuan', xpReward: 100 },
-      { id: 4, question: 'Susun kata: S - C - H - O - O - L', options: ['SCHOOL', 'SCHOLAR', 'SCHEDULE', 'SCHEME'], correct: 0, explanation: 'Artinya: Sekolah', xpReward: 100 },
-      { id: 5, question: 'Susun kata: T - E - A - C - H - E - R', options: ['TEACHER', 'TRAINER', 'THEATER', 'TUTORIAL'], correct: 0, explanation: 'Artinya: Guru', xpReward: 100 }
     ]
   },
   {
     id: 'memory',
+    slug: 'memory',
     name: 'IPA Memory',
     icon: '🧬',
     subject: 'IPA',
@@ -150,17 +155,15 @@ const INITIAL_7_GAMES = [
     played: 5,
     bestScore: 640,
     difficulty: 'Sedang',
-    mode: 'match',
+    mode: 'memory',
     questions: [
       { id: 1, question: 'Klorofil', options: ['Zat hijau daun pengikat cahaya matahari', '', '', ''], correct: 0, explanation: 'Biologi Tumbuhan', xpReward: 100 },
       { id: 2, question: 'Mitokondria', options: ['Organel sel penghasil energi selular', '', '', ''], correct: 0, explanation: 'Biologi Sel', xpReward: 100 },
-      { id: 3, question: 'Stomata', options: ['Celah mulut daun tempat pertukaran gas', '', '', ''], correct: 0, explanation: 'Anatomi Tumbuhan', xpReward: 100 },
-      { id: 4, question: 'Osmosis', options: ['Perpindahan molekul air melalui membran', '', '', ''], correct: 0, explanation: 'Fisika Biologi', xpReward: 100 },
-      { id: 5, question: 'Kapiler', options: ['Pembuluh darah terkecil penyuplai sel', '', '', ''], correct: 0, explanation: 'Sistem Peredaran Darah', xpReward: 100 }
     ]
   },
   {
     id: 'quiz-ipa',
+    slug: 'quiz-ipa',
     name: 'Science Quiz',
     icon: '🔭',
     subject: 'IPA',
@@ -170,17 +173,15 @@ const INITIAL_7_GAMES = [
     played: 15,
     bestScore: 920,
     difficulty: 'Mudah',
-    mode: 'speed',
+    mode: 'quiz',
     questions: [
       { id: 1, question: 'Organel sel yang berfungsi sebagai pusat energi sel adalah...', options: ['Mitokondria', 'Ribosom', 'Lisosom', 'Nukleus'], correct: 0, explanation: 'Mitokondria menghasilkan ATP energi sel.', xpReward: 100 },
       { id: 2, question: 'Gas yang diserap tumbuhan saat fotosintesis adalah...', options: ['Karbondioksida (CO2)', 'Oksigen (O2)', 'Nitrogen (N2)', 'Hidrogen (H2)'], correct: 0, explanation: 'Tumbuhan menyerap CO2 dan merilis Oksigen.', xpReward: 100 },
-      { id: 3, question: 'Satuan internasional untuk mengukur arus listrik adalah...', options: ['Ampere', 'Volt', 'Ohm', 'Watt'], correct: 0, explanation: 'Arus listrik diukur dalam Ampere (A).', xpReward: 100 },
-      { id: 4, question: 'Planet terbesar dalam tata surya kita adalah...', options: ['Jupiter', 'Saturnus', 'Neptunus', 'Bumi'], correct: 0, explanation: 'Jupiter adalah planet terbesar di Tata Surya.', xpReward: 100 },
-      { id: 5, question: 'Urutan lapisan atmosfer terendah adalah...', options: ['Troposfer', 'Stratosfer', 'Mesosfer', 'Termosfer'], correct: 0, explanation: 'Troposfer tempat terjadinya fenomena cuaca.', xpReward: 100 }
     ]
   },
   {
     id: 'timeline',
+    slug: 'timeline',
     name: 'Sejarah Timeline',
     icon: '📅',
     subject: 'IPS',
@@ -190,27 +191,35 @@ const INITIAL_7_GAMES = [
     played: 6,
     bestScore: 780,
     difficulty: 'Sulit',
-    mode: 'speed',
+    mode: 'timeline',
     questions: [
       { id: 1, question: 'Tahun Proklamasi Kemerdekaan Republik Indonesia adalah...', options: ['1945', '1928', '1908', '1950'], correct: 0, explanation: 'Proklamasi dibacakan Ir. Soekarno pada 17 Agustus 1945.', xpReward: 100 },
       { id: 2, question: 'Peristiwa Sumpah Pemuda dicetuskan pada tahun...', options: ['1928', '1908', '1945', '1912'], correct: 0, explanation: 'Kongres Pemuda II pada 28 Oktober 1928.', xpReward: 100 },
-      { id: 3, question: 'Peristiwa Rengasdengklok terjadi pada tanggal...', options: ['16 Agustus 1945', '17 Agustus 1945', '18 Agustus 1945', '15 Agustus 1945'], correct: 0, explanation: 'Penjelapan Soekarno-Hatta ke Rengasdengklok.', xpReward: 100 },
-      { id: 4, question: 'Kongres Pemuda Pertama dilaksanakan pada tahun...', options: ['1926', '1928', '1945', '1930'], correct: 0, explanation: 'Kongres Pemuda I di Batavia tahun 1926.', xpReward: 100 },
-      { id: 5, question: 'Berdirinya organisasi Budi Utomo pada tahun...', options: ['1908', '1912', '1928', '1945'], correct: 0, explanation: '20 Mei 1908 sebagai Hari Kebangkitan Nasional.', xpReward: 100 }
     ]
   }
 ];
 
-const ALL_SUBJECTS = ['PAI', 'Matematika', 'IPA', 'Bahasa Indonesia', 'Bahasa Inggris', 'IPS', 'PPKn', 'Seni Budaya', 'PJOK', 'Informatika'];
+const ALL_SUBJECTS = ['Semua Mapel', 'PAI', 'Matematika', 'IPA', 'Bahasa Indonesia', 'Bahasa Inggris', 'IPS', 'PPKn', 'Seni Budaya', 'PJOK', 'Informatika'];
+const EMOJI_ICONS = ['🎯', '🎮', '⚡', '🧩', '🔤', '🧬', '🔭', '📅', '☪️', '🔢', '🧪', '📕', '🏆', '💡', '🎨', '🚀'];
+const COLOR_THEMES = [
+  { label: 'Emerald Teal', val: 'from-emerald-600 to-teal-700' },
+  { label: 'Indigo Purple', val: 'from-indigo-500 to-purple-600' },
+  { label: 'Blue Sky', val: 'from-blue-500 to-indigo-600' },
+  { label: 'Purple Violet', val: 'from-purple-500 to-violet-600' },
+  { label: 'Orange Amber', val: 'from-orange-500 to-amber-600' },
+  { label: 'Rose Red', val: 'from-rose-500 to-red-600' },
+  { label: 'Teal Cyan', val: 'from-teal-500 to-cyan-600' },
+];
 
 export default function GuruElearningPage() {
   const [activeTab, setActiveTab] = useState<'modul' | 'games'>('modul');
   const [modules, setModules] = useState<Module[]>([]);
-  const [gamesList, setGamesList] = useState(INITIAL_7_GAMES);
-  const [editingGame, setEditingGame] = useState<typeof INITIAL_7_GAMES[0] | null>(null);
-  const [previewGame, setPreviewGame] = useState<typeof INITIAL_7_GAMES[0] | null>(null);
-  const [previewQuestionIdx, setPreviewQuestionIdx] = useState(0);
-  const [previewUserAns, setPreviewUserAns] = useState<number | null>(null);
+  const [gamesList, setGamesList] = useState<any[]>(INITIAL_MASTER_GAMES);
+
+  const [editingGame, setEditingGame] = useState<any | null>(null);
+  const [previewGame, setPreviewGame] = useState<any | null>(null);
+  const [deleteGameTarget, setDeleteGameTarget] = useState<any | null>(null);
+  const [showCreateGameModal, setShowCreateGameModal] = useState(false);
 
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -226,6 +235,26 @@ export default function GuruElearningPage() {
     type: 'VIDEO' as Module['type'],
     content: '',
     fileUrl: '',
+  });
+
+  const [newGameForm, setNewGameForm] = useState({
+    name: '',
+    icon: '🎯',
+    subject: 'Matematika',
+    mode: 'quizizz' as 'quizizz' | 'speed' | 'match' | 'scramble' | 'adventure' | 'memory' | 'quiz' | 'timeline',
+    difficulty: 'Sedang',
+    color: 'from-amber-500 via-orange-600 to-rose-600',
+    desc: '',
+    questions: [
+      {
+        id: Date.now(),
+        question: 'Contoh Pertanyaan Soal #1',
+        options: ['Opsi Jawaban A', 'Opsi Jawaban B', 'Opsi Jawaban C', 'Opsi Jawaban D'] as [string, string, string, string],
+        correct: 0,
+        explanation: 'Penjelasan pembahasan soal...',
+        xpReward: 100,
+      }
+    ]
   });
 
   const fetchModules = async () => {
@@ -258,30 +287,68 @@ export default function GuruElearningPage() {
   const fetchGamesFromDb = async () => {
     try {
       const res = await apiClient.get('/elearning-games');
-      if (res.data?.data && Array.isArray(res.data.data)) {
-        const mapped = res.data.data.map((g: any) => ({
-          id: g.slug || g.id,
-          slug: g.slug || g.id,
-          name: g.name,
-          icon: g.icon,
-          subject: g.subject,
-          color: g.color || 'from-emerald-600 to-teal-700',
-          bgColor: 'bg-emerald-50 border-emerald-200 text-emerald-900',
-          desc: g.desc,
-          played: g.played || 10,
-          bestScore: g.bestScore || 1000,
-          difficulty: g.difficulty || 'Sedang',
-          mode: g.mode || 'speed',
-          questions: g.questions?.map((q: any) => ({
-            id: q.id,
-            question: q.question,
-            options: q.options || ['Opsi A', 'Opsi B', 'Opsi C', 'Opsi D'],
-            correct: q.correct || 0,
-            explanation: q.explanation || '',
-            xpReward: q.xpReward || 100,
-          })) || [],
-        }));
-        setGamesList(mapped);
+      if (res.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
+        const dbMap = new Map<string, any>();
+        res.data.data.forEach((g: any) => {
+          const key = g.slug || g.id;
+          dbMap.set(key, g);
+        });
+
+        // 1. Update initial master games with live Database stats (played & bestScore & questions)
+        const updatedInitial = INITIAL_MASTER_GAMES.map(initGame => {
+          const key = initGame.slug || initGame.id;
+          const dbGame = dbMap.get(key);
+          if (dbGame) {
+            return {
+              ...initGame,
+              name: dbGame.name || initGame.name,
+              icon: dbGame.icon || initGame.icon,
+              subject: dbGame.subject || initGame.subject,
+              played: dbGame.played !== undefined ? dbGame.played : initGame.played,
+              bestScore: dbGame.bestScore !== undefined ? dbGame.bestScore : initGame.bestScore,
+              difficulty: dbGame.difficulty || initGame.difficulty,
+              mode: dbGame.mode || initGame.mode,
+              questions: dbGame.questions?.length > 0 ? dbGame.questions.map((q: any) => ({
+                id: q.id,
+                question: q.question,
+                options: q.options || ['Opsi A', 'Opsi B', 'Opsi C', 'Opsi D'],
+                correct: q.correct || 0,
+                explanation: q.explanation || '',
+                xpReward: q.xpReward || 100,
+              })) : initGame.questions,
+            };
+          }
+          return initGame;
+        });
+
+        // 2. Add any custom games created by teachers in DB
+        const initialKeys = new Set(INITIAL_MASTER_GAMES.map(g => g.slug || g.id));
+        const customDbGames = res.data.data
+          .filter((g: any) => !initialKeys.has(g.slug) && !initialKeys.has(g.id))
+          .map((g: any) => ({
+            id: g.id,
+            slug: g.slug || g.id,
+            name: g.name,
+            icon: g.icon,
+            subject: g.subject,
+            color: g.color || 'from-emerald-600 to-teal-700',
+            bgColor: 'bg-emerald-50 border-emerald-200 text-emerald-900',
+            desc: g.desc,
+            played: g.played || 0,
+            bestScore: g.bestScore || 1000,
+            difficulty: g.difficulty || 'Sedang',
+            mode: g.mode || 'speed',
+            questions: g.questions?.map((q: any) => ({
+              id: q.id,
+              question: q.question,
+              options: q.options || ['Opsi A', 'Opsi B', 'Opsi C', 'Opsi D'],
+              correct: q.correct || 0,
+              explanation: q.explanation || '',
+              xpReward: q.xpReward || 100,
+            })) || [],
+          }));
+
+        setGamesList([...updatedInitial, ...customDbGames]);
       }
     } catch (e) {
       console.warn('Fetch elearning games error:', e);
@@ -311,6 +378,54 @@ export default function GuruElearningPage() {
       setForm({ title: '', subject: 'Matematika', class: '8A', type: 'VIDEO', content: '', fileUrl: '' });
     }
     setShowForm(true);
+  };
+
+  const handleCreateGameSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newGameForm.name || !newGameForm.subject) {
+      toast.error('Form Tidak Lengkap', 'Silakan lengkapi nama game dan mata pelajaran.');
+      return;
+    }
+
+    try {
+      const payload = {
+        name: newGameForm.name,
+        icon: newGameForm.icon,
+        subject: newGameForm.subject,
+        mode: newGameForm.mode,
+        difficulty: newGameForm.difficulty,
+        color: newGameForm.color,
+        desc: newGameForm.desc || `Game pembelajaran ${newGameForm.subject}`,
+        questions: newGameForm.questions,
+      };
+
+      if (editingGame) {
+        setGamesList(prev => prev.map(g => (g.id === editingGame.id || g.slug === editingGame.slug) ? { ...g, ...payload } : g));
+        toast.success('Soal & Game Berhasil Diperbarui! 🎉', `Game "${newGameForm.name}" telah diperbarui.`);
+      } else {
+        await apiClient.post('/elearning-games', payload);
+        toast.success('Game Pembelajaran Berhasil Dibuat!', `Game "${newGameForm.name}" telah tersimpan dan dapat dimainkan oleh siswa.`);
+      }
+
+      setShowCreateGameModal(false);
+      setEditingGame(null);
+      fetchGamesFromDb();
+    } catch (err) {
+      toast.error('Gagal Menyimpan Game', 'Terjadi kesalahan saat menyimpan game.');
+    }
+  };
+
+  const handleDeleteGame = async () => {
+    if (!deleteGameTarget) return;
+    try {
+      const slug = deleteGameTarget.slug || deleteGameTarget.id;
+      await apiClient.delete(`/elearning-games/${slug}`);
+      toast.warning('Game Dihapus', `Game "${deleteGameTarget.name}" berhasil dihapus.`);
+      setDeleteGameTarget(null);
+      fetchGamesFromDb();
+    } catch (err) {
+      toast.error('Gagal Menghapus Game', 'Terjadi kesalahan saat menghapus game.');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -365,23 +480,45 @@ export default function GuruElearningPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Modul &amp; Bahan Ajar E-Learning</h1>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Modul &amp; Game Pembelajaran E-Learning</h1>
+          <p className="text-xs text-slate-500 font-medium">Kelola bahan ajar dan Master Game Studio interaktif untuk siswa</p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => fetchModules()}
+            onClick={() => { fetchModules(); fetchGamesFromDb(); }}
             className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition-colors cursor-pointer shadow-2xs"
             title="Refresh Data"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
-          <Link
-            href="/guru/akademik/materi"
+          <button
+            onClick={() => {
+              setNewGameForm({
+                name: '',
+                icon: '🎮',
+                subject: 'Matematika',
+                mode: 'speed',
+                difficulty: 'Sedang',
+                color: 'from-emerald-600 to-teal-700',
+                desc: '',
+                questions: [
+                  {
+                    id: Date.now(),
+                    question: 'Pertanyaan Soal Pertama',
+                    options: ['Opsi A', 'Opsi B', 'Opsi C', 'Opsi D'],
+                    correct: 0,
+                    explanation: 'Penjelasan pembahasan soal...',
+                    xpReward: 100,
+                  }
+                ]
+              });
+              setShowCreateGameModal(true);
+            }}
             className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-amber-950 text-xs font-bold transition-all shadow-xs cursor-pointer"
           >
-            <Gamepad2 className="w-4 h-4" /> Game Interaktif
-          </Link>
+            <Sparkles className="w-4 h-4" /> Buat Game Baru
+          </button>
           <button
             onClick={() => handleOpenForm()}
             className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
@@ -412,7 +549,7 @@ export default function GuruElearningPage() {
               : 'border-transparent text-slate-500 hover:text-slate-700'
           }`}
         >
-          <Gamepad2 className="w-4 h-4 text-amber-500" /> Game Pembelajaran Siswa ({gamesList.length})
+          <Gamepad2 className="w-4 h-4 text-amber-500" /> Master Game Studio ({gamesList.length})
         </button>
       </div>
 
@@ -489,12 +626,52 @@ export default function GuruElearningPage() {
         </>
       )}
 
-      {/* Tab 2: 7 Games Management Grid */}
+      {/* Tab 2: Master Game Studio Grid */}
       {activeTab === 'games' && (
         <div className="space-y-4">
+          {/* Header Banner Master Game Studio */}
+          <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-emerald-600 rounded-3xl p-6 text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">🎮</span>
+                <h2 className="text-lg font-extrabold tracking-tight">Master Game Studio — Buat Game per Mapel</h2>
+              </div>
+              <p className="text-white/90 text-xs font-medium max-w-2xl leading-relaxed">
+                Pilih mata pelajaran atau materi yang ingin digamifikasi! Pilih mekanik game (Speed Quiz, Concept Match, Word Scramble, Adventure Quest), buat soal kustom, dan publikasikan langsung ke siswa.
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setNewGameForm({
+                  name: '',
+                  icon: '🎮',
+                  subject: 'Matematika',
+                  mode: 'speed',
+                  difficulty: 'Sedang',
+                  color: 'from-emerald-600 to-teal-700',
+                  desc: '',
+                  questions: [
+                    {
+                      id: Date.now(),
+                      question: 'Contoh Pertanyaan Soal #1',
+                      options: ['Opsi Jawaban A', 'Opsi Jawaban B', 'Opsi Jawaban C', 'Opsi Jawaban D'],
+                      correct: 0,
+                      explanation: 'Penjelasan pembahasan soal...',
+                      xpReward: 100,
+                    }
+                  ]
+                });
+                setShowCreateGameModal(true);
+              }}
+              className="px-5 py-3 rounded-2xl bg-white text-slate-900 font-extrabold text-xs transition-all hover:bg-slate-100 hover:scale-105 active:scale-95 shadow-md flex items-center gap-2 shrink-0 cursor-pointer"
+            >
+              <PlusCircle className="w-4 h-4 text-emerald-700" /> Buat Game Pembelajaran Baru
+            </button>
+          </div>
+
           <div className="grid sm:grid-cols-2 gap-4">
             {gamesList.map(game => (
-              <div key={game.id} className="bg-white rounded-3xl border border-slate-200 p-5 hover:border-emerald-300 hover:shadow-md transition-all space-y-4 flex flex-col justify-between">
+              <div key={game.id || game.slug} className="bg-white rounded-3xl border border-slate-200 p-5 hover:border-emerald-300 hover:shadow-md transition-all space-y-4 flex flex-col justify-between">
                 <div>
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div className="flex items-center gap-3">
@@ -503,7 +680,7 @@ export default function GuruElearningPage() {
                       </div>
                       <div>
                         <h3 className="font-extrabold text-slate-900 text-sm">{game.name}</h3>
-                        <p className="text-xs font-bold text-emerald-700">{game.subject} · {game.questions.length} Soal/Kartu Aktif</p>
+                        <p className="text-xs font-bold text-emerald-700">{game.subject} · {game.questions?.length || 0} Soal/Kartu</p>
                       </div>
                     </div>
                     <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
@@ -515,25 +692,42 @@ export default function GuruElearningPage() {
                 </div>
 
                 <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-                  <span className="text-[11px] font-semibold text-slate-400">Dimainkan {game.played}×</span>
+                  <span className="text-[11px] font-semibold text-slate-400">Dimainkan {game.played || 0}×</span>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => {
-                        setPreviewGame(game);
-                        setPreviewQuestionIdx(0);
-                        setPreviewUserAns(null);
-                      }}
+                      onClick={() => setPreviewGame(game)}
                       className="px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
                     >
-                      <Eye className="w-3.5 h-3.5 text-blue-600" /> Preview Game
+                      <Eye className="w-3.5 h-3.5 text-blue-600" /> Preview
                     </button>
                     <button
                       type="button"
-                      onClick={() => setEditingGame(game)}
+                      onClick={() => {
+                        setEditingGame(game);
+                        setNewGameForm({
+                          name: game.name || '',
+                          icon: game.icon || '🎯',
+                          subject: game.subject || 'Matematika',
+                          mode: game.mode || 'quizizz',
+                          difficulty: game.difficulty || 'Sedang',
+                          color: game.color || 'from-amber-500 via-orange-600 to-rose-600',
+                          desc: game.desc || '',
+                          questions: game.questions || [],
+                        });
+                        setShowCreateGameModal(true);
+                      }}
                       className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-amber-950 text-xs font-extrabold transition-all shadow-2xs cursor-pointer flex items-center gap-1.5"
                     >
-                      <Settings className="w-3.5 h-3.5" /> Edit Soal Game
+                      <Settings className="w-3.5 h-3.5" /> Edit Game
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDeleteGameTarget(game)}
+                      className="p-1.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                      title="Hapus Game"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
@@ -543,7 +737,323 @@ export default function GuruElearningPage() {
         </div>
       )}
 
-      {/* Modal Form Tambah / Edit */}
+      {/* Modal Form Master Studio: Buat Game Baru */}
+      {showCreateGameModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-amber-500 to-emerald-600 text-white">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">🎮</span>
+                <div>
+                  <h2 className="font-extrabold text-base">Game Master Studio: Buat Game Baru</h2>
+                  <p className="text-xs text-amber-100 font-medium">Buat game pembelajaran kustom untuk mapel atau materi tertentu</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowCreateGameModal(false)}
+                className="p-1.5 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateGameSubmit}>
+              <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Nama Game Pembelajaran *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newGameForm.name}
+                      onChange={e => setNewGameForm(p => ({ ...p, name: e.target.value }))}
+                      placeholder="cth: Kuis Persamaan Linear 8A"
+                      className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Mata Pelajaran (Mapel) *</label>
+                    <select
+                      value={newGameForm.subject}
+                      onChange={e => setNewGameForm(p => ({ ...p, subject: e.target.value }))}
+                      className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                    >
+                      {ALL_SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Mode Mechanics Game *</label>
+                    <select
+                      value={newGameForm.mode}
+                      onChange={e => setNewGameForm(p => ({ ...p, mode: e.target.value as any }))}
+                      className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                    >
+                      <option value="quizizz">🎯 Quizizz Live Arena (Arena Live, QR Code &amp; Power-Ups)</option>
+                      <option value="speed">⚡ Math Blitz / Speed Quiz (Pilihan Ganda Cepat)</option>
+                      <option value="match">🧩 Concept &amp; Word Match (Pasangan Kartu Istilah)</option>
+                      <option value="adventure">☪️ Tajwid &amp; PAI Quest (Kuis Bertingkat &amp; Pembahasan)</option>
+                      <option value="scramble">🔤 Word Scramble (Menyusun Huruf Acak Materi)</option>
+                      <option value="memory">🧬 IPA &amp; Sains Memory Match (Mengingat Pasangan Kartu)</option>
+                      <option value="quiz">🔭 Science &amp; General Quiz (Kuis Sains Penjelasan Rinci)</option>
+                      <option value="timeline">📅 Sejarah &amp; Timeline (Urutan Peristiwa Sejarah)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Tingkat Kesulitan *</label>
+                    <select
+                      value={newGameForm.difficulty}
+                      onChange={e => setNewGameForm(p => ({ ...p, difficulty: e.target.value }))}
+                      className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                    >
+                      <option value="Mudah">🌱 Mudah (20 detik / soal · 100 XP)</option>
+                      <option value="Sedang">⭐ Sedang (15 detik / soal · 150 XP)</option>
+                      <option value="Sulit">🔥 Sulit (12 detik / soal · 200 XP)</option>
+                    </select>
+                    <div className="mt-1.5 p-2 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] font-medium leading-tight">
+                      {newGameForm.difficulty === 'Mudah' && (
+                        <span className="text-emerald-700 font-bold block">
+                          🌱 <strong>Mode Pemula (Mudah)</strong>: Alokasi 20 detik/soal · Poin +100 XP
+                        </span>
+                      )}
+                      {newGameForm.difficulty === 'Sedang' && (
+                        <span className="text-amber-700 font-bold block">
+                          ⭐ <strong>Mode Menengah (Sedang)</strong>: Alokasi 15 detik/soal · Poin +150 XP
+                        </span>
+                      )}
+                      {newGameForm.difficulty === 'Sulit' && (
+                        <span className="text-rose-700 font-bold block">
+                          🔥 <strong>Mode Mahir (Sulit)</strong>: Alokasi 12 detik/soal · Poin +200 XP
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Emoji Icon Game</label>
+                  <div className="flex items-center gap-2">
+                    <div className="text-2xl w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 shadow-2xs">
+                      {newGameForm.icon || '🎮'}
+                    </div>
+                    <input
+                      type="text"
+                      value={newGameForm.icon}
+                      onChange={e => setNewGameForm(p => ({ ...p, icon: e.target.value }))}
+                      placeholder="Ketik atau paste emoji kustom (misal: ⚽, 🚀, 🕌, 🏆)..."
+                      className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1 mt-2 flex-wrap text-sm bg-slate-50 p-2 rounded-xl border border-slate-100">
+                    <span className="text-[10px] font-bold text-slate-400 mr-1">Rekomendasi Cepat:</span>
+                    {EMOJI_ICONS.map(ic => (
+                      <button
+                        key={ic}
+                        type="button"
+                        onClick={() => setNewGameForm(p => ({ ...p, icon: ic }))}
+                        className={`w-7 h-7 rounded-lg hover:bg-white transition-all cursor-pointer flex items-center justify-center ${newGameForm.icon === ic ? 'bg-white shadow-2xs border border-emerald-400 scale-110' : ''}`}
+                      >
+                        {ic}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Deskripsi Singkat Game</label>
+                  <input
+                    type="text"
+                    value={newGameForm.desc}
+                    onChange={e => setNewGameForm(p => ({ ...p, desc: e.target.value }))}
+                    placeholder="cth: Asah pemahaman aljabar dan variabel sebelum waktu habis!"
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                {/* Editor Soal / Pasangan Kartu */}
+                <div className="pt-3 border-t border-slate-100 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      Daftar {newGameForm.mode === 'match' || newGameForm.mode === 'memory' ? 'Pasangan Kartu' : 'Soal Game'} ({newGameForm.questions.length} Item)
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNewGameForm(prev => {
+                          const newQ = {
+                            id: Date.now(),
+                            question: prev.mode === 'match' ? 'Kata / Istilah Baru' : `Pertanyaan Soal Baru #${prev.questions.length + 1}`,
+                            options: [prev.mode === 'match' ? 'Definisi / Pasangan Kartu' : 'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D'] as [string, string, string, string],
+                            correct: 0,
+                            explanation: 'Penjelasan pembahasan...',
+                            xpReward: 100,
+                          };
+                          return { ...prev, questions: [...prev.questions, newQ] };
+                        });
+                      }}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-amber-950 text-xs font-bold shadow-2xs cursor-pointer"
+                    >
+                      <PlusCircle className="w-3.5 h-3.5" />
+                      {newGameForm.mode === 'match' ? 'Tambah Pasangan Kartu' : 'Tambah Soal Baru'}
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    {newGameForm.questions.map((q, idx) => (
+                      <div key={q.id || idx} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-extrabold bg-emerald-600 text-white px-2.5 py-0.5 rounded-md">
+                            {newGameForm.mode === 'match' ? `Pasangan #${idx + 1}` : `Soal #${idx + 1}`}
+                          </span>
+                          {newGameForm.questions.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setNewGameForm(prev => ({
+                                  ...prev,
+                                  questions: prev.questions.filter((_, i) => i !== idx)
+                                }));
+                              }}
+                              className="text-xs font-bold text-rose-600 hover:underline cursor-pointer"
+                            >
+                              Hapus
+                            </button>
+                          )}
+                        </div>
+
+                        {newGameForm.mode === 'match' || newGameForm.mode === 'memory' ? (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-700 mb-1">Kartu A (Istilah)</label>
+                              <input
+                                type="text"
+                                value={q.question}
+                                onChange={e => {
+                                  const val = e.target.value;
+                                  setNewGameForm(prev => {
+                                    const updated = prev.questions.map((item, i) => i === idx ? { ...item, question: val } : item);
+                                    return { ...prev, questions: updated };
+                                  });
+                                }}
+                                className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-700 mb-1">Kartu B (Definisi Pasangan)</label>
+                              <input
+                                type="text"
+                                value={q.options[0]}
+                                onChange={e => {
+                                  const val = e.target.value;
+                                  setNewGameForm(prev => {
+                                    const updated = prev.questions.map((item, i) => {
+                                      if (i === idx) {
+                                        const newOpts = [...item.options] as [string, string, string, string];
+                                        newOpts[0] = val;
+                                        return { ...item, options: newOpts };
+                                      }
+                                      return item;
+                                    });
+                                    return { ...prev, questions: updated };
+                                  });
+                                }}
+                                className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-700 mb-1">Pertanyaan Soal</label>
+                              <input
+                                type="text"
+                                value={q.question}
+                                onChange={e => {
+                                  const val = e.target.value;
+                                  setNewGameForm(prev => {
+                                    const updated = prev.questions.map((item, i) => i === idx ? { ...item, question: val } : item);
+                                    return { ...prev, questions: updated };
+                                  });
+                                }}
+                                className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-700 mb-1.5">Opsi Pilihan Ganda (Pilih Kunci Jawaban Benar)</label>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {q.options.map((optVal, optIdx) => (
+                                  <div key={optIdx} className="flex items-center gap-2 bg-white p-2 rounded-xl border border-slate-200">
+                                    <input
+                                      type="radio"
+                                      name={`new-game-correct-${idx}`}
+                                      checked={q.correct === optIdx}
+                                      onChange={() => {
+                                        setNewGameForm(prev => {
+                                          const updated = prev.questions.map((item, i) => i === idx ? { ...item, correct: optIdx } : item);
+                                          return { ...prev, questions: updated };
+                                        });
+                                      }}
+                                      className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                                    />
+                                    <span className="text-xs font-bold text-slate-500 w-4">{String.fromCharCode(65 + optIdx)}.</span>
+                                    <input
+                                      type="text"
+                                      value={optVal}
+                                      onChange={e => {
+                                        const val = e.target.value;
+                                        setNewGameForm(prev => {
+                                          const updated = prev.questions.map((item, i) => {
+                                            if (i === idx) {
+                                              const newOpts = [...item.options] as [string, string, string, string];
+                                              newOpts[optIdx] = val;
+                                              return { ...item, options: newOpts };
+                                            }
+                                            return item;
+                                          });
+                                          return { ...prev, questions: updated };
+                                        });
+                                      }}
+                                      className="flex-1 text-xs font-semibold text-slate-900 bg-transparent focus:outline-none"
+                                      placeholder={`Opsi ${String.fromCharCode(65 + optIdx)}`}
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateGameModal(false)}
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs cursor-pointer flex items-center gap-1.5"
+                >
+                  <Sparkles className="w-4 h-4" /> Publis Game Baru
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Form Tambah / Edit Modul */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
           <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-lg overflow-hidden flex flex-col">
@@ -614,7 +1124,6 @@ export default function GuruElearningPage() {
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-2">Lampiran Berkas Modul Pembelajaran</label>
 
-                  {/* Mode Attachment Selector */}
                   <div className="flex items-center gap-1.5 mb-3 bg-slate-100 p-1 rounded-xl w-fit text-xs font-bold">
                     <button
                       type="button"
@@ -682,7 +1191,7 @@ export default function GuruElearningPage() {
         </div>
       )}
 
-      {/* Modal Hapus */}
+      {/* Modal Hapus Modul */}
       {deleteMod && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
           <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md p-6 text-center space-y-4">
@@ -713,7 +1222,38 @@ export default function GuruElearningPage() {
         </div>
       )}
 
-      {/* Modal Kustomisasi Soal Game */}
+      {/* Modal Hapus Game Pembelajaran */}
+      {deleteGameTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md p-6 text-center space-y-4">
+            <div className="w-12 h-12 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center mx-auto">
+              <AlertCircle className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-900 text-base">Hapus Game Pembelajaran?</h3>
+              <p className="text-xs text-slate-500 font-normal mt-1">
+                Apakah Anda yakin ingin menghapus game <span className="font-semibold text-slate-900">{deleteGameTarget.name}</span>? Data game dan skor siswa akan dihapus secara permanen.
+              </p>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setDeleteGameTarget(null)}
+                className="flex-1 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleDeleteGame}
+                className="flex-1 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs cursor-pointer"
+              >
+                Ya, Hapus Game
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Kustomisasi / Edit Game */}
       {editingGame && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
           <div className="bg-white rounded-3xl shadow-xl border border-slate-200 w-full max-w-2xl overflow-hidden flex flex-col">
@@ -721,8 +1261,8 @@ export default function GuruElearningPage() {
               <div className="flex items-center gap-3">
                 <span className="text-3xl">{editingGame.icon}</span>
                 <div>
-                  <h2 className="font-extrabold text-slate-900 text-base">Pengaturan Soal Game: {editingGame.name}</h2>
-                  <p className="text-xs text-slate-500 font-medium">Kelola pertanyaan, pilihan jawaban, dan tingkat kesulitan game</p>
+                  <h2 className="font-extrabold text-slate-900 text-base">Pengaturan Game: {editingGame.name}</h2>
+                  <p className="text-xs text-slate-500 font-medium">Kelola nama, mapel, pertanyaan, pilihan jawaban, dan tingkat kesulitan</p>
                 </div>
               </div>
               <button
@@ -734,34 +1274,121 @@ export default function GuruElearningPage() {
             </div>
 
             <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
-              <div className="grid grid-cols-2 gap-3">
+              {/* Nama Game & Mapel */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Mata Pelajaran (Mapel)</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Nama Game *</label>
+                  <input
+                    type="text"
+                    value={editingGame.name}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setEditingGame((prev: any) => prev ? { ...prev, name: val } : null);
+                    }}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Mata Pelajaran (Mapel) *</label>
                   <select
                     value={editingGame.subject}
                     onChange={e => {
                       const val = e.target.value;
-                      setEditingGame(prev => prev ? { ...prev, subject: val } : null);
+                      setEditingGame((prev: any) => prev ? { ...prev, subject: val } : null);
                     }}
                     className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
                   >
                     {ALL_SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
+              </div>
+
+              {/* Mode Game & Tingkat Kesulitan */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Tingkat Kesulitan</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Mode Game Mechanics *</label>
+                  <select
+                    value={editingGame.mode}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setEditingGame((prev: any) => prev ? { ...prev, mode: val } : null);
+                    }}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                  >
+                    <option value="speed">⚡ Math Blitz / Speed Quiz (Pilihan Ganda Cepat)</option>
+                    <option value="match">🧩 Concept &amp; Word Match (Pasangan Kartu Istilah)</option>
+                    <option value="adventure">☪️ Tajwid &amp; PAI Quest (Kuis Bertingkat &amp; Pembahasan)</option>
+                    <option value="scramble">🔤 Word Scramble (Menyusun Huruf Acak Materi)</option>
+                    <option value="memory">🧬 IPA &amp; Sains Memory Match (Mengingat Pasangan Kartu)</option>
+                    <option value="quiz">🔭 Science &amp; General Quiz (Kuis Sains Penjelasan Rinci)</option>
+                    <option value="timeline">📅 Sejarah &amp; Timeline (Urutan Peristiwa Sejarah)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Tingkat Kesulitan *</label>
                   <select
                     value={editingGame.difficulty}
                     onChange={e => {
                       const val = e.target.value;
-                      setEditingGame(prev => prev ? { ...prev, difficulty: val } : null);
+                      setEditingGame((prev: any) => prev ? { ...prev, difficulty: val } : null);
                     }}
                     className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
                   >
-                    <option value="Mudah">Mudah</option>
-                    <option value="Sedang">Sedang</option>
-                    <option value="Sulit">Sulit</option>
+                    <option value="Mudah">🌱 Mudah (20 detik / soal · 100 XP)</option>
+                    <option value="Sedang">⭐ Sedang (15 detik / soal · 150 XP)</option>
+                    <option value="Sulit">🔥 Sulit (12 detik / soal · 200 XP)</option>
                   </select>
+                  <div className="mt-1.5 p-2 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] font-medium leading-tight">
+                    {editingGame.difficulty === 'Mudah' && (
+                      <span className="text-emerald-700 font-bold block">
+                        🌱 <strong>Mode Pemula (Mudah)</strong>: Alokasi 20 detik/soal · Poin +100 XP
+                      </span>
+                    )}
+                    {editingGame.difficulty === 'Sedang' && (
+                      <span className="text-amber-700 font-bold block">
+                        ⭐ <strong>Mode Menengah (Sedang)</strong>: Alokasi 15 detik/soal · Poin +150 XP
+                      </span>
+                    )}
+                    {editingGame.difficulty === 'Sulit' && (
+                      <span className="text-rose-700 font-bold block">
+                        🔥 <strong>Mode Mahir (Sulit)</strong>: Alokasi 12 detik/soal · Poin +200 XP
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Emoji Icon Game */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Emoji Icon Game</label>
+                <div className="flex items-center gap-2">
+                  <div className="text-2xl w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 shadow-2xs">
+                    {editingGame.icon || '🎮'}
+                  </div>
+                  <input
+                    type="text"
+                    value={editingGame.icon || ''}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setEditingGame((prev: any) => prev ? { ...prev, icon: val } : null);
+                    }}
+                    placeholder="Ketik atau paste emoji kustom (misal: ⚽, 🚀, 🕌, 🏆)..."
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div className="flex items-center gap-1 mt-1.5 flex-wrap text-sm bg-slate-50 p-1.5 rounded-xl border border-slate-100">
+                  <span className="text-[10px] font-bold text-slate-400 mr-1">Rekomendasi Cepat:</span>
+                  {EMOJI_ICONS.map(ic => (
+                    <button
+                      key={ic}
+                      type="button"
+                      onClick={() => setEditingGame((prev: any) => prev ? { ...prev, icon: ic } : null)}
+                      className={`w-6 h-6 rounded-md hover:bg-white transition-all cursor-pointer flex items-center justify-center text-xs ${editingGame.icon === ic ? 'bg-white shadow-2xs border border-emerald-400 scale-110' : ''}`}
+                    >
+                      {ic}
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -770,44 +1397,45 @@ export default function GuruElearningPage() {
                 <div className="flex items-center justify-between">
                   <h3 className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    Daftar {editingGame.mode === 'match' ? 'Pasangan Kartu' : 'Soal Game'} ({editingGame.questions.length} Item)
+                    Daftar {editingGame.mode === 'match' || editingGame.mode === 'memory' ? 'Pasangan Kartu' : 'Soal Game'} ({editingGame.questions?.length || 0} Item)
                   </h3>
                   <button
                     type="button"
                     onClick={() => {
-                      setEditingGame(prev => {
+                      setEditingGame((prev: any) => {
                         if (!prev) return null;
+                        const isCard = prev.mode === 'match' || prev.mode === 'memory';
                         const newQ = {
                           id: Date.now(),
-                          question: prev.mode === 'match' ? 'Kata / Istilah Baru' : `Pertanyaan Soal Baru #${prev.questions.length + 1}`,
-                          options: [prev.mode === 'match' ? 'Definisi / Pasangan Kartu Baru' : 'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D'] as [string, string, string, string],
+                          question: isCard ? 'Kata / Istilah Baru' : `Pertanyaan Soal Baru #${(prev.questions?.length || 0) + 1}`,
+                          options: [isCard ? 'Definisi / Pasangan Kartu Baru' : 'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D'] as [string, string, string, string],
                           correct: 0,
                           explanation: 'Penjelasan pembahasan...',
                           xpReward: 100,
                         };
-                        return { ...prev, questions: [...prev.questions, newQ] };
+                        return { ...prev, questions: [...(prev.questions || []), newQ] };
                       });
                     }}
                     className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-amber-950 text-xs font-bold shadow-2xs cursor-pointer"
                   >
                     <PlusCircle className="w-3.5 h-3.5" />
-                    {editingGame.mode === 'match' ? 'Tambah Pasangan Kartu' : 'Tambah Soal Baru'}
+                    {editingGame.mode === 'match' || editingGame.mode === 'memory' ? 'Tambah Pasangan Kartu' : 'Tambah Soal Baru'}
                   </button>
                 </div>
 
                 <div className="space-y-3">
-                  {editingGame.questions.map((q, idx) => (
+                  {editingGame.questions?.map((q: any, idx: number) => (
                     <div key={q.id || idx} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-extrabold bg-emerald-600 text-white px-2.5 py-0.5 rounded-md">
-                          {editingGame.mode === 'match' ? `Pasangan #${idx + 1}` : `Soal #${idx + 1}`}
+                          {editingGame.mode === 'match' || editingGame.mode === 'memory' ? `Pasangan #${idx + 1}` : `Soal #${idx + 1}`}
                         </span>
                         <button
                           type="button"
                           onClick={() => {
-                            setEditingGame(prev => {
+                            setEditingGame((prev: any) => {
                               if (!prev) return null;
-                              return { ...prev, questions: prev.questions.filter((_, i) => i !== idx) };
+                              return { ...prev, questions: prev.questions.filter((_: any, i: number) => i !== idx) };
                             });
                           }}
                           className="text-xs font-bold text-rose-600 hover:underline cursor-pointer"
@@ -816,7 +1444,7 @@ export default function GuruElearningPage() {
                         </button>
                       </div>
 
-                      {editingGame.mode === 'match' ? (
+                      {editingGame.mode === 'match' || editingGame.mode === 'memory' ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div>
                             <label className="block text-[11px] font-semibold text-slate-700 mb-1">Kartu A (Istilah)</label>
@@ -825,9 +1453,9 @@ export default function GuruElearningPage() {
                               value={q.question}
                               onChange={e => {
                                 const val = e.target.value;
-                                setEditingGame(prev => {
+                                setEditingGame((prev: any) => {
                                   if (!prev) return null;
-                                  const updated = prev.questions.map((item, i) => i === idx ? { ...item, question: val } : item);
+                                  const updated = prev.questions.map((item: any, i: number) => i === idx ? { ...item, question: val } : item);
                                   return { ...prev, questions: updated };
                                 });
                               }}
@@ -838,14 +1466,14 @@ export default function GuruElearningPage() {
                             <label className="block text-[11px] font-semibold text-slate-700 mb-1">Kartu B (Definisi Pasangan)</label>
                             <input
                               type="text"
-                              value={q.options[0]}
+                              value={q.options?.[0] || ''}
                               onChange={e => {
                                 const val = e.target.value;
-                                setEditingGame(prev => {
+                                setEditingGame((prev: any) => {
                                   if (!prev) return null;
-                                  const updated = prev.questions.map((item, i) => {
+                                  const updated = prev.questions.map((item: any, i: number) => {
                                     if (i === idx) {
-                                      const newOpts = [...item.options] as [string, string, string, string];
+                                      const newOpts = [...(item.options || ['','','',''])] as [string, string, string, string];
                                       newOpts[0] = val;
                                       return { ...item, options: newOpts };
                                     }
@@ -867,9 +1495,9 @@ export default function GuruElearningPage() {
                               value={q.question}
                               onChange={e => {
                                 const val = e.target.value;
-                                setEditingGame(prev => {
+                                setEditingGame((prev: any) => {
                                   if (!prev) return null;
-                                  const updated = prev.questions.map((item, i) => i === idx ? { ...item, question: val } : item);
+                                  const updated = prev.questions.map((item: any, i: number) => i === idx ? { ...item, question: val } : item);
                                   return { ...prev, questions: updated };
                                 });
                               }}
@@ -880,16 +1508,16 @@ export default function GuruElearningPage() {
                           <div>
                             <label className="block text-[11px] font-semibold text-slate-700 mb-1.5">Opsi Pilihan Ganda (Pilih Kunci Jawaban Benar)</label>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                              {q.options.map((optVal, optIdx) => (
+                              {(q.options || ['','','','']).map((optVal: string, optIdx: number) => (
                                 <div key={optIdx} className="flex items-center gap-2 bg-white p-2 rounded-xl border border-slate-200">
                                   <input
                                     type="radio"
                                     name={`game-correct-${idx}`}
                                     checked={q.correct === optIdx}
                                     onChange={() => {
-                                      setEditingGame(prev => {
+                                      setEditingGame((prev: any) => {
                                         if (!prev) return null;
-                                        const updated = prev.questions.map((item, i) => i === idx ? { ...item, correct: optIdx } : item);
+                                        const updated = prev.questions.map((item: any, i: number) => i === idx ? { ...item, correct: optIdx } : item);
                                         return { ...prev, questions: updated };
                                       });
                                     }}
@@ -901,11 +1529,11 @@ export default function GuruElearningPage() {
                                     value={optVal}
                                     onChange={e => {
                                       const val = e.target.value;
-                                      setEditingGame(prev => {
+                                      setEditingGame((prev: any) => {
                                         if (!prev) return null;
-                                        const updated = prev.questions.map((item, i) => {
+                                        const updated = prev.questions.map((item: any, i: number) => {
                                           if (i === idx) {
-                                            const newOpts = [...item.options] as [string, string, string, string];
+                                            const newOpts = [...(item.options || ['','','',''])] as [string, string, string, string];
                                             newOpts[optIdx] = val;
                                             return { ...item, options: newOpts };
                                           }
@@ -941,16 +1569,17 @@ export default function GuruElearningPage() {
                 type="button"
                 onClick={async () => {
                   if (!editingGame) return;
-                  const slug = (editingGame as any).slug || editingGame.id;
-                  const updatedList = gamesList.map(g => g.id === editingGame.id ? editingGame : g);
-                  setGamesList(updatedList);
+                  const slug = editingGame.slug || editingGame.id;
                   try {
                     await apiClient.put(`/elearning-games/${slug}`, {
+                      name: editingGame.name,
+                      icon: editingGame.icon,
                       subject: editingGame.subject,
                       difficulty: editingGame.difficulty,
+                      mode: editingGame.mode,
                       questions: editingGame.questions,
                     });
-                    toast.success('Soal Game Diperbarui', `Pengaturan soal game "${editingGame.name}" berhasil disimpan di Database.`);
+                    toast.success('Game Diperbarui', `Game "${editingGame.name}" berhasil disimpan di Database.`);
                     fetchGamesFromDb();
                   } catch (e) {
                     toast.error('Gagal Menyimpan', 'Terjadi kesalahan saat menyimpan ke database.');
@@ -959,7 +1588,7 @@ export default function GuruElearningPage() {
                 }}
                 className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs cursor-pointer"
               >
-                Simpan Perubahan Soal
+                Simpan Perubahan Game
               </button>
             </div>
           </div>
@@ -968,47 +1597,67 @@ export default function GuruElearningPage() {
 
       {/* Modal Preview Live Game Siswa (Render Component Siswa Langsung) */}
       {previewGame && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-500/20 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-3xl overflow-hidden flex flex-col h-[85vh]">
-            {/* Header Modal - Bright & Clean Theme */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white text-slate-900 shrink-0">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">{previewGame.icon}</span>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh] my-auto">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-white text-slate-900 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <span className="text-xl">{previewGame.icon}</span>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="font-bold text-slate-900 text-base">Preview: {previewGame.name}</h2>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    <h2 className="font-bold text-slate-900 text-sm">Preview: {previewGame.name}</h2>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
                       {previewGame.subject}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 font-medium">Tampilan game siswa</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => {
                     setEditingGame(previewGame);
+                    setNewGameForm({
+                      name: previewGame.name || '',
+                      icon: previewGame.icon || '🎯',
+                      subject: previewGame.subject || 'Matematika',
+                      mode: previewGame.mode || 'quizizz',
+                      difficulty: previewGame.difficulty || 'Sedang',
+                      color: previewGame.color || 'from-amber-500 via-orange-600 to-rose-600',
+                      desc: previewGame.desc || '',
+                      questions: previewGame.questions || [],
+                    });
+                    setShowCreateGameModal(true);
                     setPreviewGame(null);
                   }}
-                  className="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-amber-950 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                  className="px-3 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-500 text-amber-950 text-xs font-bold transition-all cursor-pointer flex items-center gap-1 shadow-2xs"
                 >
                   <Settings className="w-3.5 h-3.5" /> Edit Soal
                 </button>
                 <button
                   onClick={() => setPreviewGame(null)}
-                  className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                  className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            {/* Render Component Game Siswa Langsung */}
-            <div className="p-4 overflow-y-auto flex-1 bg-slate-50">
-              {previewGame.mode === 'match' || previewGame.id === 'vocab' || previewGame.id === 'memory' ? (
+            <div className="p-3 sm:p-4 overflow-y-auto max-h-[75vh] bg-slate-50 text-slate-900 rounded-b-2xl">
+              {previewGame.slug === 'quizizz' || previewGame.id === 'quizizz' || previewGame.mode === 'quizizz' ? (
+                <QuizizzGameArena gameData={previewGame} />
+              ) : previewGame.slug === 'quiz-ipa' || previewGame.id === 'quiz-ipa' || previewGame.mode === 'quiz' ? (
+                <ScienceQuizGame />
+              ) : previewGame.slug === 'matematika' || previewGame.id === 'matematika' || previewGame.mode === 'speed' ? (
+                <MathBlitzGame />
+              ) : previewGame.slug === 'vocab' || previewGame.id === 'vocab' || previewGame.mode === 'match' ? (
                 <WordMatchGame gameData={previewGame} />
-              ) : (
+              ) : previewGame.slug === 'tajwid' || previewGame.id === 'tajwid' || previewGame.mode === 'adventure' ? (
                 <TajwidQuestGame gameData={previewGame} />
+              ) : previewGame.slug === 'scramble' || previewGame.id === 'scramble' || previewGame.mode === 'scramble' ? (
+                <WordScrambleGame />
+              ) : previewGame.slug === 'memory' || previewGame.id === 'memory' || previewGame.mode === 'memory' ? (
+                <MemoryMatchGame />
+              ) : (
+                <SejarahTimelineGame />
               )}
             </div>
           </div>

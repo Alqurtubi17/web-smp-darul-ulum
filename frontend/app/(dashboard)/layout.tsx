@@ -20,55 +20,63 @@ interface SearchItem {
 }
 
 const SEARCHABLE_ITEMS: SearchItem[] = [
-  // Admin & General
-  { label: 'Dashboard Utama', href: '/admin', category: 'Dashboard', keywords: 'home utama beranda' },
-  { label: 'Berita Sekolah', href: '/admin/konten/berita', category: 'Konten', keywords: 'kabar pengumuman artikel' },
-  { label: 'Pengumuman Sekolah', href: '/admin/konten/pengumuman', category: 'Konten', keywords: 'info pemberitahuan' },
-  { label: 'Agenda & Kalender', href: '/admin/konten/agenda', category: 'Konten', keywords: 'jadwal kegiatan event' },
-  { label: 'Galeri Foto & Video', href: '/admin/konten/galeri', category: 'Konten', keywords: 'foto media dokumentasi' },
-  { label: 'Prestasi Siswa', href: '/admin/konten/prestasi', category: 'Konten', keywords: 'lomba juara penghargaan' },
-  { label: 'Download Berkas', href: '/admin/konten/download', category: 'Konten', keywords: 'dokumen surat formulir' },
-  { label: 'Pendaftaran PPDB', href: '/admin/ppdb', category: 'Pendaftaran', keywords: 'siswa baru calon registrasi' },
-  { label: 'Data Siswa', href: '/admin/pengguna/siswa', category: 'Pengguna', keywords: 'murid peserta didik' },
-  { label: 'Data Guru & Staf', href: '/admin/pengguna/guru', category: 'Pengguna', keywords: 'pengajar ustadz guru' },
-  { label: 'Laporan Rekapitulasi', href: '/admin/laporan', category: 'Laporan', keywords: 'statistik rekap grafik' },
-  { label: 'Keuangan & SPP', href: '/admin/keuangan', category: 'Keuangan', keywords: 'bayar spp tagihan bayaran' },
-  { label: 'Perpustakaan Digital', href: '/admin/perpustakaan', category: 'Perpustakaan', keywords: 'buku pustaka e-book' },
-  { label: 'Log Aktivitas System', href: '/admin/log', category: 'Audit Log', keywords: 'log audit jejak aktivitas history tracker' },
-  { label: 'Pengaturan Sistem', href: '/admin/pengaturan', category: 'Pengaturan', keywords: 'setting profil akun' },
+  // Admin & Management
+  { label: 'Dashboard Utama Admin', href: '/admin', category: 'Dashboard', keywords: 'home utama beranda statistik admin' },
+  { label: 'Manajemen Berita Sekolah', href: '/admin/konten/berita', category: 'Konten', keywords: 'kabar pengumuman artikel berita publik' },
+  { label: 'Kelola Pengumuman Sekolah', href: '/admin/konten/pengumuman', category: 'Konten', keywords: 'info pemberitahuan surat pengumuman' },
+  { label: 'Agenda & Kalender Kegiatan', href: '/admin/konten/agenda', category: 'Konten', keywords: 'jadwal kegiatan event kalender acara' },
+  { label: 'Galeri Foto & Video Kegiatan', href: '/admin/konten/galeri', category: 'Konten', keywords: 'foto media dokumentasi album video' },
+  { label: 'Data Prestasi Siswa', href: '/admin/konten/prestasi', category: 'Konten', keywords: 'lomba juara penghargaan kejuaraan' },
+  { label: 'Download Berkas & Formulir', href: '/admin/konten/download', category: 'Konten', keywords: 'dokumen surat edaran pdf' },
+  { label: 'Pendaftaran PPDB Online', href: '/admin/ppdb', category: 'PPDB', keywords: 'siswa baru calon registrasi pendaftaran' },
+  { label: 'Data Siswa & Santri', href: '/admin/pengguna/siswa', category: 'Pengguna', keywords: 'murid peserta didik nis nisn' },
+  { label: 'Data Guru & Staf Pengajar', href: '/admin/pengguna/guru', category: 'Pengguna', keywords: 'pengajar ustadz guru nip' },
+  { label: 'Laporan Rekapitulasi Sekolah', href: '/admin/laporan', category: 'Laporan', keywords: 'statistik rekap grafik laporan' },
+  { label: 'Keuangan & SPP Siswa', href: '/admin/keuangan', category: 'Keuangan', keywords: 'bayar spp tagihan bayaran kwitansi' },
+  { label: 'Perpustakaan Digital', href: '/admin/perpustakaan', category: 'Perpustakaan', keywords: 'buku pustaka e-book peminjaman' },
+  { label: 'Log Aktivitas System Tracker', href: '/admin/log', category: 'Audit Log', keywords: 'log audit jejak aktivitas history' },
+  { label: 'Pengaturan Web & Sistem', href: '/admin/pengaturan', category: 'Pengaturan', keywords: 'setting profil akun instansi sekolah' },
 
-  // Guru
-  { label: 'Dashboard Guru', href: '/guru', category: 'Guru', keywords: 'home guru utama' },
-  { label: 'Jadwal Mengajar', href: '/guru/jadwal', category: 'Akademik', keywords: 'jam kelas mengajar' },
-  { label: 'Input Nilai Siswa', href: '/guru/akademik/nilai', category: 'Akademik', keywords: 'nilai ujian tugas ulangan' },
-  { label: 'Absensi Kehadiran', href: '/guru/akademik/absensi', category: 'Akademik', keywords: 'presensi hadir izin sakit' },
-  { label: 'Kelola Tugas', href: '/guru/akademik/tugas', category: 'Akademik', keywords: 'pr tugas latihan' },
-  { label: 'Materi Pembelajaran', href: '/guru/akademik/materi', category: 'Akademik', keywords: 'modul bahan ajar' },
-  { label: 'E-Learning Guru', href: '/guru/elearning', category: 'E-Learning', keywords: 'modul game kuis' },
+  // Guru & Tenaga Pendidik
+  { label: 'Dashboard Guru', href: '/guru', category: 'Guru', keywords: 'home guru utama mengajar' },
+  { label: 'Jadwal Mengajar Guru', href: '/guru/jadwal', category: 'Akademik', keywords: 'jam kelas mengajar jadwal pelajaran' },
+  { label: 'Input Nilai Rapor Siswa', href: '/guru/akademik/nilai', category: 'Akademik', keywords: 'nilai ujian tugas ulangan pts pas' },
+  { label: 'Presensi & Absensi Kelas', href: '/guru/akademik/absensi', category: 'Akademik', keywords: 'presensi hadir izin sakit alfa' },
+  { label: 'Kelola Tugas & PR Siswa', href: '/guru/akademik/tugas', category: 'Akademik', keywords: 'pr tugas latihan evaluasi' },
+  { label: 'Materi & Modul Ajar', href: '/guru/akademik/materi', category: 'Akademik', keywords: 'modul bahan ajar pdf video link' },
+  { label: 'E-Learning & Master Game Studio', href: '/guru/elearning', category: 'E-Learning', keywords: 'modul game kuis quizizz arena studio qr pin' },
 
-  // Siswa
-  { label: 'Dashboard Siswa', href: '/siswa', category: 'Siswa', keywords: 'home siswa' },
-  { label: 'Jadwal Pelajaran', href: '/siswa/jadwal', category: 'Akademik', keywords: 'jam pelajaran kelas' },
-  { label: 'Nilai Siswa', href: '/siswa/nilai', category: 'Akademik', keywords: 'hasil ujian kelulusan' },
-  { label: 'Absensi Saya', href: '/siswa/absensi', category: 'Akademik', keywords: 'kehadiran presensi' },
-  { label: 'Tugas Saya', href: '/siswa/tugas', category: 'Akademik', keywords: 'pr kumpul tugas' },
-  { label: 'Materi Belajar', href: '/siswa/materi', category: 'Akademik', keywords: 'download modul' },
-  { label: 'E-Learning Interaktif', href: '/siswa/elearning', category: 'E-Learning', keywords: 'game kuis blitz' },
-  { label: 'Game Math Blitz', href: '/siswa/elearning/game/matematika', category: 'Games', keywords: 'matematika hitung aljabar' },
+  // Siswa & Peserta Didik
+  { label: 'Dashboard Siswa', href: '/siswa', category: 'Siswa', keywords: 'home siswa utama' },
+  { label: 'Jadwal Pelajaran Saya', href: '/siswa/jadwal', category: 'Akademik', keywords: 'jam pelajaran kelas jadwal' },
+  { label: 'Nilai & Hasil Belajar', href: '/siswa/nilai', category: 'Akademik', keywords: 'hasil ujian kelulusan transkrip' },
+  { label: 'Rekap Absensi Saya', href: '/siswa/absensi', category: 'Akademik', keywords: 'kehadiran presensi sakit izin' },
+  { label: 'Daftar Tugas & PR Saya', href: '/siswa/tugas', category: 'Akademik', keywords: 'pr kumpul tugas deadline' },
+  { label: 'Materi Belajar Siswa', href: '/siswa/materi', category: 'Akademik', keywords: 'download modul pdf video' },
+  { label: 'E-Learning & Arena Game', href: '/siswa/elearning', category: 'E-Learning', keywords: 'game kuis blitz arena' },
+  { label: 'Quizizz Live Arena (Siswa)', href: '/siswa/elearning/game/quizizz', category: 'Games', keywords: 'quizizz live arena qr pin kuis' },
+  { label: 'Game Math Blitz', href: '/siswa/elearning/game/matematika', category: 'Games', keywords: 'matematika hitung aljabar speed' },
   { label: 'Game Tajwid & PAI Quest', href: '/siswa/elearning/game/tajwid', category: 'Games', keywords: 'pai tajwid quran hukum bacaan' },
   { label: 'Game Word & Concept Match', href: '/siswa/elearning/game/vocab', category: 'Games', keywords: 'kosakata istilah match sains' },
-  { label: 'Game Word Scramble', href: '/siswa/elearning/game/scramble', category: 'Games', keywords: 'inggris kata susun' },
-  { label: 'Game IPA Memory Match', href: '/siswa/elearning/game/memory', category: 'Games', keywords: 'sains ipa cocok' },
+  { label: 'Game Word Scramble', href: '/siswa/elearning/game/scramble', category: 'Games', keywords: 'inggris kata susun huruf' },
+  { label: 'Game IPA Memory Match', href: '/siswa/elearning/game/memory', category: 'Games', keywords: 'sains ipa cocok memori karti' },
   { label: 'Game Science Quiz', href: '/siswa/elearning/game/quiz-ipa', category: 'Games', keywords: 'kuis ipa fisika biologi' },
-  { label: 'Game Timeline Sejarah', href: '/siswa/elearning/game/timeline', category: 'Games', keywords: 'ips sejarah urut' },
-  { label: 'Rapor Digital', href: '/siswa/rapor', category: 'Rapor', keywords: 'nilai akhir semester' },
-  { label: 'Kartu Siswa (QR Code)', href: '/siswa/kartu', category: 'Identitas', keywords: 'cetak kartu id qr' },
+  { label: 'Game Timeline Sejarah', href: '/siswa/elearning/game/timeline', category: 'Games', keywords: 'ips sejarah urut peristiwa' },
+  { label: 'Rapor Digital Siswa', href: '/siswa/rapor', category: 'Rapor', keywords: 'nilai akhir semester cetak rapor' },
+  { label: 'Kartu Siswa (QR Code)', href: '/siswa/kartu', category: 'Identitas', keywords: 'cetak kartu id qr code siswa' },
 
-  // Ortu
-  { label: 'Dashboard Orang Tua', href: '/ortu', category: 'Orang Tua', keywords: 'home ortu wali' },
-  { label: 'Nilai Perkembangan Anak', href: '/ortu/nilai', category: 'Akademik', keywords: 'rapor hasil belajar' },
-  { label: 'Absensi Kehadiran Anak', href: '/ortu/absensi', category: 'Akademik', keywords: 'presensi sekolah' },
-  { label: 'Pembayaran SPP & Biaya', href: '/ortu/pembayaran', category: 'Keuangan', keywords: 'spp rekening transfer bayar' },
+  // Orang Tua & Wali Siswa
+  { label: 'Dashboard Orang Tua', href: '/ortu', category: 'Orang Tua', keywords: 'home ortu wali anak' },
+  { label: 'Nilai Perkembangan Anak', href: '/ortu/nilai', category: 'Akademik', keywords: 'rapor hasil belajar siswa anak' },
+  { label: 'Absensi Kehadiran Anak', href: '/ortu/absensi', category: 'Akademik', keywords: 'presensi sekolah hadir anak' },
+  { label: 'Pembayaran SPP & Biaya Sekolah', href: '/ortu/pembayaran', category: 'Keuangan', keywords: 'spp rekening transfer bayar tagihan' },
+
+  // Halaman Publik
+  { label: 'Beranda SMP Darul Ulum', href: '/', category: 'Publik', keywords: 'website utama profil sekolah' },
+  { label: 'Profil & Visi Misi Sekolah', href: '/profil', category: 'Publik', keywords: 'sejarah visi misi struktur' },
+  { label: 'Pusat Informasi PPDB Online', href: '/ppdb', category: 'Publik', keywords: 'info pendaftaran murid baru' },
+  { label: 'Perpustakaan Publik', href: '/perpustakaan', category: 'Publik', keywords: 'buku umum bacaan' },
+  { label: 'Kontak & Lokasi Sekolah', href: '/kontak', category: 'Publik', keywords: 'alamat telepon email peta' },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -109,11 +117,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const filteredItems = searchQuery.trim()
     ? SEARCHABLE_ITEMS.filter((item) => {
         const q = searchQuery.toLowerCase();
-        return (
+        const matchesQuery = (
           item.label.toLowerCase().includes(q) ||
           item.category.toLowerCase().includes(q) ||
           (item.keywords && item.keywords.toLowerCase().includes(q))
         );
+        if (!matchesQuery) return false;
+
+        // Strictly role-specific search items per user role
+        if (role === 'GURU') {
+          return item.href.startsWith('/guru') || item.href === '/' || item.href.startsWith('/profil') || item.href.startsWith('/kontak');
+        }
+        if (role === 'SISWA') {
+          return item.href.startsWith('/siswa') || item.href === '/' || item.href.startsWith('/profil') || item.href.startsWith('/kontak');
+        }
+        if (role === 'ORANG_TUA') {
+          return item.href.startsWith('/ortu') || item.href === '/' || item.href.startsWith('/profil') || item.href.startsWith('/kontak');
+        }
+        if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
+          return item.href.startsWith('/admin') || item.href === '/' || item.href.startsWith('/profil') || item.href.startsWith('/kontak');
+        }
+        return true;
       })
     : [];
 

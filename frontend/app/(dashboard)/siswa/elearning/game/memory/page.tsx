@@ -105,33 +105,32 @@ export default function MemoryMatchGame() {
   const cols = cfg.pairs <= 6 ? 'grid-cols-4' : cfg.pairs <= 9 ? 'grid-cols-6' : 'grid-cols-6';
 
   if (phase === 'menu') return (
-    <div className="max-w-lg mx-auto space-y-5">
-      <Link href="/siswa/elearning" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700"><ArrowLeft className="w-4 h-4"/> Kembali</Link>
-      <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-3xl p-8 text-white text-center shadow-2xl">
-        <div className="text-6xl mb-3">🧬</div>
-        <h1 className="text-3xl font-extrabold mb-2">IPA Memory Match!</h1>
-        <p className="text-green-100 text-sm">Pasangkan istilah IPA dengan definisinya!<br/>Combo match = bonus poin! 🔥</p>
+    <div className="max-w-md mx-auto space-y-3.5">
+      <Link href="/siswa/elearning" className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 font-bold"><ArrowLeft className="w-3.5 h-3.5"/> Kembali</Link>
+      <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-4 text-white text-center shadow-md">
+        <div className="text-3xl mb-1.5">🧬</div>
+        <h1 className="text-lg font-extrabold mb-1">IPA Memory Match</h1>
+        <p className="text-green-100 text-xs font-medium">Pasangkan istilah IPA dengan definisinya!<br/>Combo match = bonus poin! 🔥</p>
       </div>
-      <div className="bg-white rounded-2xl border border-gray-200 p-5">
-        <p className="font-semibold text-gray-900 mb-3">Pilih Level</p>
-        <div className="grid grid-cols-3 gap-3">
+      <div className="bg-white rounded-xl border border-gray-200 p-3 space-y-2 shadow-2xs">
+        <p className="font-bold text-xs text-gray-900">Pilih Level</p>
+        <div className="grid grid-cols-3 gap-2">
           {(Object.entries(LEVEL_CONFIG) as [Level, typeof cfg][]).map(([k, v]) => (
             <button key={k} onClick={()=>setLevel(k)}
-              className={`p-3 rounded-xl border-2 text-center transition-all ${level===k?'border-green-500 bg-green-50':'border-gray-200'}`}>
-              <p className="text-sm font-bold text-gray-900">{v.label}</p>
-              <p className="text-[10px] text-gray-400 mt-1">{v.desc}</p>
+              className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${level===k?'border-green-500 bg-green-50 shadow-2xs':'border-gray-200'}`}>
+              <p className="text-xs font-bold text-gray-900">{v.label}</p>
+              <p className="text-[9px] text-gray-400 mt-0.5">{v.desc}</p>
             </button>
           ))}
         </div>
       </div>
-      <div className="bg-gray-50 rounded-2xl p-4 text-xs text-gray-500 space-y-1">
+      <div className="bg-gray-50 rounded-xl p-3 text-[11px] text-gray-600 space-y-1 border border-gray-200 font-medium">
         <p>🧬 Ketuk kartu untuk membaliknya</p>
         <p>🔗 Pasangkan istilah dengan definisinya</p>
         <p>🔥 Combo match berturut-turut = bonus poin!</p>
-        <p>⏰ Selesaikan sebelum waktu habis</p>
       </div>
-      <button onClick={startGame} className="w-full py-4 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 text-white font-extrabold text-lg transition-all hover:scale-105 shadow-lg">
-        🧬 Mulai Main!
+      <button onClick={startGame} className="w-full py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-2xs cursor-pointer">
+        🧬 Mulai Main
       </button>
     </div>
   );

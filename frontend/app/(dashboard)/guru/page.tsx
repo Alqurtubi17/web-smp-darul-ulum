@@ -1,16 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { CalendarDays, Users, ClipboardList, BookOpen, Clock, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { CalendarDays, Users, ClipboardList, BookOpen, Clock, CheckCircle2, AlertCircle, Loader2, FileText } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDate, DAY_NAMES } from '@/lib/utils';
 import apiClient from '@/lib/api';
 
 export default function GuruDashboard() {
   const { user } = useAuth();
-  const dayName = DAY_NAMES[new Date().getDay()] || 'Hari ini';
+  const todayDay = new Date().getDay();
+  const currentDayOfWeek = todayDay >= 1 && todayDay <= 6 ? todayDay : 1;
+  const dayName = DAY_NAMES[currentDayOfWeek] || 'Hari ini';
 
   const [classList, setClassList] = useState<any[]>([]);
+  const [scheduleList, setScheduleList] = useState<any[]>([]);
   const [assignmentList, setAssignmentList] = useState<any[]>([]);
   const [materialList, setMaterialList] = useState<any[]>([]);
   const [studentList, setStudentList] = useState<any[]>([]);
@@ -20,8 +23,9 @@ export default function GuruDashboard() {
     const fetchGuruData = async () => {
       setIsLoading(true);
       try {
-        const [resClasses, resAssignments, resMaterials, resStudents] = await Promise.all([
+        const [resClasses, resSchedules, resAssignments, resMaterials, resStudents] = await Promise.all([
           apiClient.get('/classes').catch(() => ({ data: { data: [] } })),
+          apiClient.get('/schedules').catch(() => ({ data: { data: [] } })),
           apiClient.get('/assignments').catch(() => ({ data: { data: [] } })),
           apiClient.get('/materials').catch(() => ({ data: { data: [] } })),
           apiClient.get('/students').catch(() => ({ data: { data: [] } })),
@@ -29,6 +33,9 @@ export default function GuruDashboard() {
 
         if (resClasses.data?.data && Array.isArray(resClasses.data.data)) {
           setClassList(resClasses.data.data);
+        }
+        if (resSchedules.data?.data && Array.isArray(resSchedules.data.data)) {
+          setScheduleList(resSchedules.data.data);
         }
         if (resAssignments.data?.data && Array.isArray(resAssignments.data.data)) {
           setAssignmentList(resAssignments.data.data);
@@ -50,54 +57,43 @@ export default function GuruDashboard() {
   }, []);
 
   const teacherSubject = user?.teacher?.subject || 'Matematika';
-  const totalStudentsCount = studentList.length || classList.reduce((acc, c) => acc + (c.capacity || 30), 0);
 
-  const displayClasses = classList.length > 0 ? classList : [
-    { name: '7A', capacity: 32 },
-    { name: '7B', capacity: 30 },
-    { name: '8A', capacity: 31 },
-    { name: '8B', capacity: 29 },
-  ];
+  // Jadwal Hari Ini
+  const todaySchedules = scheduleList.filter((s) => (s.dayOfWeek || 1) === currentDayOfWeek);
 
-  const todayClasses = displayClasses.map((c, idx) => ({
-    time: idx === 0 ? '07.00–08.40' : idx === 1 ? '08.40–10.20' : idx === 2 ? '10.35–12.15' : '13.00–14.40',
-    class: c.name,
-    subject: teacherSubject,
-    room: `R.${c.name}`,
-    students: c.capacity || 30,
-    done: idx < 2,
+  const displayTodayClasses = todaySchedules.map((s, idx) => ({
+    time: `${s.startTime || '07.00'}–${s.endTime || '08.40'}`,
+    class: s.class?.name || '7A',
+    subject: s.subject?.name || teacherSubject,
+    room: s.room || `Ruang ${s.class?.name || '7A'}`,
+    students: s.class?.capacity || 30,
+    done: false,
   }));
 
-  const doneClasses = todayClasses.filter((c) => c.done).length;
+  const doneClasses = displayTodayClasses.filter((c) => c.done).length;
 
-  const unsubmittedSubmissions = assignmentList.flatMap((a) =>
-    (a.submissions || []).filter((s: any) => !s.score)
-  );
+  const totalStudentsCount = studentList.length || scheduleList.reduce((a, b) => a + (b.class?.capacity || 30), 0);
 
-  const pendingTasks = [
-    { title: `Penilaian Tugas ${teacherSubject} Rombel ${displayClasses[0]?.name || '7A'}`, urgency: 'high', count: unsubmittedSubmissions.length || studentList.length },
-    { title: `Evaluasi Berkas Pembelajaran & Modul ${teacherSubject}`, urgency: 'medium', count: materialList.length },
-    { title: `Absensi Presensi Harian Rombel ${displayClasses[1]?.name || '8A'}`, urgency: 'high', count: null },
-    { title: `Unggah Berkas Ringkasan Bab Baru (${teacherSubject})`, urgency: 'low', count: null },
-  ];
-
-  const highPriority = pendingTasks.filter((t) => t.urgency === 'high').length;
-
+  // Submissions & Tasks
   const recentSubmissions = assignmentList.flatMap((a) =>
     (a.submissions || []).map((s: any) => ({
-      name: s.studentName || 'Siswa SMP',
-      class: s.className || a.targetGrade || '7A',
+      name: s.student?.fullName || s.studentName || 'Siswa SMP',
+      class: s.student?.classId || a.classId || '8A',
       task: a.title,
-      submittedAt: s.submittedAt ? formatDate(s.submittedAt) : 'Hari ini',
+      submittedAt: s.submittedAt ? formatDate(s.submittedAt, { day: 'numeric', month: 'short' }) : 'Baru saja',
       status: s.score !== null && s.score !== undefined ? 'reviewed' : 'new',
     }))
   );
 
-  const displaySubmissions = recentSubmissions.length > 0 ? recentSubmissions.slice(0, 5) : [
-    { name: 'Ahmad Rizki', class: displayClasses[0]?.name || '7A', task: assignmentList[0]?.title || 'Tugas Bab 1', submittedAt: 'Hari ini', status: 'new' },
-    { name: 'Siti Nurhaliza', class: displayClasses[0]?.name || '7A', task: assignmentList[0]?.title || 'Tugas Bab 1', submittedAt: 'Hari ini', status: 'new' },
-    { name: 'Budi Permana', class: displayClasses[1]?.name || '8A', task: assignmentList[1]?.title || 'Tugas Bab 2', submittedAt: 'Kemarin', status: 'reviewed' },
+  const unsubmittedCount = recentSubmissions.filter((s) => s.status === 'new').length;
+
+  const pendingTasks = [
+    { title: `Tugas Pembelajaran Aktif`, urgency: assignmentList.length > 0 ? 'high' : 'low', count: assignmentList.length },
+    { title: `Modul & Bahan Ajar Terpublikasi`, urgency: 'medium', count: materialList.length },
+    { title: `Tugas Menguji / Belum Dinilai`, urgency: unsubmittedCount > 0 ? 'high' : 'low', count: unsubmittedCount },
   ];
+
+  const highPriority = pendingTasks.filter((t) => t.urgency === 'high').length;
 
   return (
     <div className="space-y-6">
@@ -113,16 +109,16 @@ export default function GuruDashboard() {
         <div className="flex flex-wrap gap-2.5 mt-3">
           <span className="text-xs font-semibold bg-white/10 rounded-xl px-3 py-1 border border-white/10">📚 {teacherSubject}</span>
           <span className="text-xs font-semibold bg-white/10 rounded-xl px-3 py-1 border border-white/10">📅 {formatDate(new Date(), { weekday: 'long', day: 'numeric', month: 'long' })}</span>
-          <span className="text-xs font-semibold bg-white/10 rounded-xl px-3 py-1 border border-white/10">🏫 {doneClasses}/{todayClasses.length} kelas selesai</span>
+          <span className="text-xs font-semibold bg-white/10 rounded-xl px-3 py-1 border border-white/10">🏫 {displayTodayClasses.length} sesi mengajar hari ini</span>
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: 'Kelas Rombel', value: todayClasses.length, icon: <CalendarDays className="w-5 h-5 text-white" />, color: 'bg-emerald-600' },
+          { label: 'Sesi Mengajar Hari Ini', value: displayTodayClasses.length, icon: <CalendarDays className="w-5 h-5 text-white" />, color: 'bg-emerald-600' },
           { label: 'Total Siswa Binaan', value: totalStudentsCount, icon: <Users className="w-5 h-5 text-white" />, color: 'bg-teal-600' },
-          { label: 'Tugas Belum Dinilai', value: displaySubmissions.filter(s => s.status === 'new').length, icon: <ClipboardList className="w-5 h-5 text-white" />, color: 'bg-amber-600' },
+          { label: 'Tugas Belum Dinilai', value: unsubmittedCount, icon: <ClipboardList className="w-5 h-5 text-white" />, color: 'bg-amber-600' },
           { label: 'Perlu Perhatian', value: highPriority, icon: <AlertCircle className="w-5 h-5 text-white" />, color: 'bg-rose-600' },
         ].map((s) => (
           <div key={s.label} className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs">
@@ -147,28 +143,36 @@ export default function GuruDashboard() {
             </div>
             <a href="/guru/jadwal" className="text-xs font-semibold text-emerald-700 hover:underline">Semua jadwal</a>
           </div>
+
           <div className="divide-y divide-slate-100">
-            {todayClasses.map((c, i) => (
-              <div key={i} className={`flex items-center gap-4 px-5 py-3.5 ${c.done ? 'opacity-60' : ''}`}>
-                <div className="text-center w-20 flex-shrink-0">
-                  <p className="text-xs font-mono font-bold text-slate-600">{c.time.split('–')[0]}</p>
-                  <p className="text-[11px] font-mono text-slate-400">–{c.time.split('–')[1]}</p>
-                </div>
-                <div className={`w-1 h-10 rounded-full flex-shrink-0 ${c.done ? 'bg-slate-300' : 'bg-emerald-600'}`} />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="font-bold text-xs sm:text-sm text-slate-900">{c.subject} — Kelas {c.class}</p>
-                    {c.done && <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">Selesai</span>}
-                  </div>
-                  <p className="text-xs text-slate-500 font-medium">{c.room} · {c.students} siswa</p>
-                </div>
-                {!c.done && (
-                  <a href="/guru/akademik/absensi" className="text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/80 hover:bg-emerald-100 px-3 py-1.5 rounded-xl flex-shrink-0 transition-colors">
-                    Absensi
-                  </a>
-                )}
+            {displayTodayClasses.length === 0 ? (
+              <div className="text-center py-10 text-slate-400">
+                <Clock className="w-7 h-7 text-emerald-600/30 mx-auto mb-1.5" />
+                <p className="text-xs font-semibold text-slate-600">Tidak ada jadwal mengajar pada hari {dayName}.</p>
               </div>
-            ))}
+            ) : (
+              displayTodayClasses.map((c, i) => (
+                <div key={i} className={`flex items-center gap-4 px-5 py-3.5 ${c.done ? 'opacity-60' : ''}`}>
+                  <div className="text-center w-20 flex-shrink-0">
+                    <p className="text-xs font-mono font-bold text-slate-600">{c.time.split('–')[0]}</p>
+                    <p className="text-[11px] font-mono text-slate-400">–{c.time.split('–')[1]}</p>
+                  </div>
+                  <div className={`w-1 h-10 rounded-full flex-shrink-0 ${c.done ? 'bg-slate-300' : 'bg-emerald-600'}`} />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-bold text-xs sm:text-sm text-slate-900">{c.subject} — Kelas {c.class}</p>
+                      {c.done && <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">Selesai</span>}
+                    </div>
+                    <p className="text-xs text-slate-500 font-medium">{c.room} · {c.students} siswa</p>
+                  </div>
+                  {!c.done && (
+                    <a href="/guru/akademik/absensi" className="text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/80 hover:bg-emerald-100 px-3 py-1.5 rounded-xl flex-shrink-0 transition-colors">
+                      Absensi
+                    </a>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -188,7 +192,7 @@ export default function GuruDashboard() {
                 }`} />
                 <div>
                   <p className="text-xs font-bold text-slate-800 leading-snug">{t.title}</p>
-                  {t.count !== null && t.count !== undefined && <p className="text-[11px] font-semibold text-slate-400 mt-0.5">{t.count} berkas / item</p>}
+                  {t.count !== null && t.count !== undefined && <p className="text-[11px] font-semibold text-slate-400 mt-0.5">{t.count} item</p>}
                 </div>
               </div>
             ))}
@@ -205,38 +209,46 @@ export default function GuruDashboard() {
           </div>
           <a href="/guru/akademik/tugas" className="text-xs font-semibold text-emerald-700 hover:underline">Lihat semua</a>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                {['Nama Siswa', 'Kelas', 'Judul Tugas', 'Tanggal Dikumpulkan', 'Status'].map((h) => (
-                  <th key={h} className="px-5 py-3.5">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {displaySubmissions.map((s, i) => (
-                <tr key={i} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="px-5 py-3.5 text-xs font-bold text-slate-900">{s.name}</td>
-                  <td className="px-5 py-3.5 text-xs font-semibold text-emerald-800">{s.class}</td>
-                  <td className="px-5 py-3.5 text-xs font-medium text-slate-700">{s.task}</td>
-                  <td className="px-5 py-3.5 text-xs font-medium text-slate-500 flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-emerald-600" />{s.submittedAt}
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <span className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full ${
-                      s.status === 'new'
-                        ? 'bg-amber-100 text-amber-800 border border-amber-200'
-                        : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                    }`}>
-                      {s.status === 'new' ? 'Belum dinilai' : 'Sudah dinilai'}
-                    </span>
-                  </td>
+        
+        {recentSubmissions.length === 0 ? (
+          <div className="text-center py-10 text-slate-400">
+            <FileText className="w-7 h-7 text-emerald-600/30 mx-auto mb-1.5" />
+            <p className="text-xs font-semibold text-slate-600">Belum ada pengumpulan tugas siswa terbaru di database.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-100 bg-slate-50/50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  {['Nama Siswa', 'Kelas', 'Judul Tugas', 'Tanggal Dikumpulkan', 'Status'].map((h) => (
+                    <th key={h} className="px-5 py-3.5">{h}</th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {recentSubmissions.slice(0, 5).map((s, i) => (
+                  <tr key={i} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="px-5 py-3.5 text-xs font-bold text-slate-900">{s.name}</td>
+                    <td className="px-5 py-3.5 text-xs font-semibold text-emerald-800">{s.class}</td>
+                    <td className="px-5 py-3.5 text-xs font-medium text-slate-700">{s.task}</td>
+                    <td className="px-5 py-3.5 text-xs font-medium text-slate-500 flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-emerald-600" />{s.submittedAt}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full ${
+                        s.status === 'new'
+                          ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                          : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                      }`}>
+                        {s.status === 'new' ? 'Belum dinilai' : 'Sudah dinilai'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Quick actions */}

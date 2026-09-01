@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { NextSSRPlugin } from '@uploadthing/react/next-ssr-plugin';
 import { extractRouterConfig } from 'uploadthing/server';
 import { ourFileRouter } from '@/app/api/uploadthing/core';
+import { PageTitleManager } from '@/components/PageTitleManager';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
@@ -18,6 +19,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider attribute="class" defaultTheme="light" forcedTheme="light" enableSystem={false}>
           <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
+          <PageTitleManager />
           {children}
         </ThemeProvider>
       </QueryClientProvider>

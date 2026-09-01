@@ -53,16 +53,11 @@ export default function GuruJadwalPage() {
     });
   });
 
-  const displayList = (scheduleByDay[activeDay] || []).length > 0
-    ? scheduleByDay[activeDay]
-    : [
-        { time: '07.00–08.40', class: '8A', subject: user?.teacher?.subject || 'Matematika', room: 'Ruang 8A', students: 32 },
-        { time: '08.40–10.20', class: '7B', subject: user?.teacher?.subject || 'Matematika', room: 'Ruang 7B', students: 30 },
-      ];
+  const displayList = scheduleByDay[activeDay] || [];
 
-  const totalSessions = schedules.length || 12;
-  const uniqueClasses = new Set(schedules.map(s => s.class?.name || s.classId)).size || 4;
-  const totalStudents = schedules.reduce((a, b) => a + (b.class?.capacity || 30), 0) || 120;
+  const totalSessions = schedules.length;
+  const uniqueClasses = new Set(schedules.map(s => s.class?.name || s.classId).filter(Boolean)).size;
+  const totalStudents = schedules.reduce((a, b) => a + (b.class?.capacity || 30), 0);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-10">
@@ -105,42 +100,49 @@ export default function GuruJadwalPage() {
                   {DAY_NAMES[day]}
                   {day === today && <span className="ml-1 text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded-md">Hari ini</span>}
                 </p>
-                <p className="text-[11px] text-slate-400 mt-0.5 font-semibold">{count > 0 ? `${count} sesi` : 'Aktif'}</p>
+                <p className="text-[11px] text-slate-400 mt-0.5 font-semibold">{count > 0 ? `${count} sesi` : 'Kosong'}</p>
               </button>
             );
           })}
         </div>
 
         <div className="p-4 space-y-3">
-          {displayList.map((s, i) => (
-            <div key={i} className="flex gap-4 p-4 rounded-xl border border-slate-200/80 bg-slate-50/50 hover:bg-white hover:border-emerald-300 transition-all shadow-2xs">
-              <div className="text-center w-20 flex-shrink-0">
-                <p className="text-xs font-mono font-bold text-slate-700">{s.time.split('–')[0]}</p>
-                <p className="text-[11px] font-mono text-slate-400 font-semibold">– {s.time.split('–')[1]}</p>
-              </div>
-              <div className="w-1 bg-emerald-600 rounded-full flex-shrink-0" />
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-md">{s.class}</span>
-                  <p className="font-bold text-xs sm:text-sm text-slate-900">{s.subject}</p>
-                </div>
-                <div className="flex gap-4 mt-1.5 text-xs text-slate-500 font-medium">
-                  <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-emerald-600"/>{s.room}</span>
-                  <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5 text-emerald-600"/>{s.students} siswa</span>
-                </div>
-              </div>
-              <div className="flex flex-col gap-1.5 flex-shrink-0">
-                <a href="/guru/akademik/absensi"
-                  className="text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 text-center transition-colors shadow-2xs">
-                  Absensi
-                </a>
-                <a href="/guru/akademik/nilai"
-                  className="text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 text-center transition-colors">
-                  Nilai
-                </a>
-              </div>
+          {displayList.length === 0 ? (
+            <div className="text-center py-12 text-slate-400">
+              <Clock className="w-8 h-8 text-emerald-600/30 mx-auto mb-2" />
+              <p className="text-xs font-semibold text-slate-600">Tidak ada jadwal mengajar pada hari {DAY_NAMES[activeDay]}.</p>
             </div>
-          ))}
+          ) : (
+            displayList.map((s, i) => (
+              <div key={i} className="flex gap-4 p-4 rounded-xl border border-slate-200/80 bg-slate-50/50 hover:bg-white hover:border-emerald-300 transition-all shadow-2xs">
+                <div className="text-center w-20 flex-shrink-0">
+                  <p className="text-xs font-mono font-bold text-slate-700">{s.time.split('–')[0]}</p>
+                  <p className="text-[11px] font-mono text-slate-400 font-semibold">– {s.time.split('–')[1]}</p>
+                </div>
+                <div className="w-1 bg-emerald-600 rounded-full flex-shrink-0" />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-md">{s.class}</span>
+                    <p className="font-bold text-xs sm:text-sm text-slate-900">{s.subject}</p>
+                  </div>
+                  <div className="flex gap-4 mt-1.5 text-xs text-slate-500 font-medium">
+                    <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-emerald-600"/>{s.room}</span>
+                    <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5 text-emerald-600"/>{s.students} siswa</span>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1.5 flex-shrink-0">
+                  <a href="/guru/akademik/absensi"
+                    className="text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 text-center transition-colors shadow-2xs">
+                    Absensi
+                  </a>
+                  <a href="/guru/akademik/nilai"
+                    className="text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 text-center transition-colors">
+                    Nilai
+                  </a>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

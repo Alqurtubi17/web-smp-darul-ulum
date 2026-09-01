@@ -43,8 +43,8 @@ export const useAcademicYearStore = create<AcademicYearState>((set, get) => ({
       const res = await contentService.getSettings();
       const settingsData = res?.data || res;
       if (settingsData && typeof settingsData === 'object') {
-        const backendYear = settingsData.active_academic_year || get().activeYear;
-        const backendSemester = (settingsData.active_academic_semester as 'Ganjil' | 'Genap') || get().activeSemester;
+        const backendYear = settingsData.active_academic_year;
+        const backendSemester = settingsData.active_academic_semester as 'Ganjil' | 'Genap';
 
         let dbYears: AcademicYearItem[] = get().academicYears;
 
@@ -67,13 +67,19 @@ export const useAcademicYearStore = create<AcademicYearState>((set, get) => ({
         }
 
         const activeItem = dbYears.find((y) => y.isActive);
-        const finalYear = activeItem ? activeItem.year : backendYear;
-        const finalSemester = activeItem ? activeItem.semester : backendSemester;
+        const finalYear = backendYear || (activeItem ? activeItem.year : '2024/2025');
+        const finalSemester = backendSemester || (activeItem ? activeItem.semester : 'Ganjil');
+
+        const syncedYears = dbYears.map((y) => ({
+          ...y,
+          isActive: y.year === finalYear && y.semester === finalSemester,
+          status: (y.year === finalYear && y.semester === finalSemester) ? ('Aktif' as const) : ('Arsip' as const),
+        }));
 
         set({
           activeYear: finalYear,
           activeSemester: finalSemester,
-          academicYears: dbYears,
+          academicYears: syncedYears,
           isLoaded: true,
         });
       }

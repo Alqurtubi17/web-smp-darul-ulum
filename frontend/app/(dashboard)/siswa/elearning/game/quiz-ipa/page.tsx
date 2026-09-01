@@ -86,24 +86,24 @@ export default function ScienceQuizGame() {
   };
 
   if (phase === 'menu') return (
-    <div className="max-w-lg mx-auto space-y-5">
-      <Link href="/siswa/elearning" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700"><ArrowLeft className="w-4 h-4"/> Kembali</Link>
-      <div className="bg-gradient-to-br from-teal-500 to-cyan-600 rounded-3xl p-8 text-white text-center shadow-2xl">
-        <div className="text-6xl mb-3">🔭</div>
-        <h1 className="text-3xl font-extrabold mb-2">Science Quiz!</h1>
-        <p className="text-teal-100 text-sm">10 soal IPA — Fisika, Biologi & Kimia.<br/>Setiap jawaban ada penjelasan lengkap! 📚</p>
+    <div className="max-w-md mx-auto space-y-3.5">
+      <Link href="/siswa/elearning" className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 font-bold"><ArrowLeft className="w-3.5 h-3.5"/> Kembali</Link>
+      <div className="bg-gradient-to-br from-teal-500 to-cyan-600 rounded-2xl p-5 text-white text-center shadow-md">
+        <div className="text-4xl mb-2">🔭</div>
+        <h1 className="text-xl font-extrabold mb-1">Science Quiz</h1>
+        <p className="text-teal-100 text-xs font-medium">10 soal IPA — Fisika, Biologi &amp; Kimia.<br/>Lengkap dengan pembahasan kunci jawaban.</p>
       </div>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2.5">
         {[{icon:'🔬',l:'10 Soal',v:'Beragam topik'},{icon:'⏱️',l:'25 detik',v:'Per soal'},{icon:'💡',l:'Penjelasan',v:'Setiap jawaban'}].map(s=>(
-          <div key={s.l} className="bg-white rounded-xl border border-gray-200 p-3 text-center">
-            <span className="text-xl">{s.icon}</span>
-            <p className="text-xs font-bold text-gray-900 mt-1">{s.l}</p>
+          <div key={s.l} className="bg-white rounded-xl border border-gray-200 p-2.5 text-center">
+            <span className="text-lg">{s.icon}</span>
+            <p className="text-xs font-bold text-gray-900 mt-0.5">{s.l}</p>
             <p className="text-[10px] text-gray-400">{s.v}</p>
           </div>
         ))}
       </div>
-      <button onClick={startGame} className="w-full py-4 rounded-2xl bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-extrabold text-lg hover:scale-105 transition-all shadow-lg">
-        🔭 Mulai Kuis!
+      <button onClick={startGame} className="w-full py-3 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-extrabold text-xs uppercase tracking-wider hover:opacity-90 transition-all shadow-xs cursor-pointer">
+        🔭 Mulai Kuis
       </button>
     </div>
   );

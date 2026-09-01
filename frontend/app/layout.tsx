@@ -6,7 +6,7 @@ import { Providers } from './providers';
 const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-const SCHOOL_NAME = 'SMP Darul Ulum Surabaya';
+const SCHOOL_NAME = 'SMP Darul Ulum';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

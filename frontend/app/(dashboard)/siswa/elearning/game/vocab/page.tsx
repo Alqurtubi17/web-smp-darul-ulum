@@ -153,18 +153,18 @@ export default function WordMatchGame({ gameData }: { gameData?: any } = {}) {
   };
 
   return (
-    <div className="max-w-xl mx-auto space-y-6 pb-12">
+    <div className="max-w-md mx-auto space-y-3.5">
 
-      <div className="bg-gradient-to-br from-purple-600 via-indigo-600 to-violet-700 rounded-3xl p-6 text-white text-center shadow-xl">
-        <div className="text-5xl mb-2">🔤</div>
-        <h1 className="text-2xl font-extrabold">Word &amp; Concept Match</h1>
-        <p className="text-purple-100 text-xs font-medium mt-1">
+      <div className="bg-gradient-to-br from-purple-600 via-indigo-600 to-violet-700 rounded-2xl p-4 text-white text-center shadow-md">
+        <div className="text-3xl mb-1.5">🔤</div>
+        <h1 className="text-lg font-extrabold">Word &amp; Concept Match</h1>
+        <p className="text-purple-100 text-xs font-medium mt-0.5">
           Cocokkan kartu istilah dengan definisinya sebelum waktu 60 detik habis! 🧠
         </p>
       </div>
 
       {/* HUD Bar */}
-      <div className="flex items-center justify-between bg-white rounded-2xl border border-purple-100 px-5 py-3 shadow-2xs text-xs font-bold text-slate-800">
+      <div className="flex items-center justify-between bg-white rounded-xl border border-purple-100 px-3.5 py-2 shadow-2xs text-xs font-bold text-slate-800">
         <div className="flex items-center gap-1.5 text-purple-700">
           <Star className="w-4 h-4 fill-purple-600" /> Skor: <span className="font-extrabold text-sm">{score}</span>
         </div>

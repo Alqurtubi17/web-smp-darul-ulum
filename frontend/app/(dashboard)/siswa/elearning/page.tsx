@@ -16,6 +16,7 @@ const SUBJECTS = [
 ];
 
 const GAMES = [
+  { id:'quizizz',    name:'Quizizz Live Arena', icon:'🎯', color:'bg-gradient-to-br from-amber-500 via-orange-600 to-rose-600', desc:'Arena Kuis Live persis Quizizz! Bisa masuk via QR Code/PIN sebagai Siswa atau Tamu!', bestScore:1450, played:42, difficulty:'Sedang', questionsCount: 15 },
   { id:'tajwid',     name:'Tajwid & PAI Quest', icon:'☪️', color:'bg-gradient-to-br from-emerald-600 to-teal-700', desc:'Kuis Tajwid & hukum bacaan Al-Qur’an interaktif!', bestScore:980, played:18, difficulty:'Sedang', questionsCount: 12 },
   { id:'vocab',      name:'Word & Concept Match', icon:'🧩', color:'bg-gradient-to-br from-indigo-500 to-purple-600', desc:'Cocokkan istilah dan definisi pelajaran!', bestScore:1050, played:14, difficulty:'Mudah', questionsCount: 6 },
   { id:'matematika', name:'Math Blitz', icon:'⚡', color:'bg-gradient-to-br from-blue-500 to-indigo-600', desc:'Jawab soal matematika sebelum waktu habis!', bestScore:850, played:12, difficulty:'Sedang', questionsCount: 6 },
@@ -43,13 +44,15 @@ export default function SiswaElearningPage() {
       .then(res => {
         if (res.data?.data && Array.isArray(res.data.data)) {
           const mapped = res.data.data.map((g: any) => ({
-            id: g.slug || g.id,
+            id: g.id,
+            slug: g.slug || g.id,
             name: g.name,
             icon: g.icon,
+            subject: g.subject || 'Umum',
             color: `bg-gradient-to-br ${g.color || 'from-emerald-600 to-teal-700'}`,
             desc: g.desc,
             bestScore: g.bestScore || 1000,
-            played: g.played || 10,
+            played: g.played || 0,
             difficulty: g.difficulty || 'Sedang',
             questionsCount: g.questions?.length || 5,
           }));
@@ -150,12 +153,19 @@ export default function SiswaElearningPage() {
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
             {allGames.map(game => (
-              <Link key={game.id} href={`/siswa/elearning/game/${game.id}`}
+              <Link key={game.id || game.slug} href={`/siswa/elearning/game/${game.slug || game.id}`}
                 className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all">
                 <div className={`${game.color} p-5 relative overflow-hidden`}>
                   <div className="absolute -right-4 -top-4 text-7xl opacity-20 leading-none">{game.icon}</div>
                   <div className="relative">
-                    <span className="text-3xl block mb-2">{game.icon}</span>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-3xl block">{game.icon}</span>
+                      {game.subject && (
+                        <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-xs border border-white/30">
+                          {game.subject}
+                        </span>
+                      )}
+                    </div>
                     <h3 className="font-extrabold text-white text-lg">{game.name}</h3>
                     <p className="text-white/80 text-xs mt-1">{game.desc}</p>
                   </div>
@@ -168,12 +178,12 @@ export default function SiswaElearningPage() {
                         {game.questionsCount || 5} Soal/Kartu
                       </span>
                     </div>
-                    <span className="text-xs text-gray-400">Dimainkan {game.played}×</span>
+                    <span className="text-xs text-gray-400">Dimainkan {game.played || 0}×</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
                       <Star className="w-4 h-4 text-yellow-500 fill-yellow-500"/>
-                      <span className="text-sm font-bold text-gray-900">{game.bestScore.toLocaleString('id-ID')}</span>
+                      <span className="text-sm font-bold text-gray-900">{(game.bestScore || 1000).toLocaleString('id-ID')}</span>
                       <span className="text-xs text-gray-400">best score</span>
                     </div>
                     <span className="flex items-center gap-1.5 text-sm font-bold text-green-600 group-hover:gap-2.5 transition-all">

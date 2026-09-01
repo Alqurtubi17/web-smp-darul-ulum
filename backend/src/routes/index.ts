@@ -14,8 +14,10 @@ import * as elearningGameCtrl from '../controllers/elearningGame.controller';
 // ─── E-LEARNING GAMES (PERSISTENCE & SOAL DB) ──────────────────────────────────
 export const elearningGameRouter = Router();
 elearningGameRouter.get('/', elearningGameCtrl.listGames);
+elearningGameRouter.post('/', elearningGameCtrl.createGame);
 elearningGameRouter.get('/:slug', elearningGameCtrl.getGameBySlug);
 elearningGameRouter.put('/:slug', elearningGameCtrl.updateGame);
+elearningGameRouter.delete('/:slug', elearningGameCtrl.deleteGame);
 elearningGameRouter.post('/:slug/score', elearningGameCtrl.recordScore);
 
 // ─── ANNOUNCEMENTS ────────────────────────────────────────────────────────────
@@ -73,6 +75,7 @@ assignmentRouter.patch('/submissions/:submissionId/grade', optionalAuth, assignm
 export const materialRouter = Router();
 materialRouter.get('/', optionalAuth, assignmentCtrl.listMaterials);
 materialRouter.post('/', optionalAuth, assignmentCtrl.uploadMaterial);
+materialRouter.put('/:id', optionalAuth, assignmentCtrl.updateMaterial);
 materialRouter.delete('/:id', optionalAuth, assignmentCtrl.deleteMaterial);
 
 // ─── PAYMENTS ─────────────────────────────────────────────────────────────────
